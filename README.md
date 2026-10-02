@@ -197,3 +197,13 @@ server {
 ## 许可证
 
 MIT License
+
+## API 类型生成管线
+
+`openapi.json`(仓库根)是后端 API 契约快照(源自 FileCodeBox backend 的 Swagger 定义,由 core 侧维护);`src/types/api.gen.ts` 由它生成,**勿手改**:
+
+```bash
+npm run gen:api    # openapi.json → src/types/api.gen.ts(openapi-typescript)
+```
+
+更新流程:core 侧 API 变更 → 更新 openapi.json 快照 → 重新生成 → 提交。手写类型(`src/types/common.ts`、`user.ts`)可逐步迁移到生成类型(`import type { paths, components } from './api.gen'`)。
