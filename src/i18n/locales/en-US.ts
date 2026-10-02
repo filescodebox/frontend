@@ -597,6 +597,8 @@ export default {
     expire: 'Expiration',
     requirePassword: 'Access',
     needPassword: 'Require password',
+    passwordPlaceholder: 'Access password',
+    passwordRequired: 'Password is required when protection is on',
     publicAccess: 'Public access',
     startUpload: 'Start upload',
     presign: {

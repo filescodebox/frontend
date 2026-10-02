@@ -48,6 +48,15 @@
           active-text="需要密码"
           inactive-text="公开访问"
         />
+        <el-input
+          v-if="form.require_auth"
+          v-model="form.password"
+          type="password"
+          placeholder="请输入访问密码"
+          show-password
+          maxlength="64"
+          style="margin-top: 8px"
+        />
       </div>
     </div>
 
@@ -84,11 +93,16 @@ const form = ref({
   expire_value: 1,
   expire_style: 'day',
   require_auth: false,
+  password: '',
 })
 
 const handleShare = async () => {
   if (!textContent.value.trim()) {
     ElMessage.warning('请输入文本内容')
+    return
+  }
+  if (form.value.require_auth && !form.value.password) {
+    ElMessage.warning('开启密码保护时必须填写访问密码')
     return
   }
 

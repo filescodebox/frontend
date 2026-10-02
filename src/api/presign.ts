@@ -30,6 +30,7 @@ export const presignApi = {
     expire_value?: number
     expire_style?: string
     require_auth?: boolean
+    password?: string
   }) => {
     return request<ApiResponse<PresignInitData>>({
       url: '/api/v1/presign/upload',

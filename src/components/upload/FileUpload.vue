@@ -134,6 +134,15 @@
           :active-text="t('upload.needPassword')"
           :inactive-text="t('upload.publicAccess')"
         />
+        <el-input
+          v-if="form.require_auth"
+          v-model="form.password"
+          type="password"
+          :placeholder="t('upload.passwordPlaceholder')"
+          show-password
+          maxlength="64"
+          style="margin-top: 8px"
+        />
       </div>
     </div>
 
@@ -199,6 +208,7 @@ const form = reactive({
   expire_value: 1,
   expire_style: 'day',
   require_auth: false,
+  password: '',
 })
 
 const PRESIGN_THRESHOLD = 100 * 1024 * 1024 // 100MB
@@ -308,7 +318,10 @@ const uploadOne = (item: FileItem) => {
     formData.append('file', item.file)
     formData.append('expire_value', String(form.expire_value))
     formData.append('expire_style', form.expire_style)
-    if (form.require_auth) formData.append('require_auth', 'true')
+    if (form.require_auth) {
+      formData.append('require_auth', 'true')
+      if (form.password) formData.append('password', form.password)
+    }
 
     const xhr = new XMLHttpRequest()
     item.xhr = xhr
@@ -361,6 +374,10 @@ const uploadOne = (item: FileItem) => {
 }
 
 const handleUploadAll = async () => {
+  if (form.require_auth && !form.password) {
+    ElMessage.warning(t('upload.passwordRequired'))
+    return
+  }
   const pending = fileList.value.filter((f) => f.status === 'pending' || f.status === 'error')
   for (const item of pending) {
     if (item.status === 'error' && item.xhr === null) {

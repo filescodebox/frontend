@@ -71,6 +71,7 @@ interface Props {
     expire_value?: number
     expire_style?: string
     require_auth?: boolean
+    password?: string
   }
 }
 
@@ -131,6 +132,7 @@ const doUpload = async (retryCount = 0) => {
       expire_value: props.options.expire_value || 24,
       expire_style: props.options.expire_style || 'hour',
       require_auth: props.options.require_auth,
+      password: props.options.password,
     })
     if (initRes.code !== 200 || !initRes.data) {
       throw new Error(initRes.message || 'Init failed')

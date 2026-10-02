@@ -598,6 +598,8 @@ export default {
     expire: '过期时间',
     requirePassword: '访问保护',
     needPassword: '需要密码',
+    passwordPlaceholder: '请输入访问密码',
+    passwordRequired: '开启密码保护时必须填写访问密码',
     publicAccess: '公开访问',
     startUpload: '开始上传',
     presign: {
