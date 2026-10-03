@@ -122,8 +122,11 @@
               <el-input-number v-model="rlForm.block_seconds" :min="0" :max="86400" controls-position="right" />
             </el-form-item>
             <el-form-item label="Redis 共享计数">
-              <el-switch v-model="rlForm.use_redis" />
-              <span class="form-hint" style="margin-left: 10px; color: var(--color-text-secondary)">多实例部署需开启</span>
+              <!-- 契约无 use_redis 字段（GET 不返回/PUT 不采纳），由部署配置
+                   rate_limit.use_redis / FCB_RATE_LIMIT_USE_REDIS 决定 -->
+              <span class="form-hint" style="color: var(--color-text-secondary)">
+                由部署配置决定（rate_limit.use_redis / FCB_RATE_LIMIT_USE_REDIS），此处不可改
+              </span>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" :loading="rlSaving" @click="saveRateLimit">保存限流配置</el-button>
@@ -230,8 +233,7 @@ const rlForm = reactive({
   download_qps: 50,
   login_qps: 5,
   burst: 20,
-  block_seconds: 60,
-  use_redis: false
+  block_seconds: 60
 })
 
 const fetchRateLimit = async () => {
@@ -253,7 +255,8 @@ const fetchRateLimit = async () => {
 const saveRateLimit = async () => {
   rlSaving.value = true
   try {
-    const res = await adminApi.updateRateLimitConfig({ ...rlForm })
+    // 后端绑定结构为 {config: RateLimitConfig}，扁平体会因 required 缺失被 400
+    const res = await adminApi.updateRateLimitConfig({ config: { ...rlForm } })
     if (res.code === 0 || res.code === 200) {
       ElMessage.success('限流配置已保存并热更新')
     } else {

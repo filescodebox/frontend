@@ -353,9 +353,10 @@ const fetchRecentUsers = async () => {
   try {
     const res = await adminApi.getRecentUsers()
     if (res.code === 200) {
-      const data = res.data as { users?: RecentUser[] } | RecentUser[] | undefined
-      if (data && Array.isArray((data as { users: RecentUser[] }).users)) {
-        recentUsers.value = (data as { users: RecentUser[] }).users.slice(0, 5)
+      // 后端 GET /admin/users 返回 {items,total,page,page_size}（此前读 data.users 恒空）
+      const data = res.data as { items?: RecentUser[] } | RecentUser[] | undefined
+      if (data && Array.isArray((data as { items: RecentUser[] }).items)) {
+        recentUsers.value = (data as { items: RecentUser[] }).items.slice(0, 5)
       } else if (Array.isArray(data)) {
         recentUsers.value = data.slice(0, 5)
       } else {
@@ -372,28 +373,30 @@ const fetchRecentFiles = async () => {
   try {
     const res = await adminApi.getRecentFiles()
     if (res.code === 200) {
-      const data = res.data as { list?: Array<{
-        uuid_file_name?: string
+      // 后端 GET /admin/files 返回 {items,...}，FileItem 字段为 file_name/file_size（
+      // 此前读 data.list/uuid_file_name/username 恒空）；管理端列表无 username，置空
+      const data = res.data as { items?: Array<{
+        file_name?: string
         code?: string
+        file_size?: number
         size?: number
-        username?: string
-        CreatedAt?: string
         created_at?: string
+        CreatedAt?: string
       }> } | RecentFile[] | undefined
-      if (data && Array.isArray((data as { list: unknown[] }).list)) {
-        const list = (data as { list: Array<{
-          uuid_file_name?: string
+      if (data && Array.isArray((data as { items: unknown[] }).items)) {
+        const list = (data as { items: Array<{
+          file_name?: string
           code?: string
+          file_size?: number
           size?: number
-          username?: string
-          CreatedAt?: string
           created_at?: string
-        }> }).list
+          CreatedAt?: string
+        }> }).items
         recentFiles.value = list.slice(0, 5).map((f) => ({
-          filename: f.uuid_file_name || f.code || '-',
-          file_size: f.size || 0,
-          username: f.username || '-',
-          created_at: f.CreatedAt || f.created_at || '',
+          filename: f.file_name || f.code || '-',
+          file_size: f.file_size || f.size || 0,
+          username: '-',
+          created_at: f.created_at || f.CreatedAt || '',
         }))
       } else if (Array.isArray(data)) {
         recentFiles.value = (data as RecentFile[]).slice(0, 5)

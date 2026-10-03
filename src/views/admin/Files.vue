@@ -316,7 +316,8 @@ const formatFileSize = (bytes: number): string => {
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return '-'
   try {
-    return new Date(dateStr).toLocaleString('zh-CN')
+    // 后端为 "2006-01-02 15:04:05" 格式，Safari 不认空格分隔——归一为 T
+    return new Date(dateStr.replace(' ', 'T')).toLocaleString('zh-CN')
   } catch {
     return '-'
   }
@@ -325,7 +326,7 @@ const formatDate = (dateStr: string): string => {
 const isExpired = (dateStr: string): boolean => {
   if (!dateStr) return false
   try {
-    return new Date(dateStr) < new Date()
+    return new Date(dateStr.replace(' ', 'T')) < new Date()
   } catch {
     return false
   }
@@ -598,9 +599,27 @@ const submitEdit = async () => {
   }
 }
 
-const downloadFile = (row: any) => {
-  // 管理端下载：302 到带服务端签发下载令牌的公开下载端点
-  window.open(adminApi.fileDownloadUrl(row.id), '_blank')
+const downloadFile = async (row: any) => {
+  // 管理端下载：/admin/files/:id 受 AdminMiddleware 保护，window.open 带不上
+  // Authorization 头必然 401——改为带令牌的 fetch → blob → 触发保存
+  try {
+    const { default: axios } = await import('axios')
+    const token = localStorage.getItem('token') || ''
+    const res = await axios.get(adminApi.fileDownloadUrl(row.id), {
+      responseType: 'blob',
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    })
+    const url = URL.createObjectURL(res.data)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = row.file_name || `${row.code}.bin`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  } catch (e: any) {
+    ElMessage.error(e?.response?.status === 401 ? '登录已过期，请重新登录' : '下载失败')
+  }
 }
 
 const handleSizeChange = () => {

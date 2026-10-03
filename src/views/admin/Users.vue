@@ -297,7 +297,7 @@ const formatFileSize = (bytes: number): string => {
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return '-'
   try {
-    return new Date(dateStr).toLocaleString('zh-CN')
+    return new Date(String(dateStr).replace(' ', 'T')).toLocaleString('zh-CN')
   } catch {
     return '-'
   }
@@ -305,8 +305,9 @@ const formatDate = (dateStr: string): string => {
 
 const getStoragePercentage = (user: any): number => {
   const used = user.quota_used || user.total_storage || 0
-  // 优先读用户实际配额（管理员可单独设置），>0 才有意义；否则回退系统默认 1GB
-  const quota = user.max_storage_quota > 0 ? user.max_storage_quota : 1073741824
+  // 优先读用户实际配额：GET /admin/users 返回 quota_limit（thrift UserItem），
+  // max_storage_quota 不存在于该响应（此前修错字段，实际仍是硬编码 1GB）
+  const quota = user.quota_limit > 0 ? user.quota_limit : (user.max_storage_quota > 0 ? user.max_storage_quota : 1073741824)
   if (used <= 0 || quota <= 0) return 0
   const percentage = (used / quota) * 100
   return Math.min(percentage, 100)

@@ -113,7 +113,7 @@ const formatFileSize = (bytes: number): string => {
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return '-'
   try {
-    return new Date(dateStr).toLocaleString('zh-CN')
+    return new Date(String(dateStr).replace(' ', 'T')).toLocaleString('zh-CN')
   } catch {
     return '-'
   }
