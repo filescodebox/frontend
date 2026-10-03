@@ -532,7 +532,7 @@ export default {
   },
   docs: {
     title: 'API 文档',
-    subtitle: 'FileCodeBox 后端 API（基于 thrift IDL + 自定义路由）',
+    subtitle: 'FilesCodeBox 后端 API（基于 thrift IDL + 自定义路由）',
     openInNew: '打开 OpenAPI JSON',
     loadFailed: '加载 API 文档失败',
   },

@@ -5,7 +5,7 @@
         <div class="logo-icon">
           <el-icon size="22"><Box /></el-icon>
         </div>
-        <h1>FileCodeBox</h1>
+        <h1>FilesCodeBox</h1>
         <p>管理后台登录</p>
       </div>
 

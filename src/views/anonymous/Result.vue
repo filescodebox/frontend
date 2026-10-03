@@ -7,7 +7,7 @@
           <div class="logo-icon">
             <el-icon size="28"><Box /></el-icon>
           </div>
-          <span class="logo-text">FileCodeBox</span>
+          <span class="logo-text">FilesCodeBox</span>
         </div>
         <div class="header-actions">
           <LocaleSwitcher />

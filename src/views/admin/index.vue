@@ -8,7 +8,7 @@
             <el-icon size="28"><Box /></el-icon>
           </div>
           <div class="logo-text">
-            <h2>FileCodeBox</h2>
+            <h2>FilesCodeBox</h2>
             <p>{{ t('admin.title') }}</p>
           </div>
         </div>

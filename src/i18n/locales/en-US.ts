@@ -1,7 +1,7 @@
 // English language pack
 export default {
   common: {
-    app_name: 'FileCodeBox',
+    app_name: 'FilesCodeBox',
     confirm: 'Confirm',
     cancel: 'Cancel',
     save: 'Save',
@@ -77,7 +77,7 @@ export default {
     register: 'Register',
   },
   home: {
-    title: 'FileCodeBox',
+    title: 'FilesCodeBox',
     subtitle: 'Secure, simple file sharing',
     hero_title: 'Upload a file, get a share code',
     hero_desc: 'Anonymous sharing, no signup required. Supports password, expiry, and pickup code.',
@@ -531,7 +531,7 @@ export default {
   },
   docs: {
     title: 'API Documentation',
-    subtitle: 'FileCodeBox backend API (thrift IDL + custom routes)',
+    subtitle: 'FilesCodeBox backend API (thrift IDL + custom routes)',
     openInNew: 'Open OpenAPI JSON',
     loadFailed: 'Failed to load API docs',
   },
