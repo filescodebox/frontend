@@ -49,6 +49,11 @@
           <span>{{ formatTime(row.last_used_at, t('user.tokens.neverUsed')) }}</span>
         </template>
       </el-table-column>
+      <el-table-column :label="t('user.tokens.lastIP')" width="150">
+        <template #default="{ row }">
+          <span>{{ row.last_used_ip || '-' }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="t('user.tokens.expiresAt')" width="180">
         <template #default="{ row }">
           <span>{{ formatTime(row.expires_at, t('user.tokens.never')) }}</span>

@@ -66,6 +66,15 @@
           </template>
         </el-table-column>
 
+        <el-table-column prop="api_key_id" label="Key ID" width="90">
+          <template #default="{ row }">
+            <el-tooltip v-if="row.api_key_id" content="该操作经用户 API Key 认证（泄露排查归因）">
+              <el-tag size="small" type="warning">#{{ row.api_key_id }}</el-tag>
+            </el-tooltip>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+
         <el-table-column prop="ip" label="IP 地址" width="140" />
 
         <el-table-column prop="created_at" label="操作时间" width="180">

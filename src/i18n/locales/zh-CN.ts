@@ -350,6 +350,7 @@ export default {
       revoked: '已吊销',
       expired: '已过期',
       lastUsed: '最后使用',
+      lastIP: '来源 IP',
       neverUsed: '从未使用',
       expiresAt: '过期时间',
       never: '永久',

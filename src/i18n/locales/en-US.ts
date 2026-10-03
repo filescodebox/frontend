@@ -349,6 +349,7 @@ export default {
       revoked: 'Revoked',
       expired: 'Expired',
       lastUsed: 'Last used',
+      lastIP: 'Source IP',
       neverUsed: 'Never used',
       expiresAt: 'Expires at',
       never: 'Never',
