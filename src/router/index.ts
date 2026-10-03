@@ -136,6 +136,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '文件管理' },
       },
       {
+        path: 'local-files',
+        name: 'AdminLocalFiles',
+        component: () => import('@/views/admin/LocalFiles.vue'),
+        meta: { title: '本地文件' },
+      },
+      {
         path: 'users',
         name: 'AdminUsers',
         component: () => import('@/views/admin/Users.vue'),

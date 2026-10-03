@@ -28,6 +28,11 @@
             <span>{{ t('admin.files') }}</span>
           </el-menu-item>
 
+          <el-menu-item index="/admin/local-files">
+            <el-icon><FolderOpened /></el-icon>
+            <span>{{ t('admin.localFiles') }}</span>
+          </el-menu-item>
+
           <el-menu-item index="/admin/users">
             <el-icon><User /></el-icon>
             <span>{{ t('admin.users') }}</span>
@@ -127,7 +132,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  Monitor, Folder, User, Setting, ArrowDown,
+  Monitor, Folder, FolderOpened, User, Setting, ArrowDown,
   Box, Document, Tools, Promotion, SwitchButton, List, View } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'

@@ -412,6 +412,7 @@ export default {
     dashboard: 'Dashboard',
     dashboard_title: 'Dashboard',
     files: 'Files',
+    localFiles: 'Local files',
     users: 'Users',
     config: 'Configuration',
     storage: 'Storage',
