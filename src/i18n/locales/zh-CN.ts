@@ -202,6 +202,17 @@ export default {
     paste_image: '检测到剪贴板图片，是否上传？',
     share_code: '取件码',
     scan_qr: '扫码分享',
+    customCode: '自定义取件码',
+    customCodePlaceholder: '3-32 位字母、数字、- 或 _（留空随机）',
+    e2e: {
+      title: '端到端加密',
+      on: '加密（零知识）',
+      off: '不加密',
+      hint: '密钥生成于本浏览器并嵌入分享链接，服务器只存密文无法解密。仅支持 ≤100MB 文件；请勿丢失链接中的 key 参数。',
+      encrypting: '加密中...',
+      tooLarge: '端到端加密仅支持 100MB 以内的文件',
+      failed: '加密失败（需 HTTPS 环境）',
+    },
   },
   share: {
     title: '文件分享',
@@ -673,17 +684,6 @@ export default {
       hashing: '正在计算秒传指纹...',
     },
     quickUploadHit: '秒传成功：文件已存在，直接获取分享码',
-    customCode: '自定义取件码',
-    customCodePlaceholder: '3-32 位字母、数字、- 或 _（留空随机）',
-    e2e: {
-      title: '端到端加密',
-      on: '加密（零知识）',
-      off: '不加密',
-      hint: '密钥生成于本浏览器并嵌入分享链接，服务器只存密文无法解密。仅支持 ≤100MB 文件；请勿丢失链接中的 key 参数。',
-      encrypting: '加密中...',
-      tooLarge: '端到端加密仅支持 100MB 以内的文件',
-      failed: '加密失败（需 HTTPS 环境）',
-    },
   },
 
   request: {

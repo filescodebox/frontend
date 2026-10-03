@@ -324,7 +324,10 @@ const fetchDecryptSave = async (url: string, name: string) => {
 
 const downloadFile = (fileId?: number, name?: string) => {
   if (!shareCode.value) return
-  const fallbackName = name || shareData.value?.file_name || shareData.value?.name || `${shareCode.value}.bin`
+  // 文件分享的原始名存 text 字段（E2E 文本分享的 text 是密文，但文本分支不走下载）
+  const fallbackName = name || shareData.value?.file_name || shareData.value?.name
+    || (shareData.value?.encrypted && shareFiles.value.length === 0 ? '' : shareData.value?.text)
+    || `${shareCode.value}.bin`
   if (isEncrypted.value) {
     if (!e2eKey.value) {
       e2eError.value = '缺少解密密钥（链接需携带 key 参数）'

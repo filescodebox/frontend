@@ -201,6 +201,17 @@ export default {
     paste_image: 'Clipboard image detected. Upload?',
     share_code: 'Pickup code',
     scan_qr: 'Scan QR',
+    customCode: 'Custom pickup code',
+    customCodePlaceholder: '3-32 chars: letters, digits, - or _ (empty = random)',
+    e2e: {
+      title: 'End-to-end encryption',
+      on: 'Encrypted (zero-knowledge)',
+      off: 'No encryption',
+      hint: 'The key is generated in your browser and embedded in the share link; the server stores only ciphertext. Files up to 100MB. Never lose the key parameter in the link.',
+      encrypting: 'Encrypting...',
+      tooLarge: 'End-to-end encryption supports files up to 100MB',
+      failed: 'Encryption failed (HTTPS required)',
+    },
   },
   share: {
     title: 'File share',
@@ -672,17 +683,6 @@ export default {
       hashing: 'Computing quick-upload fingerprint...',
     },
     quickUploadHit: 'Instant upload: file already exists, share code issued',
-    customCode: 'Custom pickup code',
-    customCodePlaceholder: '3-32 chars: letters, digits, - or _ (empty = random)',
-    e2e: {
-      title: 'End-to-end encryption',
-      on: 'Encrypted (zero-knowledge)',
-      off: 'No encryption',
-      hint: 'The key is generated in your browser and embedded in the share link; the server stores only ciphertext. Files up to 100MB. Never lose the key parameter in the link.',
-      encrypting: 'Encrypting...',
-      tooLarge: 'End-to-end encryption supports files up to 100MB',
-      failed: 'Encryption failed (HTTPS required)',
-    },
   },
 
   request: {
