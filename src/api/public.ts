@@ -7,6 +7,8 @@ export interface PublicConfig {
   uploadSize: number
   enableChunk: number
   openUpload: number
+  /** 注册开关（与 /user/register 判定同源）；缺省视为未拿到，不据此隐藏入口 */
+  registerEnabled?: boolean
   expireStyle: string[]
   initialized?: boolean
 }

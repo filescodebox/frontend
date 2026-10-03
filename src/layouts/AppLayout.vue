@@ -54,19 +54,19 @@
         >
           <el-menu-item index="/user/dashboard">
             <el-icon><Monitor /></el-icon>
-            <span>{{ t('user.dashboard') }}</span>
+            <span>{{ t('user.nav_dashboard') }}</span>
           </el-menu-item>
           <el-menu-item index="/user/shares">
             <el-icon><Share /></el-icon>
-            <span>{{ t('user.shares') }}</span>
+            <span>{{ t('user.nav_shares') }}</span>
           </el-menu-item>
           <el-menu-item index="/user/history">
             <el-icon><Document /></el-icon>
-            <span>{{ t('user.history') }}</span>
+            <span>{{ t('user.nav_history') }}</span>
           </el-menu-item>
           <el-menu-item index="/user/notifications">
             <el-icon><Bell /></el-icon>
-            <span>{{ t('user.notifications') }}</span>
+            <span>{{ t('user.nav_notifications') }}</span>
           </el-menu-item>
         </el-menu>
       </aside>
@@ -92,19 +92,19 @@
       >
         <el-menu-item index="/user/dashboard">
           <el-icon><Monitor /></el-icon>
-          <span>{{ t('user.dashboard') }}</span>
+          <span>{{ t('user.nav_dashboard') }}</span>
         </el-menu-item>
         <el-menu-item index="/user/shares">
           <el-icon><Share /></el-icon>
-          <span>{{ t('user.shares') }}</span>
+          <span>{{ t('user.nav_shares') }}</span>
         </el-menu-item>
         <el-menu-item index="/user/history">
           <el-icon><Document /></el-icon>
-          <span>{{ t('user.history') }}</span>
+          <span>{{ t('user.nav_history') }}</span>
         </el-menu-item>
         <el-menu-item index="/user/notifications">
           <el-icon><Bell /></el-icon>
-          <span>{{ t('user.notifications') }}</span>
+          <span>{{ t('user.nav_notifications') }}</span>
         </el-menu-item>
       </el-menu>
     </el-drawer>

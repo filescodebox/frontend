@@ -51,7 +51,7 @@
           </el-button>
         </el-form-item>
 
-        <div class="login-footer">
+        <div v-if="registerVisible" class="login-footer">
           <el-link type="primary" underline="never" @click="$router.push('/user/register')">
             {{ t('login.noAccount') }}
           </el-link>
@@ -62,16 +62,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { computed, onMounted, ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Box } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
+import { useConfigStore } from '@/stores/config'
 
 const router = useRouter()
 const userStore = useUserStore()
+const configStore = useConfigStore()
 const { t } = useI18n()
+
+// 站点关闭注册时隐藏入口（后端 /user/register 也会 403，双保险）
+const registerVisible = computed(() => configStore.config?.registerEnabled !== false)
+
+onMounted(() => {
+  configStore.fetchConfig().catch(() => {})
+})
 
 const loginFormRef = ref<FormInstance>()
 const loading = ref(false)

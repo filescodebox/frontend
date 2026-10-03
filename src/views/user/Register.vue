@@ -95,15 +95,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { onMounted, ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { Box } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { userApi } from '@/api/user'
+import { useConfigStore } from '@/stores/config'
 
 const router = useRouter()
 const { t } = useI18n()
+const configStore = useConfigStore()
+
+// 站点关闭注册时直接劝退（此前表单可填可提交，只会得到裸"注册失败"）
+onMounted(async () => {
+  const cfg = await configStore.fetchConfig().catch(() => null)
+  if (cfg && cfg.registerEnabled === false) {
+    ElMessage.warning('当前站点未开放用户注册')
+    router.replace('/user/login')
+  }
+})
 
 const registerFormRef = ref<FormInstance>()
 const loading = ref(false)

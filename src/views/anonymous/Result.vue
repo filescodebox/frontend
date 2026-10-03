@@ -138,7 +138,8 @@ const formatSize = (bytes: number): string => {
 }
 
 const formatTime = (ts: number): string => {
-  if (!Number.isFinite(ts)) return '-'
+  // 后端未回填过期时间时是 0/缺省，格式化成 epoch 会显示 1970
+  if (!Number.isFinite(ts) || ts <= 0) return '-'
   // Unix 秒 → 本地时间
   const d = new Date(ts * 1000)
   return d.toLocaleString()

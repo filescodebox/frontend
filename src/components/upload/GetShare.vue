@@ -79,13 +79,19 @@ onMounted(() => {
 })
 
 const handleGetShare = () => {
-  if (!shareCode.value.trim()) {
+  const code = shareCode.value.trim()
+  if (!code) {
     ElMessage.warning('请输入分享码')
     return
   }
 
-  // 跳转到分享查看页面
-  router.push(`/share/${shareCode.value}`)
+  // 按码长度分派：6 位取件码 → 匿名取件页（带码直填）；
+  // 其余（8 位分享码）→ 分享详情页（/share/select 查库，无需取件码）
+  if (/^[A-Za-z0-9]{6}$/.test(code)) {
+    router.push({ path: '/retrieve', query: { code } })
+  } else {
+    router.push(`/share/${code}`)
+  }
 }
 </script>
 

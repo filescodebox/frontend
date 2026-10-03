@@ -58,7 +58,8 @@
         </el-button>
       </div>
 
-      <div class="demo-account">
+      <!-- 演示账号提示只在开发构建展示：生产环境展示默认凭证属信息泄露 -->
+      <div v-if="isDev" class="demo-account">
         <el-alert title="演示账号" type="info" :closable="false">
           <p>用户名：admin &nbsp;&nbsp; 密码：admin123</p>
         </el-alert>
@@ -73,6 +74,8 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { User, Lock, Box, Back } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
+
+const isDev = import.meta.env.DEV
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()

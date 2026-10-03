@@ -45,6 +45,13 @@ instance.interceptors.response.use(
     if (traceId && response.data && typeof response.data === 'object') {
       ;(response.data as Record<string, unknown>).trace_id = traceId
     }
+    // 成功码归一化：后端两代约定并存（旧 handler=200 / resp.Success=0），
+    // 视图层普遍用 res.code===200 判成功；在这里把 0 统一改写成 200，
+    // 避免每个调用方自己记忆约定差异（匿名取件/config 拉取曾因此误判失败）
+    const body = response.data as Record<string, unknown> | null
+    if (body && typeof body === 'object' && body.code === 0) {
+      body.code = 200
+    }
     return response.data
   },
   async (error) => {
@@ -76,10 +83,11 @@ instance.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return instance(originalRequest)
       }
-      // refresh 失败 → 跳登录页
+      // refresh 失败 → 跳登录页。应用是 hash 路由，/login 不是有效路径
+      // （此前写 '/login' 会整页重载回首页，登录态却已被清空）
       const { useUserStore } = await import('@/stores/user')
       useUserStore().logout()
-      window.location.href = '/login'
+      window.location.href = '/#/user/login'
       return Promise.reject(error)
     }
 

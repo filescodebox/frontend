@@ -75,7 +75,7 @@
 
           <div class="card-hint">
             <el-icon><InfoFilled /></el-icon>
-            <span>{{ t('anonymous.codeInvalid') }}</span>
+            <span>{{ t('anonymous.codeHint') }}</span>
           </div>
         </div>
       </main>
@@ -114,7 +114,8 @@ const rules: FormRules = {
   code: [
     { required: true, message: () => t('anonymous.noCode'), trigger: 'blur' },
     {
-      pattern: /^[A-Z0-9]{8}$/,
+      // 6 位取件码或 8 位分享码，字母数字，区分大小写（后端按长度分派查找路径）
+      pattern: /^[A-Za-z0-9]{6,8}$/,
       message: t('anonymous.codeInvalid'),
       trigger: 'blur',
     },
@@ -122,8 +123,9 @@ const rules: FormRules = {
 }
 
 const onCodeInput = (val: string) => {
-  // 自动大写 + 限制字符
-  form.code = val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)
+  // 只拦非法字符，不做大小写转换——分享码区分大小写（回归 2026-10-03：
+  // 旧实现强制 toUpperCase 导致混合大小写分享码永远取不到件）
+  form.code = val.replace(/[^A-Za-z0-9]/g, '').slice(0, 8)
 }
 
 const handleRetrieve = async () => {
@@ -139,7 +141,9 @@ const handleRetrieve = async () => {
       code: form.code,
       password: form.password || undefined,
     })
-    if (res.code === 200 && res.data) {
+    // 后端成功码两代约定并存：200（旧 handler）/ 0（resp.Success）。
+    // 此前只认 200，匿名取件的 code:0 成功响应被误判为失败（"操作失败: success"）
+    if ((res.code === 200 || res.code === 0) && res.data) {
       // 成功 — 跳到结果页，带上数据
       router.push({
         path: '/retrieve/result',
@@ -156,10 +160,10 @@ const handleRetrieve = async () => {
 }
 
 onMounted(async () => {
-  // 支持 ?code=XXXXX 直填
+  // 支持 ?code=XXXXX 直填（保持原样大小写，只去空白与非法字符）
   const pre = (route.query.code as string) || ''
   if (pre) {
-    form.code = pre.toUpperCase().slice(0, 8)
+    form.code = pre.trim().replace(/[^A-Za-z0-9]/g, '').slice(0, 8)
   }
   await nextTick()
   codeInputRef.value?.focus?.()
@@ -277,7 +281,7 @@ onMounted(async () => {
   font-weight: 700;
   letter-spacing: 8px;
   text-align: center;
-  text-transform: uppercase;
+  /* 不做 text-transform：分享码区分大小写，展示值必须等于真实值 */
   font-family: 'SF Mono', Menlo, Monaco, Consolas, monospace;
 }
 
