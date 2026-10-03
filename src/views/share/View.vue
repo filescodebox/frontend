@@ -110,8 +110,9 @@
                 <el-tag>{{ shareCode }}</el-tag>
               </el-descriptions-item>
               <el-descriptions-item label="分享类型">
-                <el-tag :type="shareData.text ? 'success' : 'primary'">
-                  {{ shareData.text ? '文本' : '文件' }}
+                <!-- 文件特征（下载链接/文件名）优先；仅纯文本内容才标"文本" -->
+                <el-tag :type="shareData.text && !shareData.url && !shareData.file_name && !shareData.name ? 'success' : 'primary'">
+                  {{ shareData.text && !shareData.url && !shareData.file_name && !shareData.name ? '文本' : '文件' }}
                 </el-tag>
               </el-descriptions-item>
             </el-descriptions>

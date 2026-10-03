@@ -505,6 +505,22 @@ export const adminApi = {
     })
   },
 
+  // 用户设置（注册开关/配额默认/会话时长；读写 system_configs user 段，即时生效）
+  // 2026-10-03 假开关接线：此前该表单随通用配置保存被后端 thrift 丢弃
+  getUserSettings: () => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/config/user',
+      method: 'GET',
+    })
+  },
+  updateUserSettings: (data: Record<string, unknown>) => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/config/user',
+      method: 'PUT',
+      data,
+    })
+  },
+
   // 限流配置（后端已有：GET/PUT /admin/ratelimit/config）
   getRateLimitConfig: () => {
     return request<ApiResponse<Record<string, unknown>>>({

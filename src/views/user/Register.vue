@@ -143,6 +143,7 @@ const rules: FormRules = {
     { required: true, message: () => t('register.email'), trigger: 'blur' },
     { type: 'email', message: t('register.emailRule'), trigger: 'blur' }
   ],
+  // 契约要求 nickname 必填（required 字段），标签不再写"可选"
   nickname: [
     { required: true, message: () => t('register.nickname'), trigger: 'blur' },
     { min: 2, max: 20, message: '2-20', trigger: 'blur' }

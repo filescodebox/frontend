@@ -61,6 +61,10 @@
 
         <!-- 用户配置 -->
         <el-tab-pane label="用户配置" name="user">
+          <div style="margin-bottom: 12px">
+            <el-button type="primary" :loading="userSaving" @click="saveUserSettings">保存用户配置</el-button>
+            <span style="margin-left: 10px; color: var(--color-text-secondary); font-size: 12px">保存后即时生效（注册开关/会话时长；配额与上传限制为系统默认，用户级覆盖优先）</span>
+          </div>
           <el-form :model="configForm.user" label-width="140px" style="max-width: 600px">
             <el-form-item label="允许用户注册">
               <el-switch v-model="configForm.user.allowuserregistration" :active-value="1" :inactive-value="0" />
@@ -190,15 +194,54 @@ const fetchConfig = async () => {
       if (res.data.transfer) {
         Object.assign(configForm.transfer, res.data.transfer)
       }
-      if ((res.data as Record<string, unknown>).user) {
-        Object.assign(configForm.user, (res.data as Record<string, unknown>).user)
-      }
+      // 用户配置走独立端点（此前随通用配置保存会被后端丢弃——假开关）
+      await fetchUserSettings()
     }
   } catch (error) {
     console.error('获取配置失败:', error)
     ElMessage.error('获取配置失败')
   } finally {
     loading.value = false
+  }
+}
+
+// ==================== 用户配置（/admin/config/user，独立保存） ====================
+const fetchUserSettings = async () => {
+  try {
+    const res = await adminApi.getUserSettings()
+    if ((res.code === 0 || res.code === 200) && res.data) {
+      const d = res.data as Record<string, unknown>
+      configForm.user.allowuserregistration = Number(d.allowuserregistration === true || d.allowuserregistration === 1)
+      if (typeof d.useruploadsize === 'number' && d.useruploadsize > 0) configForm.user.useruploadsize = d.useruploadsize
+      if (typeof d.userstoragequota === 'number' && d.userstoragequota > 0) configForm.user.userstoragequota = d.userstoragequota
+      if (typeof d.sessionexpiryhours === 'number' && d.sessionexpiryhours > 0) configForm.user.sessionexpiryhours = d.sessionexpiryhours
+    }
+  } catch (error) {
+    console.error('获取用户配置失败:', error)
+  }
+}
+
+const userSaving = ref(false)
+const saveUserSettings = async () => {
+  userSaving.value = true
+  try {
+    const res = await adminApi.updateUserSettings({
+      allowuserregistration: Number(configForm.user.allowuserregistration) === 1,
+      useruploadsize: configForm.user.useruploadsize,
+      userstoragequota: configForm.user.userstoragequota,
+      sessionexpiryhours: configForm.user.sessionexpiryhours
+    })
+    if (res.code === 0 || res.code === 200) {
+      ElMessage.success('用户配置已保存并即时生效')
+      await configStore.refreshConfig()
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch (error) {
+    console.error('保存用户配置失败:', error)
+    ElMessage.error('保存失败')
+  } finally {
+    userSaving.value = false
   }
 }
 
