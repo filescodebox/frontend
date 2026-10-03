@@ -4,6 +4,15 @@
       <h2>{{ t('user.tokens.title') }}</h2>
       <p class="page-desc">{{ t('user.tokens.subtitle') }}</p>
       <div class="header-actions">
+        <el-button
+          :disabled="activeCount === 0"
+          type="danger"
+          plain
+          @click="revokeAll"
+        >
+          <el-icon><Delete /></el-icon>
+          {{ t('user.tokens.revokeAll') }}
+        </el-button>
         <el-button type="primary" @click="openCreate">
           <el-icon><Plus /></el-icon>
           {{ t('user.tokens.create') }}
@@ -135,16 +144,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { Plus, CopyDocument } from '@element-plus/icons-vue'
+import { Plus, CopyDocument, Delete } from '@element-plus/icons-vue'
 import { userApi, type ApiKeyItem } from '@/api/user'
 
 const { t } = useI18n()
 
 const loading = ref(false)
 const list = ref<ApiKeyItem[]>([])
+
+const activeCount = computed(() => list.value.filter((k) => !k.revoked && !isExpired(k)).length)
 
 const createVisible = ref(false)
 const creating = ref(false)
@@ -198,12 +209,33 @@ const submitCreate = async () => {
 }
 
 const copyKey = async () => {
+  const key = createdKey.value
   try {
-    await navigator.clipboard.writeText(createdKey.value)
+    await navigator.clipboard.writeText(key)
     copied.value = true
+    return
   } catch {
-    // 剪贴板不可用（非安全上下文等）时退化为选中文本提示手动复制
-    ElMessage.warning(createdKey.value)
+    // 继续走 execCommand 降级
+  }
+  // 非安全上下文（HTTP 部署）clipboard API 不可用：隐藏 textarea + execCommand
+  const ta = document.createElement('textarea')
+  ta.value = key
+  ta.style.position = 'fixed'
+  ta.style.opacity = '0'
+  document.body.appendChild(ta)
+  ta.select()
+  let ok = false
+  try {
+    ok = document.execCommand('copy')
+  } catch {
+    ok = false
+  }
+  document.body.removeChild(ta)
+  if (ok) {
+    copied.value = true
+  } else {
+    // 最终兜底：明文已 user-select:all，提示手动全选复制
+    ElMessage.info(t('user.tokens.copyManually'))
   }
 }
 
@@ -225,6 +257,30 @@ const revoke = async (row: ApiKeyItem) => {
   try {
     await userApi.revokeApiKey(row.id)
     ElMessage.success(t('user.tokens.revokeSuccess'))
+    loadList()
+  } catch {
+    ElMessage.error(t('user.tokens.loadFailed'))
+  }
+}
+
+const revokeAll = async () => {
+  const count = activeCount.value
+  if (count === 0) {
+    ElMessage.info(t('user.tokens.noActiveKeys'))
+    return
+  }
+  try {
+    await ElMessageBox.confirm(
+      t('user.tokens.revokeAllWarning', { count }),
+      t('user.tokens.revokeAllConfirmTitle'),
+      { type: 'warning', confirmButtonText: t('user.tokens.revokeAll'), cancelButtonText: t('user.tokens.cancel') },
+    )
+  } catch {
+    return
+  }
+  try {
+    const res = await userApi.revokeAllApiKeys()
+    ElMessage.success(t('user.tokens.revokeAllSuccess', { count: res.data.revoked }))
     loadList()
   } catch {
     ElMessage.error(t('user.tokens.loadFailed'))

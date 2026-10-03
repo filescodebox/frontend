@@ -95,6 +95,14 @@ export const userApi = {
       method: 'DELETE',
     })
   },
+
+  // 一键吊销全部有效 API Key（应急止损，返回吊销数量）
+  revokeAllApiKeys: () => {
+    return request<ApiResponse<{ revoked: number }>>({
+      url: '/user/api-keys/revoke-all',
+      method: 'POST',
+    })
+  },
 }
 
 export interface ApiKeyItem {
