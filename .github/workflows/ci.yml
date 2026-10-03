@@ -17,7 +17,3 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
-      - name: Gen types(up-to-date check)
-        run: |
-          npm run gen:api
-          git diff --exit-code src/types/api.gen.ts || (echo "✗ api.gen.ts 与 openapi.json 不同步,请运行 npm run gen:api"; exit 1)
