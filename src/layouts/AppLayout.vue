@@ -68,6 +68,10 @@
             <el-icon><Bell /></el-icon>
             <span>{{ t('user.nav_notifications') }}</span>
           </el-menu-item>
+          <el-menu-item index="/user/tokens">
+            <el-icon><Key /></el-icon>
+            <span>{{ t('user.nav_tokens') }}</span>
+          </el-menu-item>
         </el-menu>
       </aside>
 
@@ -106,6 +110,10 @@
           <el-icon><Bell /></el-icon>
           <span>{{ t('user.nav_notifications') }}</span>
         </el-menu-item>
+        <el-menu-item index="/user/tokens">
+          <el-icon><Key /></el-icon>
+          <span>{{ t('user.nav_tokens') }}</span>
+        </el-menu-item>
       </el-menu>
     </el-drawer>
   </div>
@@ -118,7 +126,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
   ArrowDown, User, SwitchButton, Monitor, Share,
-  Document, Bell, House, Fold
+  Document, Bell, House, Fold, Key
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'

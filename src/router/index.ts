@@ -73,6 +73,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/user/Notifications.vue'),
         meta: { title: '通知', requiresAuth: true },
       },
+      {
+        path: 'tokens',
+        name: 'UserTokens',
+        component: () => import('@/views/user/Tokens.vue'),
+        meta: { title: 'API 令牌', requiresAuth: true },
+      },
     ],
   },
   {
