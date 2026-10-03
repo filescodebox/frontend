@@ -414,14 +414,50 @@ onMounted(async () => {
       fetchDashboardStats(),
       fetchRecentUsers(),
       fetchRecentFiles(),
+      fetchEnhancedStats(),
+      fetchTrend(),
     ])
-    // 生成默认 7 天趋势（如果后端没给数据，用 mock 展示图表）
-    generateMockTrend()
     generateMockFileTypeDist()
   } finally {
     loading.value = false
   }
 })
+
+// 趋势序列：后端 /admin/stats/trend 真实数据（uploads 按创建、downloads 按传输日志）；
+// 拉取失败时回退 mock，面板不空白
+const fetchTrend = async () => {
+  try {
+    const res = await adminApi.getStatsTrend(7)
+    const days = (res.data as { days?: TrendPoint[] })?.days
+    if (Array.isArray(days) && days.length > 0) {
+      trendData.value = days
+      return
+    }
+  } catch {
+    // 回退 mock
+  }
+  generateMockTrend()
+}
+
+// 富指标（/admin/stats/enhanced）：真实昨日对比/下载总量/top 后缀分布
+const enhanced = ref<{
+  today_uploads: number
+  yesterday_uploads: number
+  total_downloads: number
+  expired_files: number
+  top_suffixes: { suffix: string; count: number }[]
+} | null>(null)
+
+const fetchEnhancedStats = async () => {
+  try {
+    const res = await adminApi.getEnhancedStats()
+    if (res.code === 0 || res.code === 200) {
+      enhanced.value = res.data as typeof enhanced.value
+    }
+  } catch {
+    // 富指标失败不影响基础面板
+  }
+}
 
 const generateMockTrend = () => {
   // 后端尚未提供 /admin/stats/trend — 临时基于总数生成示例数据
@@ -440,7 +476,18 @@ const generateMockTrend = () => {
 }
 
 const generateMockFileTypeDist = () => {
-  // 后端尚未提供 /admin/stats/file-types — 临时 mock
+  // 优先使用后端富指标的真实后缀分布（/admin/stats/enhanced.top_suffixes）
+  if (enhanced.value?.top_suffixes?.length) {
+    const top = enhanced.value.top_suffixes
+    const total = top.reduce((a, b) => a + b.count, 0) || 1
+    fileTypeDist.value = top.slice(0, 6).map((s) => ({
+      type: s.suffix.replace(/^\./, '').toUpperCase(),
+      count: s.count,
+      percent: (s.count / total) * 100,
+    }))
+    return
+  }
+  // 兜底：基于最近文件推断
   const recent = recentFiles.value
   if (recent.length === 0) {
     fileTypeDist.value = []

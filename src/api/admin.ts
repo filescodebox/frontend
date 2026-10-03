@@ -172,48 +172,162 @@ export const adminApi = {
     })
   },
 
-  // 批量更新用户状态（后端未实现，待后端实现后启用）
-  batchUpdateUserStatus: (ids: number[], status: number) => {
-    return request<ApiResponse<{ updated_count: number }>>({
-      url: '/admin/users/batch/status',
-      method: 'PUT',
-      data: { ids, status }
+  // 创建用户（后端已实现：POST /admin/users）
+  createUser: (data: {
+    username: string
+    email?: string
+    password: string
+    nickname?: string
+    role?: string
+    max_storage_quota?: number
+  }) => {
+    return request<ApiResponse<any>>({
+      url: '/admin/users',
+      method: 'POST',
+      data,
     })
   },
 
-  // 更新用户角色（后端未实现，待后端实现后启用）
-  updateUserRole: (id: number, role: string) => {
+  // 更新用户（昵称/角色/状态/配额；后端已实现：PUT /admin/users/:id）
+  updateUser: (id: number, data: {
+    nickname?: string
+    role?: string
+    status?: string
+    max_storage_quota?: number
+    max_upload_size?: number
+  }) => {
+    return request<ApiResponse<any>>({
+      url: `/admin/users/${id}`,
+      method: 'PUT',
+      data,
+    })
+  },
+
+  // 删除用户（后端已实现：DELETE /admin/users/:id）
+  deleteUser: (id: number) => {
     return request<ApiResponse<void>>({
-      url: `/admin/users/${id}/role`,
-      method: 'PUT',
-      data: { role }
+      url: `/admin/users/${id}`,
+      method: 'DELETE',
     })
   },
 
-  // 更新用户配额（后端未实现，待后端实现后启用）
-  updateUserQuota: (id: number, quota: number) => {
+  // 重置用户密码（后端已实现：POST /admin/users/:id/reset-password）
+  resetUserPassword: (id: number, password: string) => {
     return request<ApiResponse<void>>({
-      url: `/admin/users/${id}/quota`,
-      method: 'PUT',
-      data: { quota }
-    })
-  },
-
-  // 重置用户密码（后端未实现，待后端实现后启用）
-  resetUserPassword: (id: number, password?: string) => {
-    return request<ApiResponse<{ password: string }>>({
       url: `/admin/users/${id}/reset-password`,
       method: 'POST',
-      data: { password }
+      data: { password },
     })
   },
 
-  // 批量删除文件（后端未实现，待后端实现后启用）
-  batchDeleteFiles: (codes: string[]) => {
-    return request<ApiResponse<{ deleted_count: number }>>({
-      url: '/admin/files/batch',
-      method: 'DELETE',
-      data: { codes }
+  // 带筛选的用户列表（后端已实现：GET /admin/users/filter）
+  getUsersFiltered: (params: {
+    page?: number
+    page_size?: number
+    keyword?: string
+    status?: string
+    role?: string
+  }) => {
+    return request<ApiResponse<{ list: any[]; total: number; page: number; page_size: number }>>({
+      url: '/admin/users/filter',
+      method: 'GET',
+      params,
+    })
+  },
+
+  // 文件详情（后端已实现：GET /admin/files/:id）
+  getFileDetail: (id: number) => {
+    return request<ApiResponse<any>>({
+      url: `/admin/files/${id}`,
+      method: 'GET',
+    })
+  },
+
+  // 编辑文件（延期/改次数；后端已实现：PUT /admin/files/:id）
+  updateFile: (id: number, data: {
+    expire_value?: number
+    expire_style?: string
+    expired_count?: number
+  }) => {
+    return request<ApiResponse<void>>({
+      url: `/admin/files/${id}`,
+      method: 'PUT',
+      data,
+    })
+  },
+
+  // 批量删除文件（按文件 ID；后端已实现：POST /admin/files/batch-delete）
+  batchDeleteFilesByIds: (ids: number[]) => {
+    return request<ApiResponse<{ deleted: number }>>({
+      url: '/admin/files/batch-delete',
+      method: 'POST',
+      data: { ids },
+    })
+  },
+
+  // 批量延期文件（后端已实现：POST /admin/files/batch-extend）
+  batchExtendFiles: (ids: number[], expireValue: number, expireStyle: string) => {
+    return request<ApiResponse<{ extended: number }>>({
+      url: '/admin/files/batch-extend',
+      method: 'POST',
+      data: { ids, expire_value: expireValue, expire_style: expireStyle },
+    })
+  },
+
+  // 管理端下载（302 到带令牌的公开下载端点）
+  fileDownloadUrl: (id: number) => `/admin/files/${id}/download`,
+
+  // Dashboard 富指标（昨日对比/top 后缀/下载总量；后端已实现）
+  getEnhancedStats: () => {
+    return request<ApiResponse<{
+      today_uploads: number
+      yesterday_uploads: number
+      total_downloads: number
+      expired_files: number
+      anonymous_files: number
+      presign_files: number
+      top_suffixes: { suffix: string; count: number }[]
+    }>>({
+      url: '/admin/stats/enhanced',
+      method: 'GET',
+    })
+  },
+
+  // Dashboard 趋势序列（后端已实现：GET /admin/stats/trend?days=7）
+  getStatsTrend: (days = 7) => {
+    return request<ApiResponse<{ days: { date: string; uploads: number; downloads: number }[] }>>({
+      url: '/admin/stats/trend',
+      method: 'GET',
+      params: { days },
+    })
+  },
+
+  // 传输日志（后端已实现：GET /admin/logs/transfer）
+  getTransferLogsList: (params: {
+    page?: number
+    page_size?: number
+    operation?: string
+    keyword?: string
+  }) => {
+    return request<ApiResponse<{ items: any[]; total: number; page: number; page_size: number }>>({
+      url: '/admin/logs/transfer',
+      method: 'GET',
+      params,
+    })
+  },
+
+  // 管理操作审计日志（后端已实现：GET /admin/activities）
+  getActivities: (params: {
+    page?: number
+    page_size?: number
+    action?: string
+    actor?: string
+    success?: string
+  }) => {
+    return request<ApiResponse<{ list: any[]; total: number; page: number; page_size: number }>>({
+      url: '/admin/activities',
+      method: 'GET',
+      params,
     })
   },
 

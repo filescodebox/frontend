@@ -124,6 +124,10 @@ const doUpload = async (retryCount = 0) => {
   statusText.value = t('upload.presign.init')
 
   try {
+    // 0. 计算秒传指纹（大文件跳过，避免整文件进内存）
+    statusText.value = t('upload.presign.hashing')
+    const fileHash = await presignApi.computeFileHash(props.file)
+
     // 1. 申请预签名 URL
     const initRes = await presignApi.init({
       file_name: props.file.name,
@@ -133,11 +137,30 @@ const doUpload = async (retryCount = 0) => {
       expire_style: props.options.expire_style || 'hour',
       require_auth: props.options.require_auth,
       password: props.options.password,
+      file_hash: fileHash || undefined,
     })
-    if (initRes.code !== 200 || !initRes.data) {
+    if (!presignApi.isOk(initRes.code) || !initRes.data) {
       throw new Error(initRes.message || 'Init failed')
     }
     const initData = initRes.data
+
+    // 1.5 秒传命中：服务端已有相同哈希+大小的分享，免直传直接出码
+    if (initData.existed && initData.share_code) {
+      progress.value = 100
+      completed.value = true
+      statusText.value = t('upload.quickUploadHit')
+      const quickResult: PresignCompleteData = {
+        code: initData.share_code,
+        url: initData.share_url || '',
+        file_name: props.file.name,
+        file_size: props.file.size,
+        download_url: initData.share_url || '',
+      }
+      result.value = quickResult
+      emit('success', quickResult)
+      return
+    }
+
     currentUploadId = initData.upload_id
     currentToken = initData.token
 
@@ -182,7 +205,7 @@ const doUpload = async (retryCount = 0) => {
       token: initData.token,
       object_key: initData.object_key,
     })
-    if (completeRes.code !== 200 || !completeRes.data) {
+    if (!presignApi.isOk(completeRes.code) || !completeRes.data) {
       throw new Error(completeRes.message || 'Complete failed')
     }
 

@@ -6,10 +6,16 @@
           <h2>用户管理</h2>
           <p>管理系统中的所有用户账户</p>
         </div>
-        <el-button @click="fetchUsers" :loading="loading" class="refresh-btn">
-          <el-icon><Refresh /></el-icon>
-          刷新数据
-        </el-button>
+        <div class="header-actions">
+          <el-button type="primary" @click="openCreateDialog">
+            <el-icon><Plus /></el-icon>
+            新建用户
+          </el-button>
+          <el-button @click="fetchUsers" :loading="loading" class="refresh-btn">
+            <el-icon><Refresh /></el-icon>
+            刷新数据
+          </el-button>
+        </div>
       </div>
 
       <el-divider />
@@ -75,7 +81,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="120" align="center" fixed="right">
+        <el-table-column label="操作" width="240" align="center" fixed="right">
           <template #default="{ row }">
             <el-button
               @click="toggleUserStatus(row)"
@@ -85,6 +91,8 @@
             >
               {{ row.status === 1 || row.status === 'active' ? '禁用' : '启用' }}
             </el-button>
+            <el-button @click="openResetPassword(row)" size="small" round>重置密码</el-button>
+            <el-button @click="removeUser(row)" type="danger" size="small" round plain>删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -102,16 +110,69 @@
         />
       </div>
     </el-card>
+
+    <!-- 新建用户 -->
+    <el-dialog v-model="createVisible" title="新建用户" width="460px">
+      <el-form :model="createForm" label-width="90px">
+        <el-form-item label="用户名" required>
+          <el-input v-model="createForm.username" placeholder="登录用户名" />
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="createForm.email" placeholder="选填" />
+        </el-form-item>
+        <el-form-item label="昵称">
+          <el-input v-model="createForm.nickname" placeholder="选填" />
+        </el-form-item>
+        <el-form-item label="初始密码" required>
+          <el-input v-model="createForm.password" type="password" show-password placeholder="至少 6 位" />
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="createForm.role" style="width: 100%">
+            <el-option label="普通用户" value="user" />
+            <el-option label="管理员" value="admin" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="存储配额">
+          <el-select v-model="createForm.quotaUnit" style="width: 100%">
+            <el-option label="不限（用系统默认）" :value="0" />
+            <el-option label="100 MB" :value="100" />
+            <el-option label="1 GB" :value="1024" />
+            <el-option label="10 GB" :value="10240" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createVisible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="submitCreate">创建</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 重置密码 -->
+    <el-dialog v-model="resetVisible" title="重置密码" width="420px">
+      <el-form label-width="90px">
+        <el-form-item label="用户">
+          <span>{{ resetTarget?.username }}</span>
+        </el-form-item>
+        <el-form-item label="新密码" required>
+          <el-input v-model="resetPassword" type="password" show-password placeholder="至少 6 位" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="resetVisible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="submitReset">确认重置</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Refresh } from '@element-plus/icons-vue'
+import { Plus, Refresh } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
 
 const loading = ref(false)
+const saving = ref(false)
 const usersList = ref<any[]>([])
 
 const pagination = reactive({
@@ -119,6 +180,111 @@ const pagination = reactive({
   pageSize: 20,
   total: 0
 })
+
+// 新建用户对话框
+const createVisible = ref(false)
+const createForm = reactive({
+  username: '',
+  email: '',
+  nickname: '',
+  password: '',
+  role: 'user',
+  quotaUnit: 0
+})
+
+// 重置密码对话框
+const resetVisible = ref(false)
+const resetTarget = ref<any>(null)
+const resetPassword = ref('')
+
+const openCreateDialog = () => {
+  createForm.username = ''
+  createForm.email = ''
+  createForm.nickname = ''
+  createForm.password = ''
+  createForm.role = 'user'
+  createForm.quotaUnit = 0
+  createVisible.value = true
+}
+
+const submitCreate = async () => {
+  if (!createForm.username || createForm.password.length < 6) {
+    ElMessage.warning('用户名与至少 6 位的密码必填')
+    return
+  }
+  saving.value = true
+  try {
+    const res = await adminApi.createUser({
+      username: createForm.username,
+      email: createForm.email || undefined,
+      nickname: createForm.nickname || undefined,
+      password: createForm.password,
+      role: createForm.role,
+      max_storage_quota: createForm.quotaUnit > 0 ? createForm.quotaUnit * 1024 * 1024 : 0
+    })
+    if (res.code === 0 || res.code === 200) {
+      ElMessage.success('用户已创建')
+      createVisible.value = false
+      await fetchUsers()
+    } else {
+      ElMessage.error(res.message || '创建失败')
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || '创建失败')
+  } finally {
+    saving.value = false
+  }
+}
+
+const openResetPassword = (user: any) => {
+  resetTarget.value = user
+  resetPassword.value = ''
+  resetVisible.value = true
+}
+
+const submitReset = async () => {
+  if (!resetTarget.value || resetPassword.value.length < 6) {
+    ElMessage.warning('密码至少 6 位')
+    return
+  }
+  saving.value = true
+  try {
+    const res = await adminApi.resetUserPassword(resetTarget.value.id, resetPassword.value)
+    if (res.code === 0 || res.code === 200) {
+      ElMessage.success('密码已重置')
+      resetVisible.value = false
+    } else {
+      ElMessage.error(res.message || '重置失败')
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || '重置失败')
+  } finally {
+    saving.value = false
+  }
+}
+
+const removeUser = async (user: any) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除用户 ${user.username} 吗？其分享记录将一并移入回收站。`,
+      '确认删除',
+      { type: 'warning' }
+    )
+  } catch {
+    return
+  }
+  try {
+    const res = await adminApi.deleteUser(user.id)
+    if (res.code === 0 || res.code === 200) {
+      ElMessage.success('已删除')
+      await fetchUsers()
+    } else {
+      ElMessage.error(res.message || '删除失败')
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || '删除失败')
+  }
+}
 
 const formatFileSize = (bytes: number): string => {
   if (!bytes || bytes === 0) return '0 B'
@@ -255,6 +421,12 @@ onMounted(() => {
   font-size: 24px;
   font-weight: 600;
   color: var(--color-text-primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .header-title p {

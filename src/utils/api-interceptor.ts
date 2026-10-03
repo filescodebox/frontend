@@ -22,6 +22,7 @@ const ERRCODE_KEY_MAP: Record<number, string> = {
   10008: 'errcode.10008',
   10009: 'errcode.10009',
   10010: 'errcode.10010',
+  10011: 'errcode.10011',
   20001: 'errcode.20001',
   20002: 'errcode.20002',
   20003: 'errcode.20003',
@@ -31,6 +32,8 @@ const ERRCODE_KEY_MAP: Record<number, string> = {
   20007: 'errcode.20007',
   20008: 'errcode.20008',
   20009: 'errcode.20009',
+  20010: 'errcode.20010',
+  20011: 'errcode.20011',
   30001: 'errcode.30001',
   30002: 'errcode.30002',
   30003: 'errcode.30003',
@@ -40,6 +43,8 @@ const ERRCODE_KEY_MAP: Record<number, string> = {
   30007: 'errcode.30007',
   30008: 'errcode.30008',
   30009: 'errcode.30009',
+  30011: 'errcode.30011',
+  30012: 'errcode.30012',
   40001: 'errcode.40001',
   40002: 'errcode.40002',
   40004: 'errcode.40004',
@@ -79,10 +84,11 @@ export interface AxiosBizError extends Omit<AxiosError, 'response'> {
 }
 
 export function onFulfilled(response: AxiosResponse): AxiosResponse {
-  // 后端约定：HTTP 200 + {code:200, data, message, trace_id} 是成功
+  // 后端约定：HTTP 200 + {code, data, message, trace_id}。
+  // 成功码：200（旧式 handler）或 0（新版 resp.Success / contracts errcode）。
   const body = response.data as unknown as BizResponse
   if (body && typeof body === 'object' && 'code' in body) {
-    if (body.code === 200) {
+    if (body.code === 200 || body.code === 0) {
       return response
     }
     // 业务错误

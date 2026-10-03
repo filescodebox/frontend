@@ -23,6 +23,17 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const logout = () => {
+    // 服务端注销：token 进黑名单即刻失效（fire-and-forget，失败不阻断本地登出）
+    if (token.value) {
+      const tk = token.value
+      axios
+        .post('/api/v1/user/logout', null, {
+          headers: { Authorization: `Bearer ${tk}` },
+        })
+        .catch(() => {
+          // 后端不可达时本地登出仍生效
+        })
+    }
     token.value = ''
     userInfo.value = null
     localStorage.removeItem('token')

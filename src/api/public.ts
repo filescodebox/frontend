@@ -11,9 +11,15 @@ export interface PublicConfig {
   initialized?: boolean
 }
 
+// 系统初始化请求（字段名与后端 thrift 模型 snake_case 对齐）
+export interface InitializeSystemReq {
+  admin_username: string
+  admin_password: string
+  admin_email: string
+}
+
 export const publicApi = {
-  // 获取公开配置（后端暂未实现，使用 /setup/check 替代）
-  // TODO: 后端需要提供 /api/config 或 /public/config 端点
+  // 获取公开配置（站点名/上传限制/初始化状态等，前端启动时拉取）
   getConfig: () => {
     return request<ApiResponse<PublicConfig>>({
       url: '/api/config',
@@ -21,7 +27,7 @@ export const publicApi = {
     })
   },
 
-  // 检查系统初始化状态（临时替代公开配置接口）
+  // 检查系统初始化状态
   checkInitialization: () => {
     return request<{
       initialized: boolean
@@ -29,6 +35,16 @@ export const publicApi = {
     }>({
       url: '/setup/check',
       method: 'GET',
+    })
+  },
+
+  // 初始化系统（创建首个管理员；仅未初始化时可用，重复调用返回 403）
+  // 成功：HTTP 200 + {message, username}；失败：HTTP 400/403/500 + {code, message}
+  initializeSystem: (data: InitializeSystemReq) => {
+    return request<{ message: string; username: string }>({
+      url: '/setup',
+      method: 'POST',
+      data,
     })
   },
 }

@@ -8,7 +8,8 @@
     "build": "vue-tsc -b && vite build",
     "typecheck": "vue-tsc --noEmit -p tsconfig.app.json",
     "preview": "vite preview",
-    "gen:api": "openapi-typescript openapi.json -o src/types/api.gen.ts"
+    "gen:api": "openapi-typescript openapi.json -o src/types/api.gen.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
@@ -34,6 +35,7 @@
     "sass": "^1.97.3",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
+    "vitest": "^5.0.3",
     "vue-tsc": "^3.1.5"
   }
 }

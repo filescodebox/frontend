@@ -39,6 +39,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '注册' },
   },
   {
+    path: '/setup',
+    name: 'Setup',
+    component: () => import('@/views/setup/Index.vue'),
+    meta: { title: '系统初始化' },
+  },
+  {
     path: '/user',
     component: () => import('@/layouts/AppLayout.vue'),
     meta: { requiresAuth: true },
@@ -128,6 +134,12 @@ const routes: RouteRecordRaw[] = [
         name: 'AdminLogs',
         component: () => import('@/views/admin/TransferLogs.vue'),
         meta: { title: '传输日志' },
+      },
+      {
+        path: 'activities',
+        name: 'AdminActivities',
+        component: () => import('@/views/admin/Activities.vue'),
+        meta: { title: '审计日志' },
       },
       {
         path: 'maintenance',

@@ -15,30 +15,66 @@
     }
   ],
   "tags": [
-    {"name": "share", "description": "分享管理（thrift IDL: share）"},
-    {"name": "share_anonymous", "description": "匿名取件（thrift IDL: share_anonymous）"},
-    {"name": "user", "description": "用户中心（thrift IDL: user）"},
-    {"name": "user-shares", "description": "我的分享管理（自定义 API）"},
-    {"name": "user-notify", "description": "我的通知（自定义 API）"},
-    {"name": "presign", "description": "预签名直传（thrift IDL: presign）"},
-    {"name": "notify", "description": "系统通知（thrift IDL: notify）"},
-    {"name": "ratelimit", "description": "限流（thrift IDL: ratelimit）"},
-    {"name": "admin", "description": "管理后台（thrift IDL: admin）"},
-    {"name": "common", "description": "通用（thrift IDL: common）"}
+    {
+      "name": "share",
+      "description": "分享管理（thrift IDL: share）"
+    },
+    {
+      "name": "share_anonymous",
+      "description": "匿名取件（thrift IDL: share_anonymous）"
+    },
+    {
+      "name": "user",
+      "description": "用户中心（thrift IDL: user）"
+    },
+    {
+      "name": "user-shares",
+      "description": "我的分享管理（自定义 API）"
+    },
+    {
+      "name": "user-notify",
+      "description": "我的通知（自定义 API）"
+    },
+    {
+      "name": "presign",
+      "description": "预签名直传（thrift IDL: presign）"
+    },
+    {
+      "name": "notify",
+      "description": "系统通知（thrift IDL: notify）"
+    },
+    {
+      "name": "ratelimit",
+      "description": "限流（thrift IDL: ratelimit）"
+    },
+    {
+      "name": "admin",
+      "description": "管理后台（thrift IDL: admin）"
+    },
+    {
+      "name": "common",
+      "description": "通用（thrift IDL: common）"
+    }
   ],
   "paths": {
     "/ping": {
       "get": {
-        "tags": ["common"],
+        "tags": [
+          "common"
+        ],
         "summary": "Ping",
         "responses": {
-          "200": {"description": "pong"}
+          "200": {
+            "description": "pong"
+          }
         }
       }
     },
     "/share/text/": {
       "post": {
-        "tags": ["share"],
+        "tags": [
+          "share"
+        ],
         "summary": "分享文本",
         "requestBody": {
           "required": true,
@@ -46,23 +82,51 @@
             "application/x-www-form-urlencoded": {
               "schema": {
                 "type": "object",
-                "required": ["text", "expire_value", "expire_style", "require_auth"],
+                "required": [
+                  "text",
+                  "expire_value",
+                  "expire_style",
+                  "require_auth"
+                ],
                 "properties": {
-                  "text": {"type": "string"},
-                  "expire_value": {"type": "integer"},
-                  "expire_style": {"type": "string", "enum": ["minute", "hour", "day", "week", "month", "year", "forever"]},
-                  "require_auth": {"type": "boolean"}
+                  "text": {
+                    "type": "string"
+                  },
+                  "expire_value": {
+                    "type": "integer"
+                  },
+                  "expire_style": {
+                    "type": "string",
+                    "enum": [
+                      "minute",
+                      "hour",
+                      "day",
+                      "week",
+                      "month",
+                      "year",
+                      "forever"
+                    ]
+                  },
+                  "require_auth": {
+                    "type": "boolean"
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/share/file/": {
       "post": {
-        "tags": ["share"],
+        "tags": [
+          "share"
+        ],
         "summary": "分享文件（multipart/form-data）",
         "requestBody": {
           "required": true,
@@ -71,43 +135,98 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "file": {"type": "string", "format": "binary"},
-                  "expire_value": {"type": "integer"},
-                  "expire_style": {"type": "string"},
-                  "require_auth": {"type": "boolean"}
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "expire_value": {
+                    "type": "integer"
+                  },
+                  "expire_style": {
+                    "type": "string"
+                  },
+                  "require_auth": {
+                    "type": "boolean"
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/share/select/": {
       "get": {
-        "tags": ["share"],
+        "tags": [
+          "share"
+        ],
         "summary": "获取分享内容",
         "parameters": [
-          {"name": "code", "in": "query", "required": true, "schema": {"type": "string"}},
-          {"name": "password", "in": "query", "required": false, "schema": {"type": "string"}}
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/share/download": {
       "get": {
-        "tags": ["share"],
+        "tags": [
+          "share"
+        ],
         "summary": "下载分享文件",
         "parameters": [
-          {"name": "code", "in": "query", "required": true, "schema": {"type": "string"}},
-          {"name": "password", "in": "query", "required": false, "schema": {"type": "string"}}
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": {"200": {"description": "file stream"}}
+        "responses": {
+          "200": {
+            "description": "file stream"
+          }
+        }
       }
     },
     "/anonymous/generate": {
       "post": {
-        "tags": ["share_anonymous"],
+        "tags": [
+          "share_anonymous"
+        ],
         "summary": "生成 6 位取件码",
         "requestBody": {
           "required": true,
@@ -115,25 +234,47 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["file_name", "file_size"],
+                "required": [
+                  "file_name",
+                  "file_size"
+                ],
                 "properties": {
-                  "file_name": {"type": "string"},
-                  "file_size": {"type": "integer", "format": "int64"},
-                  "expire_value": {"type": "string"},
-                  "expire_style": {"type": "string"},
-                  "max_pickup_count": {"type": "integer"},
-                  "password": {"type": "string"}
+                  "file_name": {
+                    "type": "string"
+                  },
+                  "file_size": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "expire_value": {
+                    "type": "string"
+                  },
+                  "expire_style": {
+                    "type": "string"
+                  },
+                  "max_pickup_count": {
+                    "type": "integer"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/anonymous/retrieve": {
       "post": {
-        "tags": ["share_anonymous"],
+        "tags": [
+          "share_anonymous"
+        ],
         "summary": "按取件码取件（不下载）",
         "requestBody": {
           "required": true,
@@ -141,82 +282,197 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["code"],
+                "required": [
+                  "code"
+                ],
                 "properties": {
-                  "code": {"type": "string"},
-                  "password": {"type": "string"}
+                  "code": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/anonymous/download/{code}": {
       "get": {
-        "tags": ["share_anonymous"],
+        "tags": [
+          "share_anonymous"
+        ],
         "summary": "下载文件",
         "parameters": [
-          {"name": "code", "in": "path", "required": true, "schema": {"type": "string"}}
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": {"200": {"description": "file stream"}}
+        "responses": {
+          "200": {
+            "description": "file stream"
+          }
+        }
       }
     },
     "/anonymous/search/{code}": {
       "get": {
-        "tags": ["share_anonymous"],
+        "tags": [
+          "share_anonymous"
+        ],
         "summary": "按码查询分享信息",
         "parameters": [
-          {"name": "code", "in": "path", "required": true, "schema": {"type": "string"}}
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/user/register": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "用户注册",
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/user/login": {
       "post": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "用户登录",
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/user/info": {
       "get": {
-        "tags": ["user"],
+        "tags": [
+          "user"
+        ],
         "summary": "获取用户信息",
-        "security": [{"bearerAuth": []}],
-        "responses": {"200": {"description": "ok"}}
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/user/files": {
       "get": {
-        "tags": ["user"],
-        "summary": "我的文件列表（thrift）",
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}},
-          {"name": "page_size", "in": "query", "schema": {"type": "integer", "default": 20}}
+        "tags": [
+          "user"
         ],
-        "responses": {"200": {"description": "ok"}}
+        "summary": "我的文件列表（thrift）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/api/v1/user/shares": {
       "get": {
-        "tags": ["user-shares"],
+        "tags": [
+          "user-shares"
+        ],
         "summary": "我的分享列表（自定义，支持筛选）",
-        "security": [{"bearerAuth": []}],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
-          {"name": "status", "in": "query", "description": "active/expired/text/file/deleted/all", "schema": {"type": "string"}},
-          {"name": "search", "in": "query", "schema": {"type": "string"}},
-          {"name": "page", "in": "query", "schema": {"type": "integer", "default": 1}},
-          {"name": "page_size", "in": "query", "schema": {"type": "integer", "default": 20}}
+          {
+            "name": "status",
+            "in": "query",
+            "description": "active/expired/text/file/deleted/all",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -226,18 +482,39 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "code": {"type": "integer"},
-                    "message": {"type": "string"},
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
                     "data": {
                       "type": "object",
                       "properties": {
-                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/UserShareItem"}},
-                        "total": {"type": "integer"},
-                        "page": {"type": "integer"},
-                        "page_size": {"type": "integer"},
-                        "total_pages": {"type": "integer"},
-                        "has_next": {"type": "boolean"},
-                        "has_prev": {"type": "boolean"}
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/UserShareItem"
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "page_size": {
+                          "type": "integer"
+                        },
+                        "total_pages": {
+                          "type": "integer"
+                        },
+                        "has_next": {
+                          "type": "boolean"
+                        },
+                        "has_prev": {
+                          "type": "boolean"
+                        }
                       }
                     }
                   }
@@ -250,145 +527,538 @@
     },
     "/api/v1/user/shares/batch-delete": {
       "post": {
-        "tags": ["user-shares"],
+        "tags": [
+          "user-shares"
+        ],
         "summary": "批量软删除我的分享",
-        "security": [{"bearerAuth": []}],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["codes"],
+                "required": [
+                  "codes"
+                ],
                 "properties": {
-                  "codes": {"type": "array", "items": {"type": "string"}}
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/api/v1/user/shares/batch-extend": {
       "post": {
-        "tags": ["user-shares"],
+        "tags": [
+          "user-shares"
+        ],
         "summary": "批量延期",
-        "security": [{"bearerAuth": []}],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": ["codes"],
+                "required": [
+                  "codes"
+                ],
                 "properties": {
-                  "codes": {"type": "array", "items": {"type": "string"}},
-                  "hours": {"type": "integer", "description": "延长小时数"},
-                  "forever": {"type": "boolean", "description": "设为永久"}
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "hours": {
+                    "type": "integer",
+                    "description": "延长小时数"
+                  },
+                  "forever": {
+                    "type": "boolean",
+                    "description": "设为永久"
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/api/v1/user/shares/{code}/restore": {
       "post": {
-        "tags": ["user-shares"],
-        "summary": "恢复软删除的分享",
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "code", "in": "path", "required": true, "schema": {"type": "string"}}
+        "tags": [
+          "user-shares"
         ],
-        "responses": {"200": {"description": "ok"}}
+        "summary": "恢复软删除的分享",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/api/v1/user/shares/{code}/hard": {
       "delete": {
-        "tags": ["user-shares"],
-        "summary": "永久删除（仅已软删除的）",
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "code", "in": "path", "required": true, "schema": {"type": "string"}}
+        "tags": [
+          "user-shares"
         ],
-        "responses": {"200": {"description": "ok"}}
+        "summary": "永久删除（仅已软删除的）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/api/v1/notifies/mine": {
       "get": {
-        "tags": ["user-notify"],
-        "summary": "我的通知列表",
-        "security": [{"bearerAuth": []}],
-        "parameters": [
-          {"name": "page", "in": "query", "schema": {"type": "integer"}},
-          {"name": "page_size", "in": "query", "schema": {"type": "integer"}}
+        "tags": [
+          "user-notify"
         ],
-        "responses": {"200": {"description": "ok"}}
+        "summary": "我的通知列表",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/api/v1/notifies/unread-count": {
       "get": {
-        "tags": ["user-notify"],
+        "tags": [
+          "user-notify"
+        ],
         "summary": "我的未读通知数",
-        "security": [{"bearerAuth": []}],
-        "responses": {"200": {"description": "ok"}}
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/api/v1/notifies/mark-read": {
       "post": {
-        "tags": ["user-notify"],
+        "tags": [
+          "user-notify"
+        ],
         "summary": "标记全部已读",
-        "security": [{"bearerAuth": []}],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "all": {"type": "boolean", "default": true}
+                  "all": {
+                    "type": "boolean",
+                    "default": true
+                  }
                 }
               }
             }
           }
         },
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/presign/init": {
       "post": {
-        "tags": ["presign"],
+        "tags": [
+          "presign"
+        ],
         "summary": "申请上传地址",
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/presign/complete": {
       "post": {
-        "tags": ["presign"],
+        "tags": [
+          "presign"
+        ],
         "summary": "完成上传",
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/presign/abort": {
       "post": {
-        "tags": ["presign"],
+        "tags": [
+          "presign"
+        ],
         "summary": "取消上传",
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/notifies/active": {
       "get": {
-        "tags": ["notify"],
+        "tags": [
+          "notify"
+        ],
         "summary": "获取当前活跃通知（公开）",
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
       }
     },
     "/admin/notifies": {
       "get": {
-        "tags": ["admin"],
+        "tags": [
+          "admin"
+        ],
         "summary": "通知列表（管理）",
-        "responses": {"200": {"description": "ok"}}
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
+      }
+    },
+    "/api/v1/user/logout": {
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "用户注销（token 进入黑名单）",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/user/check-auth": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "校验 token 有效性并返回用户信息",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/activities": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "管理操作审计日志（分页）",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/stats/enhanced": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Dashboard 富指标（昨日对比/top后缀/下载总量）",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/users": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "创建用户",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/users/filter": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "带筛选的用户列表",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/users/{id}": {
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "更新用户（昵称/角色/状态/配额）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "删除用户（级联软删分享）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/users/{id}/reset-password": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "管理员重置用户密码",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/files/{id}": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "文件详情",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "编辑文件（延期/剩余次数）",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/files/{id}/download": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "管理端下载（302 到带令牌的下载端点）",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/files/batch-delete": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "批量删除文件",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/files/batch-extend": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "批量延期文件",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/stats/trend": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Dashboard 趋势序列（连续 N 天上传/下载）",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/admin/logs/transfer": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "传输日志分页查询",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     }
   },
@@ -404,21 +1074,55 @@
       "UserShareItem": {
         "type": "object",
         "properties": {
-          "id": {"type": "integer"},
-          "code": {"type": "string"},
-          "file_name": {"type": "string"},
-          "size": {"type": "integer", "format": "int64"},
-          "text": {"type": "string"},
-          "expired_at": {"type": "string", "nullable": true},
-          "expired_count": {"type": "integer"},
-          "used_count": {"type": "integer"},
-          "viewer_ip": {"type": "string"},
-          "viewer_at": {"type": "string", "nullable": true},
-          "viewer_count": {"type": "integer"},
-          "is_expired": {"type": "boolean"},
-          "is_text_share": {"type": "boolean"},
-          "deleted_at": {"type": "string", "nullable": true},
-          "created_at": {"type": "string"}
+          "id": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "file_name": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "text": {
+            "type": "string"
+          },
+          "expired_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "expired_count": {
+            "type": "integer"
+          },
+          "used_count": {
+            "type": "integer"
+          },
+          "viewer_ip": {
+            "type": "string"
+          },
+          "viewer_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "viewer_count": {
+            "type": "integer"
+          },
+          "is_expired": {
+            "type": "boolean"
+          },
+          "is_text_share": {
+            "type": "boolean"
+          },
+          "deleted_at": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string"
+          }
         }
       }
     }

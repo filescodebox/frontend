@@ -193,7 +193,16 @@ const copyText = async () => {
 
 const downloadFile = () => {
   if (!shareCode.value) return
-  
+
+  // 优先使用取件接口下发的带令牌 download_url（security.download_token.enabled 时必需）；
+  // 旧后端无此字段时回退到手工拼接
+  const data = shareData.value as Record<string, unknown> | null
+  const serverURL = data?.download_url as string | undefined
+  if (serverURL) {
+    window.open(serverURL, '_blank')
+    return
+  }
+
   let url = `/share/download?code=${shareCode.value}`
   if (password.value) {
     url += `&password=${encodeURIComponent(password.value)}`
