@@ -6,7 +6,7 @@
       <header class="top-nav">
         <div class="logo-section">
           <div class="logo-icon">
-            <el-icon size="22"><Box /></el-icon>
+            <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
           </div>
           <div class="logo-text">
             <h1>{{ configStore.siteName() }}</h1>
@@ -155,7 +155,7 @@
       <footer class="footer-section">
         <p class="footer-notice">{{ t('home.notice') }}</p>
         <div class="footer-links">
-          <a href="https://github.com/zy84338719/fileCodeBox/backend" target="_blank">
+          <a href="https://github.com/filescodebox/filescodebox" target="_blank">
             <el-icon><Link /></el-icon>
             GitHub
           </a>
@@ -244,7 +244,7 @@ import { ElMessage } from 'element-plus'
 import QRCode from 'qrcode'
 import { useI18n } from 'vue-i18n'
 import {
-  Box, ArrowDown, User, SwitchButton, Upload, Document,
+  ArrowDown, User, SwitchButton, Upload, Document,
   Download, Link, CopyDocument, Postcard, UploadFilled, Share,
   Promotion, Folder, PictureFilled, Loading
 } from '@element-plus/icons-vue'
@@ -403,12 +403,14 @@ onMounted(async () => {
 .logo-icon {
   width: 32px;
   height: 32px;
-  background: var(--primary-color);
   border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+  overflow: hidden;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .logo-text h1 {

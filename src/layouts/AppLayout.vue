@@ -6,7 +6,7 @@
         <el-icon class="menu-toggle" @click="drawerVisible = true"><Fold /></el-icon>
         <div class="logo-section" @click="$router.push('/')">
           <div class="logo-icon">
-            <el-icon size="20"><Box /></el-icon>
+            <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
           </div>
           <span class="logo-text">FilesCodeBox</span>
         </div>
@@ -117,7 +117,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  Box, ArrowDown, User, SwitchButton, Monitor, Share,
+  ArrowDown, User, SwitchButton, Monitor, Share,
   Document, Bell, House, Fold
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
@@ -178,12 +178,14 @@ const handleCommand = (command: string) => {
 .logo-icon {
   width: 28px;
   height: 28px;
-  background: var(--primary-color);
   border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+  overflow: hidden;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .logo-text {

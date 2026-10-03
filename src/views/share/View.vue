@@ -47,7 +47,7 @@
           <div class="share-header">
             <div class="logo-section">
               <div class="logo-icon">
-                <el-icon size="32"><Box /></el-icon>
+                <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
               </div>
               <div class="logo-text">
                 <h1>分享内容</h1>
@@ -126,8 +126,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { 
-  Box, HomeFilled, Document, Folder, Download, CopyDocument, Loading 
+import {
+  HomeFilled, Document, Folder, Download, CopyDocument, Loading
 } from '@element-plus/icons-vue'
 import { shareApi } from '@/api/share'
 
@@ -301,12 +301,14 @@ onMounted(() => {
 .logo-icon {
   width: 56px;
   height: 56px;
-  background: var(--primary-color);
   border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
+  overflow: hidden;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .logo-text h1 {

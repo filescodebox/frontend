@@ -5,7 +5,7 @@
       <el-aside width="240px" class="admin-aside">
         <div class="admin-logo">
           <div class="logo-icon">
-            <el-icon size="28"><Box /></el-icon>
+            <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
           </div>
           <div class="logo-text">
             <h2>FilesCodeBox</h2>
@@ -207,12 +207,14 @@ const handleCommand = async (command: string) => {
 .logo-icon {
   width: 28px;
   height: 28px;
-  background: var(--primary-color);
   border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+  overflow: hidden;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .logo-text h2 {

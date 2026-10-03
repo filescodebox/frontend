@@ -4,7 +4,7 @@
       <!-- Logo 区 -->
       <div class="setup-header">
         <div class="logo-icon">
-          <el-icon size="22"><Box /></el-icon>
+          <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
         </div>
         <h1>{{ t('setup.title') }}</h1>
         <p class="setup-desc">{{ t('setup.description') }}</p>
@@ -99,7 +99,6 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { Box } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { publicApi } from '@/api/public'
 
@@ -210,13 +209,15 @@ const handleSetup = async () => {
 .logo-icon {
   width: 40px;
   height: 40px;
-  background: var(--primary-color);
   border-radius: var(--radius-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+  overflow: hidden;
   margin-bottom: var(--spacing-md);
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .setup-header h1 {

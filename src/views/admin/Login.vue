@@ -3,7 +3,7 @@
     <div class="login-card">
       <div class="login-header">
         <div class="logo-icon">
-          <el-icon size="22"><Box /></el-icon>
+          <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
         </div>
         <h1>FilesCodeBox</h1>
         <p>管理后台登录</p>
@@ -72,7 +72,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Lock, Box, Back } from '@element-plus/icons-vue'
+import { User, Lock, Back } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
 
 const isDev = import.meta.env.DEV
@@ -162,13 +162,15 @@ const handleLogin = async () => {
 .logo-icon {
   width: 40px;
   height: 40px;
-  background: var(--primary-color);
   border-radius: var(--radius-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
+  overflow: hidden;
   margin-bottom: var(--spacing-md);
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .login-header h1 {

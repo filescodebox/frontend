@@ -5,7 +5,7 @@
       <header class="retrieve-header">
         <div class="logo-section" @click="$router.push('/')">
           <div class="logo-icon">
-            <el-icon size="28"><Box /></el-icon>
+            <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
           </div>
           <span class="logo-text">FilesCodeBox</span>
         </div>
@@ -89,7 +89,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { type FormInstance, type FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  Box, Postcard, Key, Lock, InfoFilled
+  Postcard, Key, Lock, InfoFilled
 } from '@element-plus/icons-vue'
 import { anonymousApi } from '@/api/anonymous'
 import { useErrorHandler } from '@/composables/useErrorHandler'
@@ -211,11 +211,14 @@ onMounted(async () => {
 .logo-icon {
   width: 40px;
   height: 40px;
-  background: var(--color-muted);
   border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .logo-text {

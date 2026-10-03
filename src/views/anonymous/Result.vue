@@ -5,7 +5,7 @@
       <header class="result-header">
         <div class="logo-section" @click="$router.push('/')">
           <div class="logo-icon">
-            <el-icon size="28"><Box /></el-icon>
+            <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
           </div>
           <span class="logo-text">FilesCodeBox</span>
         </div>
@@ -107,7 +107,7 @@ import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  Box, Document, Files, Timer, Histogram, Download,
+  Document, Files, Timer, Histogram, Download,
   CircleCheckFilled, WarningFilled, Back, FolderAdd
 } from '@element-plus/icons-vue'
 import { type RetrieveData } from '@/api/anonymous'
@@ -202,11 +202,14 @@ const handleSave = () => {
 .logo-icon {
   width: 40px;
   height: 40px;
-  background: var(--color-muted);
   border-radius: var(--radius-md);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+}
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .logo-text {
