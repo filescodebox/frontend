@@ -79,8 +79,9 @@
 
           <el-divider />
 
-          <!-- 文件分享（有下载链接或文件名优先判定为文件） -->
-          <div v-if="shareData.url || shareData.name || shareData.file_name" class="file-share-content">
+          <!-- 文件分享（回归：select 响应恒带 url/download_url，不能作文件判据；
+               文本分享 = 有 text 且无 file_name/files，否则文本被当文件渲染） -->
+          <div v-if="hasFileContent" class="file-share-content">
             <!-- 多文件列表（P0 多文件）：逐文件下载 + 打包 zip -->
             <div v-if="shareFiles.length > 1" class="multi-file-section">
               <div class="multi-header">
@@ -161,9 +162,8 @@
                 <el-tag>{{ shareCode }}</el-tag>
               </el-descriptions-item>
               <el-descriptions-item label="分享类型">
-                <!-- 文件特征（下载链接/文件名）优先；仅纯文本内容才标"文本" -->
-                <el-tag :type="shareData.text && !shareData.url && !shareData.file_name && !shareData.name ? 'success' : 'primary'">
-                  {{ shareData.text && !shareData.url && !shareData.file_name && !shareData.name ? '文本' : '文件' }}
+                <el-tag :type="hasFileContent ? 'primary' : 'success'">
+                  {{ hasFileContent ? '文件' : '文本' }}
                 </el-tag>
               </el-descriptions-item>
             </el-descriptions>
@@ -284,6 +284,10 @@ const e2eBusy = ref(false)
 // 解密后的文本（未加密分享直接用原文）
 const decryptedText = ref('')
 const hasTextContent = computed(() => !!shareData.value?.text)
+// 文件分享判据：有文件名或文件列表（url/download_url 恒存在，不可作判据）
+const hasFileContent = computed(() =>
+  !!shareData.value?.file_name || shareFiles.value.length > 0
+)
 const displayText = computed(() => {
   if (shareData.value?.encrypted) return decryptedText.value || t2ePendingText()
   return shareData.value?.text || ''

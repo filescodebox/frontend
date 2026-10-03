@@ -1,24 +1,24 @@
 <template>
   <div class="requests-page">
     <div class="page-header">
-      <h2>寄件码 · 反向收件</h2>
-      <p>创建投递链接发给他人，对方无需注册即可向你投递文件（文件成为你的普通分享）。</p>
+      <h2>{{ t('request.pageTitle') }}</h2>
+      <p>{{ t('request.pageDesc') }}</p>
     </div>
 
     <!-- 创建表单 -->
     <el-card class="create-card" shadow="never">
-      <template #header>创建投递链接</template>
+      <template #header>{{ t('request.createTitle') }}</template>
       <el-form :inline="true" class="create-form">
-        <el-form-item label="说明">
-          <el-input v-model="form.title" placeholder="如：会议材料收集" maxlength="100" style="width: 220px" />
+        <el-form-item :label="t('request.formTitle')">
+          <el-input v-model="form.title" :placeholder="t('request.formTitlePh')" maxlength="100" style="width: 220px" />
         </el-form-item>
-        <el-form-item label="文件数上限">
+        <el-form-item :label="t('request.formMaxFiles')">
           <el-input-number v-model="form.max_files" :min="0" :max="100" controls-position="right" />
-          <span class="hint">（0=不限）</span>
+          <span class="hint">{{ t('request.unlimitedHint') }}</span>
         </el-form-item>
-        <el-form-item label="大小上限">
+        <el-form-item :label="t('request.formMaxBytes')">
           <el-select v-model="form.max_bytes_mb" style="width: 130px">
-            <el-option label="不限" :value="0" />
+            <el-option :label="t('request.unlimited')" :value="0" />
             <el-option label="100 MB" :value="100" />
             <el-option label="500 MB" :value="500" />
             <el-option label="1 GB" :value="1024" />
@@ -26,38 +26,38 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" :loading="creating" @click="create">生成链接</el-button>
+          <el-button type="primary" :loading="creating" @click="create">{{ t('request.createBtn') }}</el-button>
         </el-form-item>
       </el-form>
     </el-card>
 
     <!-- 链接列表 -->
     <el-card shadow="never" style="margin-top: 16px">
-      <template #header>我的投递链接</template>
+      <template #header>{{ t('request.listTitle') }}</template>
       <el-table :data="list" v-loading="loadingList" style="width: 100%">
-        <el-table-column label="说明" prop="Title" min-width="160">
-          <template #default="{ row }">{{ row.Title || '（无说明）' }}</template>
+        <el-table-column :label="t('request.formTitle')" prop="Title" min-width="160">
+          <template #default="{ row }">{{ row.Title || t('request.noTitle') }}</template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column :label="t('request.statusCol')" width="100">
           <template #default="{ row }">
-            <el-tag v-if="isExpired(row)" type="danger" size="small">已过期</el-tag>
-            <el-tag v-else type="success" size="small">有效</el-tag>
+            <el-tag v-if="isExpired(row)" type="danger" size="small">{{ t('request.expired') }}</el-tag>
+            <el-tag v-else type="success" size="small">{{ t('request.active') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="累计投递" width="140">
-          <template #default="{ row }">{{ row.UsedCount }} 次 / {{ formatSize(row.RecvBytes) }}</template>
+        <el-table-column :label="t('request.usageCol')" width="140">
+          <template #default="{ row }">{{ t('request.usedTimes', { n: row.UsedCount }) }} / {{ formatSize(row.RecvBytes) }}</template>
         </el-table-column>
-        <el-table-column label="过期时间" width="170">
-          <template #default="{ row }">{{ row.ExpiredAt ? new Date(row.ExpiredAt).toLocaleString() : '永久' }}</template>
+        <el-table-column :label="t('request.expireCol')" width="170">
+          <template #default="{ row }">{{ row.ExpiredAt ? new Date(row.ExpiredAt).toLocaleString() : t('request.forever') }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="220" fixed="right">
+        <el-table-column :label="t('request.actionsCol')" width="220" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="primary" text @click="copyLink(row.Token)">
-              <el-icon><CopyDocument /></el-icon> 复制链接
+              <el-icon><CopyDocument /></el-icon> {{ t('request.copyLink') }}
             </el-button>
-            <el-popconfirm title="撤销后访客将无法再投递，确认？" @confirm="remove(row.Token)">
+            <el-popconfirm :title="t('request.revokeConfirm')" @confirm="remove(row.Token)">
               <template #reference>
-                <el-button size="small" type="danger" text>撤销</el-button>
+                <el-button size="small" type="danger" text>{{ t('request.revoke') }}</el-button>
               </template>
             </el-popconfirm>
           </template>
@@ -70,8 +70,11 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { CopyDocument } from '@element-plus/icons-vue'
 import { requestApi, type FileRequestItem } from '@/api/request'
+
+const { t } = useI18n()
 
 const list = ref<FileRequestItem[]>([])
 const loadingList = ref(false)
@@ -119,7 +122,7 @@ const create = async () => {
       expire_style: form.expire_style,
     })
     if (res.code === 200 || res.code === 0) {
-      ElMessage.success('链接已创建')
+      ElMessage.success(t('request.created'))
       await load()
       const last = list.value[0]
       if (last) await copyLink(last.Token)
@@ -136,7 +139,7 @@ const create = async () => {
 const copyLink = async (token: string) => {
   try {
     await navigator.clipboard.writeText(buildLink(token))
-    ElMessage.success('链接已复制')
+    ElMessage.success(t('request.copied'))
   } catch {
     ElMessage.error(buildLink(token))
   }
@@ -145,7 +148,7 @@ const copyLink = async (token: string) => {
 const remove = async (token: string) => {
   const res = await requestApi.remove(token)
   if (res.code === 200 || res.code === 0) {
-    ElMessage.success('已撤销')
+    ElMessage.success(t('request.revoked'))
     await load()
   } else {
     ElMessage.error(res.message || '撤销失败')

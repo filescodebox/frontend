@@ -22,6 +22,8 @@ export interface UserShareItem {
   viewer_ip: string
   viewer_at: string | null
   viewer_count: number
+  /** P0 多文件：子文件数（0 = 旧单文件无子表行） */
+  file_count?: number
   is_expired: boolean
   is_text_share: boolean
 }

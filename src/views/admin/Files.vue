@@ -107,6 +107,7 @@
                 <div class="file-name">
                   {{ row.file_name || row.code }}
                   <el-tag v-if="row.is_text" size="small" type="success">文本</el-tag>
+                  <el-tag v-if="(row.file_count || 0) > 1" size="small" type="info">{{ row.file_count }} 个文件</el-tag>
                 </div>
                 <div v-if="row.is_text && row.text_preview" class="text-preview">
                   {{ row.text_preview }}

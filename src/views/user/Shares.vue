@@ -87,7 +87,12 @@
       <el-table-column :label="t('user.shares.fileName')" min-width="160" show-overflow-tooltip>
         <template #default="{ row }">
           <span v-if="row.is_text_share" class="text-preview">{{ row.text || '—' }}</span>
-          <span v-else>{{ row.file_name || row.prefix + row.suffix || '—' }}</span>
+          <template v-else>
+            <span>{{ row.file_name || row.prefix + row.suffix || '—' }}</span>
+            <el-tag v-if="(row.file_count || 0) > 1" size="small" type="info" style="margin-left: 6px">
+              {{ row.file_count }} {{ t('user.shares.filesUnit') }}
+            </el-tag>
+          </template>
         </template>
       </el-table-column>
       <el-table-column :label="t('user.shares.size')" width="110">

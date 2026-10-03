@@ -5,13 +5,13 @@
         <!-- 加载中 -->
         <div v-if="loading" class="center-section">
           <el-icon class="loading-icon" :size="48"><Loading /></el-icon>
-          <p>加载中...</p>
+          <p>{{ t('request.loading') }}</p>
         </div>
 
         <!-- 链接无效 -->
         <el-result v-else-if="error" icon="error" :title="error">
           <template #extra>
-            <el-button type="primary" @click="$router.push('/')">返回首页</el-button>
+            <el-button type="primary" @click="$router.push('/')">{{ t('request.backHome') }}</el-button>
           </template>
         </el-result>
 
@@ -20,13 +20,13 @@
           <div class="header">
             <img src="/favicon.svg" alt="" class="logo" />
             <div>
-              <h1>文件投递</h1>
+              <h1>{{ t('request.pickupTitle') }}</h1>
               <p v-if="view.title">{{ view.title }}</p>
             </div>
           </div>
           <el-divider />
           <el-alert type="info" :closable="false" show-icon style="margin-bottom: 16px"
-            title="上传的文件将直接投递给链接主人，仅其可见" />
+            :title="t('request.pickupNotice')" />
 
           <el-upload
             :auto-upload="false"
@@ -36,11 +36,11 @@
             drag
           >
             <el-icon size="48" class="icon-primary"><UploadFilled /></el-icon>
-            <div class="upload-text">拖拽或点击选择要投递的文件</div>
+            <div class="upload-text">{{ t('request.dragHint') }}</div>
             <template #tip>
               <div class="el-upload__tip">
-                <span v-if="view.max_files > 0">最多 {{ view.max_files }} 个文件；</span>
-                <span v-if="view.max_bytes > 0">总大小 ≤ {{ formatSize(view.max_bytes) }}</span>
+                <span v-if="view.max_files > 0">{{ t('request.maxFiles', { n: view.max_files }) }}；</span>
+                <span v-if="view.max_bytes > 0">{{ t('request.maxBytes', { size: formatSize(view.max_bytes) }) }}</span>
               </div>
             </template>
           </el-upload>
@@ -53,7 +53,7 @@
             :disabled="files.length === 0"
             @click="submit"
           >
-            {{ uploading ? `投递中 ${progress}%` : '立即投递' }}
+            {{ uploading ? t('request.submitting', { p: progress }) : t('request.submit') }}
           </el-button>
         </template>
       </div>
@@ -64,11 +64,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, type UploadFile } from 'element-plus'
 import { Loading, UploadFilled } from '@element-plus/icons-vue'
 import { requestApi, guestSubmit, type RequestPublicView } from '@/api/request'
 
 const route = useRoute()
+const { t } = useI18n()
 const token = ref('')
 const view = ref<RequestPublicView | null>(null)
 const loading = ref(true)
@@ -94,10 +96,10 @@ const submit = async () => {
   progress.value = 0
   try {
     await guestSubmit(token.value, files.value, (p) => (progress.value = p))
-    ElMessage.success('投递成功！对方已收到通知')
+    ElMessage.success(t('request.done'))
     files.value = []
   } catch (e: unknown) {
-    ElMessage.error(e instanceof Error ? e.message : '投递失败')
+    ElMessage.error(e instanceof Error ? e.message : t('request.failed'))
   } finally {
     uploading.value = false
   }
@@ -108,9 +110,9 @@ onMounted(async () => {
   try {
     const res = await requestApi.getPublic(token.value)
     if (res.code === 200 || res.code === 0) view.value = res.data
-    else error.value = res.message || '链接无效'
+    else error.value = res.message || t('request.invalid')
   } catch (e: any) {
-    error.value = e?.message || '链接无效或已过期'
+    error.value = e?.message || t('request.invalid')
   } finally {
     loading.value = false
   }
