@@ -440,4 +440,92 @@ export const adminApi = {
       method: 'GET'
     })
   },
+
+  // ===== 分享治理（2026-10-03）：组合过滤 + 管控状态机 =====
+
+  // 组合过滤文件列表（后端已实现：GET /admin/files/filter）
+  getFilesFiltered: (params: {
+    page?: number
+    page_size?: number
+    keyword?: string
+    user_id?: number
+    upload_type?: string
+    owner_ip?: string
+    status?: string
+    min_size?: number
+    max_size?: number
+    created_after?: string
+    created_before?: string
+    expired?: string
+  }) => {
+    return request<ApiResponse<{
+      items: {
+        id: number
+        code: string
+        file_name: string
+        is_text: boolean
+        text_preview: string
+        size: number
+        expired_at: string | null
+        expired_count: number
+        used_count: number
+        viewer_count: number
+        status: string
+        upload_type: string
+        user_id: number | null
+        owner_ip: string
+        require_auth: boolean
+        created_at: string
+      }[]
+      total: number
+      page: number
+      page_size: number
+    }>>({
+      url: '/admin/files/filter',
+      method: 'GET',
+      params,
+    })
+  },
+
+  // 设置单个分享管控状态（后端已实现：PUT /admin/files/:id/status）
+  setFileStatus: (id: number, status: 'normal' | 'blocked' | 'pending_review') => {
+    return request<ApiResponse<{ affected: number }>>({
+      url: `/admin/files/${id}/status`,
+      method: 'PUT',
+      data: { status },
+    })
+  },
+
+  // 批量设置分享管控状态（后端已实现：POST /admin/files/batch-status）
+  batchSetFileStatus: (ids: number[], status: 'normal' | 'blocked' | 'pending_review') => {
+    return request<ApiResponse<{ affected: number }>>({
+      url: '/admin/files/batch-status',
+      method: 'POST',
+      data: { ids, status },
+    })
+  },
+
+  // 限流配置（后端已有：GET/PUT /admin/ratelimit/config）
+  getRateLimitConfig: () => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/ratelimit/config',
+      method: 'GET',
+    })
+  },
+
+  updateRateLimitConfig: (data: Record<string, unknown>) => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/ratelimit/config',
+      method: 'PUT',
+      data,
+    })
+  },
+
+  // 限流运行状态（活跃客户端/被封禁 IP）
+  getRateLimitStatus: () => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/ratelimit/status',
+      method: 'GET',
+    })
+  },
 }

@@ -304,9 +304,11 @@ const formatDate = (dateStr: string): string => {
 }
 
 const getStoragePercentage = (user: any): number => {
-  if (!((user.quota_used || user.total_storage) && (user.quota_used || user.total_storage) !== 0)) return 0
-  const quota = 1073741824 // 1GB
-  const percentage = ((user.quota_used || user.total_storage) / quota) * 100
+  const used = user.quota_used || user.total_storage || 0
+  // 优先读用户实际配额（管理员可单独设置），>0 才有意义；否则回退系统默认 1GB
+  const quota = user.max_storage_quota > 0 ? user.max_storage_quota : 1073741824
+  if (used <= 0 || quota <= 0) return 0
+  const percentage = (used / quota) * 100
   return Math.min(percentage, 100)
 }
 

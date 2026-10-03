@@ -4,16 +4,24 @@
       <div class="card-header">
         <div class="header-title">
           <h2>文件管理</h2>
-          <p>管理系统中的所有分享文件</p>
+          <p>管理系统中的所有分享文件（支持按上传者 IP / 状态 / 类型定位滥用资源）</p>
         </div>
         <div class="header-actions">
           <el-button
             type="danger"
             plain
             :disabled="!selectedIds.length"
-            @click="batchDelete"
+            @click="batchSetStatus('blocked')"
           >
-            批量删除{{ selectedIds.length ? `（${selectedIds.length}）` : '' }}
+            批量禁用{{ selectedIds.length ? `（${selectedIds.length}）` : '' }}
+          </el-button>
+          <el-button
+            type="success"
+            plain
+            :disabled="!selectedIds.length"
+            @click="batchSetStatus('normal')"
+          >
+            批量恢复
           </el-button>
           <el-button
             type="warning"
@@ -22,6 +30,14 @@
             @click="batchExtendVisible = true"
           >
             批量延期
+          </el-button>
+          <el-button
+            type="danger"
+            plain
+            :disabled="!selectedIds.length"
+            @click="batchDelete"
+          >
+            批量删除
           </el-button>
           <el-button @click="fetchFiles" :loading="loading" class="refresh-btn">
             <el-icon><Refresh /></el-icon>
@@ -32,6 +48,46 @@
 
       <el-divider />
 
+      <!-- 治理筛选栏 -->
+      <div class="filter-bar">
+        <el-input
+          v-model="filters.keyword"
+          placeholder="取件码/文件名关键词"
+          clearable
+          style="width: 180px"
+          @keyup.enter="applyFilters"
+        />
+        <el-select v-model="filters.status" placeholder="状态" clearable style="width: 130px">
+          <el-option label="正常" value="normal" />
+          <el-option label="已禁用" value="blocked" />
+          <el-option label="待审核" value="pending_review" />
+        </el-select>
+        <el-select v-model="filters.upload_type" placeholder="上传类型" clearable style="width: 130px">
+          <el-option label="匿名" value="anonymous" />
+          <el-option label="登录用户" value="authenticated" />
+        </el-select>
+        <el-select v-model="filters.expired" placeholder="过期状态" clearable style="width: 120px">
+          <el-option label="未过期" value="false" />
+          <el-option label="已过期" value="true" />
+        </el-select>
+        <el-input
+          v-model="filters.owner_ip"
+          placeholder="上传者 IP"
+          clearable
+          style="width: 140px"
+          @keyup.enter="applyFilters"
+        />
+        <el-input
+          v-model="filters.user_id"
+          placeholder="用户 ID"
+          clearable
+          style="width: 110px"
+          @keyup.enter="applyFilters"
+        />
+        <el-button type="primary" @click="applyFilters">查询</el-button>
+        <el-button @click="resetFilters">重置</el-button>
+      </div>
+
       <el-table
         :data="filesList"
         v-loading="loading"
@@ -39,7 +95,7 @@
         @selection-change="onSelectionChange"
       >
         <el-table-column type="selection" width="44" />
-        <el-table-column label="文件信息" min-width="250">
+        <el-table-column label="文件信息" min-width="230">
           <template #default="{ row }">
             <div class="file-info">
               <div class="file-icon">
@@ -49,7 +105,11 @@
               </div>
               <div class="file-details">
                 <div class="file-name">
-                  {{ row.uuid_file_name || row.code }}
+                  {{ row.file_name || row.code }}
+                  <el-tag v-if="row.is_text" size="small" type="success">文本</el-tag>
+                </div>
+                <div v-if="row.is_text && row.text_preview" class="text-preview">
+                  {{ row.text_preview }}
                 </div>
                 <div class="file-code">
                   <el-tag size="small" type="info">
@@ -61,7 +121,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="size" label="大小" width="120" align="center">
+        <el-table-column prop="size" label="大小" width="100" align="center">
           <template #default="{ row }">
             <el-tag type="info" effect="plain">
               {{ formatFileSize(row.size) }}
@@ -69,16 +129,15 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="上传类型" width="120" align="center">
+        <el-table-column label="状态" width="96" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.text ? 'success' : 'primary'" effect="light">
-              <el-icon><component :is="row.text ? 'Document' : 'Picture'" /></el-icon>
-              {{ row.text ? '文本' : '文件' }}
+            <el-tag :type="statusTagType(row.status)" effect="dark">
+              {{ statusLabel(row.status) }}
             </el-tag>
           </template>
         </el-table-column>
 
-        <el-table-column prop="user_id" label="上传者" width="100" align="center">
+        <el-table-column label="上传者" width="100" align="center">
           <template #default="{ row }">
             <el-tag v-if="row.user_id" type="info">
               ID: {{ row.user_id }}
@@ -87,7 +146,13 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="used_count" label="下载次数" width="100" align="center">
+        <el-table-column prop="owner_ip" label="上传 IP" width="130" align="center">
+          <template #default="{ row }">
+            <span class="owner-ip">{{ row.owner_ip || '-' }}</span>
+          </template>
+        </el-table-column>
+
+        <el-table-column prop="used_count" label="下载次数" width="96" align="center">
           <template #default="{ row }">
             <div class="download-count">
               <el-icon><Download /></el-icon>
@@ -96,13 +161,13 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="CreatedAt" label="创建时间" width="180">
+        <el-table-column prop="created_at" label="创建时间" width="170">
           <template #default="{ row }">
-            {{ formatDate(row.CreatedAt) }}
+            {{ formatDate(row.created_at) }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="expired_at" label="过期时间" width="180">
+        <el-table-column prop="expired_at" label="过期时间" width="170">
           <template #default="{ row }">
             <div :class="['expire-time', { expired: isExpired(row.expired_at) }]">
               {{ formatDate(row.expired_at) }}
@@ -110,10 +175,28 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="220" align="center" fixed="right">
+        <el-table-column label="操作" width="260" align="center" fixed="right">
           <template #default="{ row }">
             <el-button
-              v-if="!row.text"
+              v-if="row.status !== 'blocked'"
+              type="warning"
+              size="small"
+              round
+              @click="setStatus(row, 'blocked')"
+            >
+              禁用
+            </el-button>
+            <el-button
+              v-else
+              type="success"
+              size="small"
+              round
+              @click="setStatus(row, 'normal')"
+            >
+              恢复
+            </el-button>
+            <el-button
+              v-if="!row.is_text"
               size="small"
               round
               @click="downloadFile(row)"
@@ -152,7 +235,7 @@
     <el-dialog v-model="editVisible" title="编辑分享" width="420px">
       <el-form label-width="100px">
         <el-form-item label="文件">
-          <span>{{ editTarget?.uuid_file_name || editTarget?.code }}</span>
+          <span>{{ editTarget?.file_name || editTarget?.code }}</span>
         </el-form-item>
         <el-form-item label="延长有效期">
           <el-select v-model="editForm.expireValue" style="width: 100%">
@@ -195,11 +278,13 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
+import {
   Refresh, Document, Picture, Download, Delete,
   VideoPlay, Headset, Reading
 } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
+
+type FileStatus = 'normal' | 'blocked' | 'pending_review'
 
 const loading = ref(false)
 const filesList = ref<any[]>([])
@@ -208,6 +293,16 @@ const pagination = reactive({
   page: 1,
   pageSize: 20,
   total: 0
+})
+
+// 治理筛选条件（对应 GET /admin/files/filter）
+const filters = reactive({
+  keyword: '',
+  status: '',
+  upload_type: '',
+  expired: '',
+  owner_ip: '',
+  user_id: ''
 })
 
 const formatFileSize = (bytes: number): string => {
@@ -236,10 +331,26 @@ const isExpired = (dateStr: string): boolean => {
   }
 }
 
+const statusLabel = (status: string): string => {
+  switch (status) {
+    case 'blocked': return '已禁用'
+    case 'pending_review': return '待审核'
+    default: return '正常'
+  }
+}
+
+const statusTagType = (status: string): 'success' | 'danger' | 'warning' => {
+  switch (status) {
+    case 'blocked': return 'danger'
+    case 'pending_review': return 'warning'
+    default: return 'success'
+  }
+}
+
 const getFileIcon = (row: any) => {
-  const filename = row.uuid_file_name || ''
+  const filename = row.file_name || ''
   const ext = filename.split('.').pop()?.toLowerCase()
-  
+
   const iconMap: Record<string, any> = {
     'jpg': Picture,
     'jpeg': Picture,
@@ -250,14 +361,14 @@ const getFileIcon = (row: any) => {
     'txt': Reading,
     'pdf': Document
   }
-  
+
   return iconMap[ext || ''] || Document
 }
 
 const getFileIconColor = (row: any) => {
-  const filename = row.uuid_file_name || ''
+  const filename = row.file_name || ''
   const ext = filename.split('.').pop()?.toLowerCase()
-  
+
   const colorMap: Record<string, string> = {
     'jpg': '#409eff',
     'jpeg': '#409eff',
@@ -268,34 +379,34 @@ const getFileIconColor = (row: any) => {
     'txt': '#909399',
     'pdf': '#f56c6c'
   }
-  
+
   return colorMap[ext || ''] || '#606266'
 }
 
 const fetchFiles = async () => {
   loading.value = true
   try {
-    const res = await adminApi.getFiles({
+    const params: Record<string, unknown> = {
       page: pagination.page,
       page_size: pagination.pageSize
-    })
-    
-    if (res.code === 200) {
-      if (res.data && Array.isArray(res.data.items)) {
-        filesList.value = res.data.items
-        pagination.total = res.data.total || res.data.items.length
-      } else if (res.data && Array.isArray((res.data as Record<string, unknown>).list)) {
-        // 兼容历史响应结构
-        const legacy = res.data as Record<string, unknown>
-        filesList.value = legacy.list as typeof filesList.value
-        pagination.total = (legacy.total as number) || (legacy.list as unknown[]).length
-      } else if (Array.isArray(res.data)) {
-        filesList.value = res.data
-        pagination.total = res.data.length
-      } else {
-        filesList.value = []
-        pagination.total = 0
-      }
+    }
+    if (filters.keyword) params.keyword = filters.keyword
+    if (filters.status) params.status = filters.status
+    if (filters.upload_type) params.upload_type = filters.upload_type
+    if (filters.expired) params.expired = filters.expired
+    if (filters.owner_ip) params.owner_ip = filters.owner_ip
+    if (filters.user_id) {
+      const uid = Number(filters.user_id)
+      if (Number.isFinite(uid) && uid > 0) params.user_id = uid
+    }
+
+    const res = await adminApi.getFilesFiltered(params)
+    if (res.code === 200 && res.data) {
+      filesList.value = res.data.items || []
+      pagination.total = res.data.total || 0
+    } else {
+      filesList.value = []
+      pagination.total = 0
     }
   } catch (error) {
     console.error('获取文件列表失败:', error)
@@ -305,10 +416,76 @@ const fetchFiles = async () => {
   }
 }
 
+const applyFilters = () => {
+  pagination.page = 1
+  fetchFiles()
+}
+
+const resetFilters = () => {
+  filters.keyword = ''
+  filters.status = ''
+  filters.upload_type = ''
+  filters.expired = ''
+  filters.owner_ip = ''
+  filters.user_id = ''
+  pagination.page = 1
+  fetchFiles()
+}
+
+// ==================== 管控状态机 ====================
+const setStatus = async (row: any, status: FileStatus) => {
+  const action = status === 'blocked' ? '禁用' : '恢复'
+  try {
+    await ElMessageBox.confirm(
+      `确定要${action}分享 ${row.file_name || row.code} 吗？` +
+        (status === 'blocked' ? '禁用后任何人无法取件，记录保留可恢复。' : ''),
+      `确认${action}`,
+      { type: status === 'blocked' ? 'warning' : 'info' }
+    )
+  } catch {
+    return
+  }
+  try {
+    const res = await adminApi.setFileStatus(row.id, status)
+    if (res.code === 0 || res.code === 200) {
+      ElMessage.success(`${action}成功`)
+      await fetchFiles()
+    } else {
+      ElMessage.error(res.message || `${action}失败`)
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || `${action}失败`)
+  }
+}
+
+const batchSetStatus = async (status: FileStatus) => {
+  const action = status === 'blocked' ? '禁用' : '恢复'
+  try {
+    await ElMessageBox.confirm(
+      `确定要批量${action}选中的 ${selectedIds.value.length} 个分享吗？`,
+      `批量${action}`,
+      { type: status === 'blocked' ? 'warning' : 'info' }
+    )
+  } catch {
+    return
+  }
+  try {
+    const res = await adminApi.batchSetFileStatus(selectedIds.value, status)
+    if (res.code === 0 || res.code === 200) {
+      ElMessage.success(`已${action} ${res.data?.affected ?? selectedIds.value.length} 个`)
+      await fetchFiles()
+    } else {
+      ElMessage.error(res.message || `批量${action}失败`)
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || `批量${action}失败`)
+  }
+}
+
 const deleteFile = async (file: any) => {
   try {
     await ElMessageBox.confirm(
-      `确定要删除文件 ${file.uuid_file_name || file.code} 吗？`,
+      `确定要删除文件 ${file.file_name || file.code} 吗？`,
       '确认删除',
       {
         type: 'warning',
@@ -480,6 +657,20 @@ onMounted(() => {
   color: var(--color-text-secondary);
 }
 
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
 .refresh-btn {
   border-radius: var(--radius-md);
   background: var(--primary-color);
@@ -514,6 +705,7 @@ onMounted(() => {
 
 .file-details {
   flex: 1;
+  min-width: 0;
 }
 
 .file-name {
@@ -521,6 +713,19 @@ onMounted(() => {
   color: var(--color-text-primary);
   margin-bottom: 6px;
   font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.text-preview {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .file-code {
@@ -531,6 +736,12 @@ onMounted(() => {
 .anonymous {
   color: var(--color-text-secondary);
   font-size: 14px;
+}
+
+.owner-ip {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--color-text-regular);
 }
 
 .download-count {

@@ -97,13 +97,50 @@
             </el-form-item>
           </el-form>
         </el-tab-pane>
+        <!-- 安全与限流（读写 /admin/ratelimit/*，独立保存） -->
+        <el-tab-pane label="安全与限流" name="ratelimit">
+          <el-form :model="rlForm" label-width="160px" style="max-width: 640px">
+            <el-form-item label="启用限流">
+              <el-switch v-model="rlForm.enabled" />
+            </el-form-item>
+            <el-form-item label="全局 QPS">
+              <el-input-number v-model="rlForm.global_qps" :min="1" :max="100000" controls-position="right" />
+            </el-form-item>
+            <el-form-item label="上传 QPS">
+              <el-input-number v-model="rlForm.upload_qps" :min="1" :max="100000" controls-position="right" />
+            </el-form-item>
+            <el-form-item label="下载 QPS">
+              <el-input-number v-model="rlForm.download_qps" :min="1" :max="100000" controls-position="right" />
+            </el-form-item>
+            <el-form-item label="登录 QPS">
+              <el-input-number v-model="rlForm.login_qps" :min="1" :max="10000" controls-position="right" />
+            </el-form-item>
+            <el-form-item label="突发容量 Burst">
+              <el-input-number v-model="rlForm.burst" :min="1" :max="100000" controls-position="right" />
+            </el-form-item>
+            <el-form-item label="触发封禁时长（秒）">
+              <el-input-number v-model="rlForm.block_seconds" :min="0" :max="86400" controls-position="right" />
+            </el-form-item>
+            <el-form-item label="Redis 共享计数">
+              <el-switch v-model="rlForm.use_redis" />
+              <span class="form-hint" style="margin-left: 10px; color: var(--color-text-secondary)">多实例部署需开启</span>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" :loading="rlSaving" @click="saveRateLimit">保存限流配置</el-button>
+              <el-button :loading="rlStatusLoading" @click="fetchRateLimitStatus">查看运行状态</el-button>
+            </el-form-item>
+            <el-form-item v-if="rlStatus" label="运行状态">
+              <pre class="rl-status">{{ rlStatusText }}</pre>
+            </el-form-item>
+          </el-form>
+        </el-tab-pane>
       </el-tabs>
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '@/api/admin'
 import { useConfigStore } from '@/stores/config'
@@ -182,8 +219,74 @@ const saveConfig = async () => {
   }
 }
 
+// ==================== 安全与限流（/admin/ratelimit/*，独立于通用配置保存） ====================
+const rlSaving = ref(false)
+const rlStatusLoading = ref(false)
+const rlStatus = ref<Record<string, unknown> | null>(null)
+const rlForm = reactive({
+  enabled: true,
+  global_qps: 100,
+  upload_qps: 10,
+  download_qps: 50,
+  login_qps: 5,
+  burst: 20,
+  block_seconds: 60,
+  use_redis: false
+})
+
+const fetchRateLimit = async () => {
+  try {
+    const res = await adminApi.getRateLimitConfig()
+    if (res.code === 0 || res.code === 200) {
+      const data = (res.data || {}) as Record<string, unknown>
+      for (const k of Object.keys(rlForm) as (keyof typeof rlForm)[]) {
+        if (typeof data[k] === 'boolean' || typeof data[k] === 'number') {
+          ;(rlForm as Record<string, unknown>)[k] = data[k]
+        }
+      }
+    }
+  } catch (error) {
+    console.error('获取限流配置失败:', error)
+  }
+}
+
+const saveRateLimit = async () => {
+  rlSaving.value = true
+  try {
+    const res = await adminApi.updateRateLimitConfig({ ...rlForm })
+    if (res.code === 0 || res.code === 200) {
+      ElMessage.success('限流配置已保存并热更新')
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || '保存失败')
+  } finally {
+    rlSaving.value = false
+  }
+}
+
+const rlStatusText = computed(() => JSON.stringify(rlStatus.value, null, 2))
+
+const fetchRateLimitStatus = async () => {
+  rlStatusLoading.value = true
+  try {
+    const res = await adminApi.getRateLimitStatus()
+    if (res.code === 0 || res.code === 200) {
+      rlStatus.value = res.data || null
+    } else {
+      ElMessage.error(res.message || '获取运行状态失败')
+    }
+  } catch (e: any) {
+    ElMessage.error(e.message || '获取运行状态失败')
+  } finally {
+    rlStatusLoading.value = false
+  }
+}
+
 onMounted(() => {
   fetchConfig()
+  fetchRateLimit()
 })
 </script>
 
@@ -202,5 +305,16 @@ onMounted(() => {
   margin: 0;
   font-size: 18px;
   font-weight: 600;
+}
+
+.rl-status {
+  background: var(--color-muted);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12px;
+  max-height: 260px;
+  overflow: auto;
+  width: 100%;
+  margin: 0;
 }
 </style>
