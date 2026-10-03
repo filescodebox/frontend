@@ -51,6 +51,13 @@
           </el-button>
         </el-form-item>
 
+        <!-- OIDC 单点登录（P2；security.oidc.enabled 时后端下发 oidcEnabled） -->
+        <el-form-item v-if="configStore.config?.oidcEnabled">
+          <el-button size="large" class="oidc-btn" @click="startOidcLogin">
+            {{ t('login.oidc') }}
+          </el-button>
+        </el-form-item>
+
         <div v-if="registerVisible" class="login-footer">
           <el-link type="primary" underline="never" @click="$router.push('/user/register')">
             {{ t('login.noAccount') }}
@@ -76,6 +83,11 @@ const { t } = useI18n()
 
 // 站点关闭注册时隐藏入口（后端 /user/register 也会 403，双保险）
 const registerVisible = computed(() => configStore.config?.registerEnabled !== false)
+
+// OIDC：跳转后端授权入口（302 到 IdP；登录回调写 token 后进仪表盘）
+const startOidcLogin = () => {
+  window.location.href = '/api/v1/user/oidc/login'
+}
 
 onMounted(() => {
   configStore.fetchConfig().catch(() => {})

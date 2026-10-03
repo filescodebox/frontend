@@ -144,6 +144,28 @@
           style="margin-top: 8px"
         />
       </div>
+
+      <div v-if="userStore.isLoggedIn" class="setting-group">
+        <label class="setting-label">
+          <el-icon><EditPen /></el-icon>
+          {{ t('upload.customCode') }}
+        </label>
+        <el-input
+          v-model="form.custom_code"
+          :placeholder="t('upload.customCodePlaceholder')"
+          maxlength="32"
+          style="max-width: 280px"
+        />
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label">
+          <el-icon><Key /></el-icon>
+          {{ t('upload.e2e.title') }}
+        </label>
+        <el-switch v-model="form.e2e" :active-text="t('upload.e2e.on')" :inactive-text="t('upload.e2e.off')" />
+        <div class="e2e-hint">{{ t('upload.e2e.hint') }}</div>
+      </div>
     </div>
 
     <!-- 上传按钮 -->
@@ -180,15 +202,21 @@ import { ElMessage, type UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
   UploadFilled, Document, InfoFilled, Close, Clock,
-  Lock, Upload, CircleCheckFilled, CircleCloseFilled
+  Lock, Upload, CircleCheckFilled, CircleCloseFilled, Key, EditPen
 } from '@element-plus/icons-vue'
 import { type PresignCompleteData } from '@/api/presign'
+import { multiDirect, chunkUploadFile, multiBind, type MultiShareOptions, type MultiShareResult } from '@/api/multifile'
+import { useConfigStore } from '@/stores/config'
+import { useUserStore } from '@/stores/user'
+import { generateKeyB64, encryptFile } from '@/utils/e2e'
 import PresignUploadDialog from './PresignUploadDialog.vue'
 
 const { t } = useI18n()
+const configStore = useConfigStore()
+const userStore = useUserStore()
 
 const emit = defineEmits<{
-  success: [result: { code: string; share_url: string; full_share_url: string; qr_code_data: string }]
+  success: [result: { code: string; share_url: string; full_share_url: string; qr_code_data: string; e2e_key?: string }]
 }>()
 
 interface FileItem {
@@ -199,6 +227,8 @@ interface FileItem {
   statusText: string
   error: string
   xhr?: XMLHttpRequest | null
+  // E2E 加密后的密文文件（上传用；file 保留原文件供列表展示）
+  uploadFile?: File
 }
 
 const fileList = ref<FileItem[]>([])
@@ -209,14 +239,22 @@ const form = reactive({
   expire_style: 'day',
   require_auth: false,
   password: '',
+  e2e: false,
+  custom_code: '',
 })
 
+// E2E 密钥（本次上传生成；随成功事件交给分享对话框拼进链接）
+const e2eKey = ref('')
+
 const PRESIGN_THRESHOLD = 100 * 1024 * 1024 // 100MB
+const E2E_MAX_BYTES = 100 * 1024 * 1024 // E2E 整文件内存加密上限
 
 const presignVisible = ref(false)
 const presignTarget = ref<FileItem | null>(null)
 
 const anyUploading = computed(() => fileList.value.some((f) => f.status === 'uploading'))
+// 多文件合并上传的中断控制器（多文件模式无逐项 xhr，用 signal 统一取消）
+const multiAbort = ref<AbortController | null>(null)
 const canStart = computed(
   () => fileList.value.length > 0 && fileList.value.some((f) => f.status === 'pending' || f.status === 'error')
 )
@@ -290,6 +328,9 @@ const uploadOne = (item: FileItem) => {
 
     // 决定走哪条路径
     if (item.file.size > PRESIGN_THRESHOLD) {
+      if (form.e2e) {
+        throw new Error(t('upload.e2e.tooLarge'))
+      }
       // 大文件走预签名
       item.statusText = t('upload.largeFileHint')
       presignTarget.value = item
@@ -315,13 +356,15 @@ const uploadOne = (item: FileItem) => {
 
     // 小文件走传统 /share/file/
     const formData = new FormData()
-    formData.append('file', item.file)
+    formData.append('file', item.uploadFile || item.file)
     formData.append('expire_value', String(form.expire_value))
     formData.append('expire_style', form.expire_style)
     if (form.require_auth) {
       formData.append('require_auth', 'true')
       if (form.password) formData.append('password', form.password)
     }
+    if (form.e2e && item.uploadFile) formData.append('encrypted', 'true')
+    if (userStore.isLoggedIn && form.custom_code) formData.append('custom_code', form.custom_code)
 
     const xhr = new XMLHttpRequest()
     item.xhr = xhr
@@ -385,16 +428,151 @@ const handleUploadAll = async () => {
       item.status = 'pending'
       item.error = ''
     }
+  }
+
+  // E2E：生成密钥并加密全部待传文件（仅支持 ≤100MB；密文作为实际上传内容）
+  e2eKey.value = ''
+  if (form.e2e && pending.length > 0) {
+    const tooBig = pending.filter((i) => i.file.size > E2E_MAX_BYTES)
+    if (tooBig.length > 0) {
+      ElMessage.error(t('upload.e2e.tooLarge'))
+      return
+    }
+    try {
+      e2eKey.value = await generateKeyB64()
+      for (const item of pending) {
+        item.status = 'uploading'
+        item.statusText = t('upload.e2e.encrypting')
+        item.uploadFile = await encryptFile(e2eKey.value, item.file)
+        item.status = 'pending'
+        item.statusText = ''
+      }
+    } catch (e: unknown) {
+      ElMessage.error(e instanceof Error ? e.message : t('upload.e2e.failed'))
+      return
+    }
+  }
+
+  // 多文件：合并为一个分享（一个取件码 ↔ N 个文件）
+  const multiItems = pending.filter((f) => f.status === 'pending')
+  if (multiItems.length > 1) {
+    await uploadAllAsMultiShare(multiItems)
+    return
+  }
+
+  for (const item of pending) {
     try {
       const result = await uploadOne(item)
       // 触发成功事件（仅第一个文件弹分享对话框；多文件只 emit 给 home 处理）
-      emit('success', result)
+      emit('success', { ...result, e2e_key: form.e2e ? e2eKey.value : undefined })
       ElMessage.success(`${item.file.name}: ${t('upload.success')}`)
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed'
       ElMessage.error(`${item.file.name}: ${msg}`)
     }
   }
+}
+
+// ===== 多文件合并上传（一个分享） =====
+
+const CHUNK_SIZE = 5 * 1024 * 1024 // 分片通道单片 5MB
+
+const uploadAllAsMultiShare = async (items: FileItem[]) => {
+  const opts: MultiShareOptions = {
+    expire_value: form.expire_value,
+    expire_style: form.expire_style,
+    require_auth: form.require_auth,
+    password: form.password,
+    encrypted: form.e2e,
+    custom_code: form.custom_code || undefined,
+  }
+  items.forEach((i) => {
+    i.status = 'uploading'
+    i.progress = 0
+    i.error = ''
+    i.statusText = t('upload.prepare')
+  })
+  multiAbort.value = new AbortController()
+
+  // 单请求体上限：后端 Hertz max body = upload_size（未知时保守取 8MB），
+  // 留 1MB 表单开销余量；超限或单文件超限整体走分片通道
+  const bodyCap = Math.max((configStore.config?.uploadSize || 0) - 1024 * 1024, 0) || 8 * 1024 * 1024
+  const totalBytes = items.reduce((s, i) => s + i.file.size, 0)
+  const useDirect = totalBytes <= bodyCap && items.every((i) => i.file.size <= bodyCap)
+
+  try {
+    let result: MultiShareResult
+    if (useDirect) {
+      // 聚合进度按字节均摊到各文件行（上传的是密文（若启用 E2E）或原文件）
+      const uploadFiles = items.map((i) => i.uploadFile || i.file)
+      const capBytes = uploadFiles.map((f) => f.size)
+      result = await multiDirect(
+        uploadFiles,
+        opts,
+        (loaded, total) => {
+          let acc = 0
+          for (let idx = 0; idx < items.length; idx++) {
+            const item = items[idx]
+            if (!item) continue
+            const cap = Math.max(capBytes[idx] ?? item.file.size, 1)
+            const done = Math.min(Math.max(loaded - acc, 0), cap)
+            item.progress = Math.round((done / cap) * 100)
+            item.statusText = t('upload.uploading')
+            acc += cap
+          }
+          void total
+        },
+        multiAbort.value.signal
+      )
+    } else {
+      // 大文件/大批量：逐文件分片上传（复用 chunk 通道任意大小能力），最后一次性绑定
+      const entries: Array<{ upload_id: string }> = []
+      for (const item of items) {
+        if (multiAbort.value.signal.aborted) throw new Error('Cancelled')
+        item.statusText = t('upload.uploading')
+        const uploadId = crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
+        await chunkUploadFile(item.uploadFile || item.file, uploadId, CHUNK_SIZE, (loaded, total) => {
+          item.progress = Math.round((loaded / Math.max(total, 1)) * 100)
+        }, multiAbort.value.signal)
+        entries.push({ upload_id: uploadId })
+      }
+      itemStatusBind(items)
+      result = await multiBind(entries, opts)
+    }
+
+    items.forEach((i) => {
+      i.status = 'success'
+      i.progress = 100
+      i.statusText = t('common.success')
+    })
+    emit('success', {
+      code: result.code,
+      share_url: result.share_url || result.url,
+      full_share_url: result.url,
+      qr_code_data: result.url,
+      e2e_key: form.e2e ? e2eKey.value : undefined,
+    })
+    ElMessage.success(t('upload.success'))
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Failed'
+    items.forEach((i) => {
+      if (i.status !== 'success') {
+        i.status = 'error'
+        i.error = msg
+      }
+    })
+    ElMessage.error(msg)
+  } finally {
+    multiAbort.value = null
+  }
+}
+
+// 绑定阶段提示（分片已传完、等待服务端合并）
+const itemStatusBind = (items: FileItem[]) => {
+  items.forEach((i) => {
+    i.progress = 100
+    i.statusText = t('upload.prepare')
+  })
 }
 
 const onPresignSuccess = (result: PresignCompleteData) => {
@@ -478,6 +656,7 @@ onBeforeUnmount(() => {
       try { f.xhr.abort() } catch { /* noop */ }
     }
   })
+  multiAbort.value?.abort()
 })
 </script>
 
@@ -657,6 +836,13 @@ onBeforeUnmount(() => {
 
 .setting-group:last-child {
   margin-bottom: 0;
+}
+
+.e2e-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
 }
 
 .setting-label {

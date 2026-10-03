@@ -173,6 +173,16 @@
       <div class="share-result">
         <el-result :icon="'success'" :title="t('home.shareSuccess')" :sub-title="t('home.shareSuccessSubtitle')" />
 
+        <!-- E2E 提示：链接含解密密钥 -->
+        <el-alert
+          v-if="shareE2EKey"
+          type="warning"
+          :title="t('home.e2eLinkWarning')"
+          :closable="false"
+          show-icon
+          style="margin-bottom: 12px"
+        />
+
         <!-- 分享方式三选一 Tab -->
         <el-tabs v-model="shareMethod" class="share-method-tabs">
           <!-- 6 位码 -->
@@ -274,17 +284,22 @@ const showShareDialog = ref(false)
 const shareUrl = ref('')
 const shareCode = ref('')
 const qrCodeDataUrl = ref('')
+// E2E 密钥（有值时分享对话框提示"链接含解密密钥"）
+const shareE2EKey = ref('')
 
 interface ShareResult {
   code: string
   share_url: string
   full_share_url: string
   qr_code_data: string
+  e2e_key?: string
 }
 
 const handleShareSuccess = async (result: ShareResult) => {
   // 6 位码（取件码）
   shareCode.value = result.code
+  // E2E 密钥随链接传递（hash 路由 query，永不发往服务器）
+  shareE2EKey.value = result.e2e_key || ''
 
   // 确保使用正确的 hash 路由格式
   let url = result.full_share_url || result.share_url
@@ -301,6 +316,11 @@ const handleShareSuccess = async (result: ShareResult) => {
         url = url.substring(0, pathIndex) + '/#' + url.substring(pathIndex)
       }
     }
+  }
+
+  // E2E：密钥并入 hash 内 query（#/share/CODE?key=xxx；客户端可见、服务端不可见）
+  if (shareE2EKey.value) {
+    url += (url.includes('?') ? '&' : '?') + 'key=' + encodeURIComponent(shareE2EKey.value)
   }
 
   shareUrl.value = url

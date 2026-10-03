@@ -101,6 +101,7 @@ export default {
     loggedIn: 'Logged in',
     shareSuccess: 'Share created',
     shareSuccessSubtitle: 'Your share link is ready',
+    e2eLinkWarning: 'This share is end-to-end encrypted: the link contains the decryption key. Send the full link and keep the key parameter intact.',
     qrCodeTip: 'Scan to access',
     copyLink: 'Copy link',
     linkCopied: 'Link copied to clipboard',
@@ -220,6 +221,7 @@ export default {
     nav_history: 'Pickup History',
     nav_notifications: 'Notifications',
     nav_tokens: 'API Tokens',
+    nav_requests: 'File Requests',
     login_title: 'Sign in',
     register_title: 'Create an account',
     username_placeholder: 'Enter your username',
@@ -552,6 +554,7 @@ export default {
     success: 'Signed in',
     failed: 'Sign in failed',
     noAccount: "Don't have an account? Register",
+    oidc: 'Sign in with SSO (OIDC)',
   },
   share_view: {
     title: 'Share details',
@@ -667,6 +670,17 @@ export default {
       hashing: 'Computing quick-upload fingerprint...',
     },
     quickUploadHit: 'Instant upload: file already exists, share code issued',
+    customCode: 'Custom pickup code',
+    customCodePlaceholder: '3-32 chars: letters, digits, - or _ (empty = random)',
+    e2e: {
+      title: 'End-to-end encryption',
+      on: 'Encrypted (zero-knowledge)',
+      off: 'No encryption',
+      hint: 'The key is generated in your browser and embedded in the share link; the server stores only ciphertext. Files up to 100MB. Never lose the key parameter in the link.',
+      encrypting: 'Encrypting...',
+      tooLarge: 'End-to-end encryption supports files up to 100MB',
+      failed: 'Encryption failed (HTTPS required)',
+    },
   },
 
   setup: {

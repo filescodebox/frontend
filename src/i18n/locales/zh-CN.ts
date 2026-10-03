@@ -102,6 +102,7 @@ export default {
     loggedIn: '已登录',
     shareSuccess: '分享成功',
     shareSuccessSubtitle: '您的分享链接已生成',
+    e2eLinkWarning: '该分享已端到端加密：链接中包含解密密钥（key），请完整发送链接、勿删除参数',
     qrCodeTip: '扫码访问',
     copyLink: '复制链接',
     linkCopied: '链接已复制到剪贴板',
@@ -221,6 +222,7 @@ export default {
     nav_history: '取件历史',
     nav_notifications: '通知',
     nav_tokens: 'API 令牌',
+    nav_requests: '寄件码',
     login_title: '账号登录',
     register_title: '注册账号',
     username_placeholder: '请输入用户名',
@@ -553,6 +555,7 @@ export default {
     success: '登录成功',
     failed: '登录失败',
     noAccount: '还没有账号？立即注册',
+    oidc: '使用单点登录（OIDC）',
   },
   share_view: {
     title: '分享详情',
@@ -668,6 +671,17 @@ export default {
       hashing: '正在计算秒传指纹...',
     },
     quickUploadHit: '秒传成功：文件已存在，直接获取分享码',
+    customCode: '自定义取件码',
+    customCodePlaceholder: '3-32 位字母、数字、- 或 _（留空随机）',
+    e2e: {
+      title: '端到端加密',
+      on: '加密（零知识）',
+      off: '不加密',
+      hint: '密钥生成于本浏览器并嵌入分享链接，服务器只存密文无法解密。仅支持 ≤100MB 文件；请勿丢失链接中的 key 参数。',
+      encrypting: '加密中...',
+      tooLarge: '端到端加密仅支持 100MB 以内的文件',
+      failed: '加密失败（需 HTTPS 环境）',
+    },
   },
 
   setup: {

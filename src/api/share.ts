@@ -9,6 +9,8 @@ export const shareApi = {
     expire_style: string
     require_auth?: boolean
     password?: string
+    encrypted?: boolean
+    custom_code?: string
   }) => {
     const formData = new FormData()
     formData.append('text', data.text)
@@ -16,6 +18,8 @@ export const shareApi = {
     if (data.require_auth && data.password) formData.append('password', data.password)
     formData.append('expire_style', data.expire_style)
     formData.append('require_auth', String(data.require_auth || false))
+    if (data.encrypted) formData.append('encrypted', 'true')
+    if (data.custom_code) formData.append('custom_code', data.custom_code)
 
     return request<ApiResponse<{
       code: string
@@ -73,6 +77,11 @@ export const shareApi = {
       url?: string
       has_password: boolean
       expire_time: string
+      encrypted?: boolean
+      download_url?: string
+      token?: string
+      files?: Array<{ id: number; name: string; size: number }>
+      is_multi?: boolean
     }>>({
       url: '/share/select/',
       method: 'GET',

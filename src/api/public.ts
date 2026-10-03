@@ -9,6 +9,8 @@ export interface PublicConfig {
   openUpload: number
   /** 注册开关（与 /user/register 判定同源）；缺省视为未拿到，不据此隐藏入口 */
   registerEnabled?: boolean
+  /** OIDC 单点登录开关（P2 SSO；security.oidc.enabled） */
+  oidcEnabled?: boolean
   expireStyle: string[]
   initialized?: boolean
 }

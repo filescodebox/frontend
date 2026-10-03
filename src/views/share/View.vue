@@ -43,6 +43,23 @@
 
         <!-- 分享内容 -->
         <div v-else-if="shareData" class="content-section">
+          <!-- E2E 缺密钥提示 -->
+          <el-alert
+            v-if="shareData.encrypted && !e2eKey"
+            type="warning"
+            title="此分享已端到端加密，但当前链接缺少解密密钥（key 参数），无法解密内容"
+            :closable="false"
+            show-icon
+            style="margin-bottom: 16px"
+          />
+          <el-alert
+            v-else-if="e2eError"
+            type="error"
+            :title="e2eError"
+            :closable="false"
+            show-icon
+            style="margin-bottom: 16px"
+          />
           <!-- 头部 -->
           <div class="share-header">
             <div class="logo-section">
@@ -64,7 +81,40 @@
 
           <!-- 文件分享（有下载链接或文件名优先判定为文件） -->
           <div v-if="shareData.url || shareData.name || shareData.file_name" class="file-share-content">
-            <div class="file-card">
+            <!-- 多文件列表（P0 多文件）：逐文件下载 + 打包 zip -->
+            <div v-if="shareFiles.length > 1" class="multi-file-section">
+              <div class="multi-header">
+                <div class="multi-title">
+                  <el-icon class="icon-primary"><Folder /></el-icon>
+                  <span>{{ shareFiles.length }} 个文件</span>
+                  <el-tag type="info" size="small">{{ formatFileSize(totalShareSize) }}</el-tag>
+                  <el-tag v-if="shareData.encrypted" type="warning" size="small">端到端加密</el-tag>
+                </div>
+                <el-button
+                  v-if="!shareData.encrypted"
+                  type="primary"
+                  class="download-btn"
+                  @click="downloadAll"
+                >
+                  <el-icon><Download /></el-icon>
+                  打包下载 ZIP
+                </el-button>
+              </div>
+              <div class="multi-file-list">
+                <div v-for="f in shareFiles" :key="f.id" class="multi-file-item">
+                  <el-icon class="icon-secondary"><Document /></el-icon>
+                  <span class="m-name" :title="f.name">{{ f.name }}</span>
+                  <span class="m-size">{{ formatFileSize(f.size) }}</span>
+                  <el-button size="small" text type="primary" :loading="e2eBusy" @click="downloadFile(f.id, f.name)">
+                    <el-icon><Download /></el-icon>
+                    下载
+                  </el-button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 单文件卡片 -->
+            <div v-else class="file-card">
               <div class="file-icon">
                 <el-icon :size="80" class="icon-primary"><Folder /></el-icon>
               </div>
@@ -79,7 +129,7 @@
                   </el-tag>
                 </div>
               </div>
-              <el-button type="primary" size="large" class="download-btn" @click="downloadFile">
+              <el-button type="primary" size="large" class="download-btn" @click="downloadFile()">
                 <el-icon><Download /></el-icon>
                 下载文件
               </el-button>
@@ -87,13 +137,14 @@
           </div>
 
           <!-- 文本分享 -->
-          <div v-else-if="shareData.text" class="text-share-content">
+          <div v-else-if="hasTextContent" class="text-share-content">
             <div class="content-label">
               <el-icon><Document /></el-icon>
               <span>文本内容</span>
+              <el-tag v-if="shareData.encrypted" type="warning" size="small">端到端加密</el-tag>
             </div>
             <div class="text-box">
-              <pre>{{ shareData.text }}</pre>
+              <pre>{{ displayText }}</pre>
             </div>
             <div class="actions">
               <el-button type="primary" @click="copyText">
@@ -124,13 +175,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   HomeFilled, Document, Folder, Download, CopyDocument, Loading
 } from '@element-plus/icons-vue'
 import { shareApi } from '@/api/share'
+import { decryptBytes, decryptText } from '@/utils/e2e'
 
 const route = useRoute()
 
@@ -140,6 +192,14 @@ const error = ref('')
 const needPassword = ref(false)
 const password = ref('')
 const shareData = ref<any>(null)
+
+// 多文件列表（后端 /share/select 的 files 数组；旧单文件分享为空 → 走单文件卡片）
+const shareFiles = computed<any[]>(() =>
+  Array.isArray(shareData.value?.files) ? shareData.value.files : []
+)
+const totalShareSize = computed(() =>
+  shareFiles.value.reduce((s, f) => s + (Number(f.size) || 0), 0)
+)
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 B'
@@ -159,6 +219,15 @@ const fetchShare = async (pwd?: string) => {
 
     if (res.code === 200) {
       shareData.value = res.data
+      // E2E 文本解密（密文 base64 存于 text 字段）
+      if (res.data?.encrypted && res.data?.text && e2eKey.value) {
+        decryptedText.value = ''
+        try {
+          decryptedText.value = await decryptText(e2eKey.value, res.data.text)
+        } catch {
+          e2eError.value = '解密失败：密钥不匹配或密文已损坏'
+        }
+      }
     } else if (res.code === 403 || res.data?.has_password) {
       needPassword.value = true
     } else if (res.code === 404) {
@@ -182,33 +251,89 @@ const fetchShareWithPassword = () => {
 }
 
 const copyText = async () => {
-  if (!shareData.value?.text) return
-  
+  const text = displayText.value
+  if (!text) return
+
   try {
-    await navigator.clipboard.writeText(shareData.value.text)
+    await navigator.clipboard.writeText(text)
     ElMessage.success('文本已复制到剪贴板')
   } catch {
     ElMessage.error('复制失败')
   }
 }
 
-const downloadFile = () => {
-  if (!shareCode.value) return
-
+const buildDownloadUrl = (fileId?: number): string => {
   // 优先使用取件接口下发的带令牌 download_url（security.download_token.enabled 时必需）；
   // 旧后端无此字段时回退到手工拼接
   const data = shareData.value as Record<string, unknown> | null
-  const serverURL = data?.download_url as string | undefined
-  if (serverURL) {
-    window.open(serverURL, '_blank')
-    return
-  }
-
-  let url = `/share/download?code=${shareCode.value}`
-  if (password.value) {
+  let url = (data?.download_url as string | undefined) || `/share/download?code=${shareCode.value}`
+  if (password.value && !url.includes('password=')) {
     url += `&password=${encodeURIComponent(password.value)}`
   }
-  window.open(url, '_blank')
+  if (fileId != null && fileId > 0) {
+    url += `&file=${fileId}`
+  }
+  return url
+}
+
+// ===== E2E 解密（端到端加密分享） =====
+// 密钥来自分享链接 hash 路由的 query（#/share/CODE?key=xxx），服务端不可见
+const e2eKey = computed(() => (typeof route.query.key === 'string' ? route.query.key : ''))
+const e2eError = ref('')
+const e2eBusy = ref(false)
+// 解密后的文本（未加密分享直接用原文）
+const decryptedText = ref('')
+const hasTextContent = computed(() => !!shareData.value?.text)
+const displayText = computed(() => {
+  if (shareData.value?.encrypted) return decryptedText.value || t2ePendingText()
+  return shareData.value?.text || ''
+})
+const t2ePendingText = () => (e2eKey.value ? '解密中...' : '（缺少密钥，无法解密）')
+
+const isEncrypted = computed(() => !!shareData.value?.encrypted)
+
+/** 解密并保存文件（E2E 分享：服务端流返回密文） */
+const fetchDecryptSave = async (url: string, name: string) => {
+  e2eBusy.value = true
+  e2eError.value = ''
+  try {
+    const resp = await fetch(url)
+    if (!resp.ok) throw new Error(`下载失败 HTTP ${resp.status}`)
+    const buf = await resp.arrayBuffer()
+    const plain = await decryptBytes(e2eKey.value, buf)
+    const blob = new Blob([plain], { type: 'application/octet-stream' })
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = name
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(a.href), 10_000)
+  } catch (e: unknown) {
+    e2eError.value = e instanceof Error ? `解密失败：${e.message}` : '解密失败'
+  } finally {
+    e2eBusy.value = false
+  }
+}
+
+const downloadFile = (fileId?: number, name?: string) => {
+  if (!shareCode.value) return
+  const fallbackName = name || shareData.value?.file_name || shareData.value?.name || `${shareCode.value}.bin`
+  if (isEncrypted.value) {
+    if (!e2eKey.value) {
+      e2eError.value = '缺少解密密钥（链接需携带 key 参数）'
+      return
+    }
+    void fetchDecryptSave(buildDownloadUrl(fileId), fallbackName)
+    return
+  }
+  window.open(buildDownloadUrl(fileId), '_blank')
+}
+
+// 打包下载（多文件分享；服务端流式 zip。E2E 分享服务端无法打包，按钮已隐藏）
+const downloadAll = () => {
+  if (!shareCode.value) return
+  window.open(buildDownloadUrl(), '_blank')
 }
 
 onMounted(() => {
@@ -373,6 +498,62 @@ onMounted(() => {
 /* 文件分享 */
 .file-share-content {
   margin-top: 30px;
+}
+
+/* 多文件列表 */
+.multi-file-section {
+  background: var(--color-muted);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+
+.multi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.multi-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.multi-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.multi-file-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--color-card-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+}
+
+.multi-file-item .m-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.multi-file-item .m-size {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
 }
 
 .file-card {

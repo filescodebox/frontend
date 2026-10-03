@@ -79,7 +79,25 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/user/Tokens.vue'),
         meta: { title: 'API 令牌', requiresAuth: true },
       },
+      {
+        path: 'requests',
+        name: 'UserRequests',
+        component: () => import('@/views/user/Requests.vue'),
+        meta: { title: '寄件码', requiresAuth: true },
+      },
     ],
+  },
+  {
+    path: '/request/:token',
+    name: 'RequestPickup',
+    component: () => import('@/views/request/Pickup.vue'),
+    meta: { title: '文件投递' },
+  },
+  {
+    path: '/oidc/callback',
+    name: 'OidcCallback',
+    component: () => import('@/views/user/OidcCallback.vue'),
+    meta: { title: 'OIDC 登录' },
   },
   {
     path: '/api-docs',

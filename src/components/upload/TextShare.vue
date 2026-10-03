@@ -43,7 +43,7 @@
           <el-icon><Lock /></el-icon>
           访问保护
         </label>
-        <el-switch 
+        <el-switch
           v-model="form.require_auth"
           active-text="需要密码"
           inactive-text="公开访问"
@@ -57,6 +57,23 @@
           maxlength="64"
           style="margin-top: 8px"
         />
+      </div>
+
+      <div v-if="userStore.isLoggedIn" class="setting-group">
+        <label class="setting-label">
+          <el-icon><EditPen /></el-icon>
+          自定义取件码
+        </label>
+        <el-input v-model="form.custom_code" placeholder="3-32 位字母、数字、- 或 _" maxlength="32" style="max-width: 280px" />
+      </div>
+
+      <div class="setting-group">
+        <label class="setting-label">
+          <el-icon><Key /></el-icon>
+          端到端加密
+        </label>
+        <el-switch v-model="form.e2e" active-text="加密（零知识）" inactive-text="不加密" />
+        <div class="e2e-hint">密钥生成于本浏览器并嵌入分享链接，服务器只存密文无法解密；请勿丢失链接中的 key 参数。</div>
       </div>
     </div>
 
@@ -80,10 +97,14 @@
 import { ref } from 'vue'
 import { shareApi } from '@/api/share'
 import { ElMessage } from 'element-plus'
-import { Clock, Lock, Promotion } from '@element-plus/icons-vue'
+import { Clock, EditPen, Key, Lock, Promotion } from '@element-plus/icons-vue'
+import { encryptText, generateKeyB64 } from '@/utils/e2e'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 const emit = defineEmits<{
-  success: [result: { code: string; share_url: string; full_share_url: string; qr_code_data: string }]
+  success: [result: { code: string; share_url: string; full_share_url: string; qr_code_data: string; e2e_key?: string }]
 }>()
 
 const textContent = ref('')
@@ -94,6 +115,8 @@ const form = ref({
   expire_style: 'day',
   require_auth: false,
   password: '',
+  e2e: false,
+  custom_code: '',
 })
 
 const handleShare = async () => {
@@ -109,9 +132,19 @@ const handleShare = async () => {
   sharing.value = true
 
   try {
+    // E2E：生成密钥并加密文本（密文 base64 作为分享内容；密钥随链接传递）
+    let e2eKey = ''
+    let payloadText = textContent.value
+    if (form.value.e2e) {
+      e2eKey = await generateKeyB64()
+      payloadText = await encryptText(e2eKey, textContent.value)
+    }
+
     const res = await shareApi.shareText({
-      text: textContent.value,
+      text: payloadText,
       ...form.value,
+      encrypted: form.value.e2e,
+      custom_code: userStore.isLoggedIn ? form.value.custom_code : '',
     })
 
     if (res.code === 200) {
@@ -123,8 +156,9 @@ const handleShare = async () => {
         share_url: res.data.share_url || res.data.url || '',
         full_share_url: fullUrl,
         qr_code_data: res.data.qr_code_data || fullUrl,
+        e2e_key: e2eKey || undefined,
       })
-      
+
       // 重置
       textContent.value = ''
     } else {
@@ -165,6 +199,13 @@ const handleShare = async () => {
   padding: 20px;
   background: var(--color-muted);
   border-radius: var(--radius-lg);
+}
+
+.e2e-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
 }
 
 .setting-group {
