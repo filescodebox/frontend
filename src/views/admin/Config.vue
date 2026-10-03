@@ -226,6 +226,9 @@ const saveConfig = async () => {
 const rlSaving = ref(false)
 const rlStatusLoading = ref(false)
 const rlStatus = ref<Record<string, unknown> | null>(null)
+// GET 快照：契约存在 required 字段（如 block_on_limit）且不在 rlForm 中，
+// 保存时合并快照，避免缺 required 被 400
+let rlSnapshot: Record<string, unknown> = {}
 const rlForm = reactive({
   enabled: true,
   global_qps: 100,
@@ -241,6 +244,7 @@ const fetchRateLimit = async () => {
     const res = await adminApi.getRateLimitConfig()
     if (res.code === 0 || res.code === 200) {
       const data = (res.data || {}) as Record<string, unknown>
+      rlSnapshot = { ...data }
       for (const k of Object.keys(rlForm) as (keyof typeof rlForm)[]) {
         if (typeof data[k] === 'boolean' || typeof data[k] === 'number') {
           ;(rlForm as Record<string, unknown>)[k] = data[k]
@@ -256,7 +260,9 @@ const saveRateLimit = async () => {
   rlSaving.value = true
   try {
     // 后端绑定结构为 {config: RateLimitConfig}，扁平体会因 required 缺失被 400
-    const res = await adminApi.updateRateLimitConfig({ config: { ...rlForm } })
+    const res = await adminApi.updateRateLimitConfig({
+      config: { ...rlSnapshot, ...rlForm }
+    })
     if (res.code === 0 || res.code === 200) {
       ElMessage.success('限流配置已保存并热更新')
     } else {
