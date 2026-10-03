@@ -43,6 +43,11 @@
             <span>{{ t('admin.logs') }}</span>
           </el-menu-item>
 
+          <el-menu-item index="/admin/moderation">
+            <el-icon><View /></el-icon>
+            <span>内容审核</span>
+          </el-menu-item>
+
           <el-menu-item index="/admin/activities">
             <el-icon><List /></el-icon>
             <span>{{ t('admin.activities') }}</span>
@@ -123,7 +128,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
   Monitor, Folder, User, Setting, ArrowDown,
-  Box, Document, Tools, Promotion, SwitchButton, List } from '@element-plus/icons-vue'
+  Box, Document, Tools, Promotion, SwitchButton, List, View } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'

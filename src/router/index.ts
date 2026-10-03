@@ -136,6 +136,12 @@ const routes: RouteRecordRaw[] = [
         meta: { title: '传输日志' },
       },
       {
+        path: 'moderation',
+        name: 'AdminModeration',
+        component: () => import('@/views/admin/Moderation.vue'),
+        meta: { title: '内容审核' },
+      },
+      {
         path: 'activities',
         name: 'AdminActivities',
         component: () => import('@/views/admin/Activities.vue'),
