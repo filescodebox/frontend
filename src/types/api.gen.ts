@@ -461,6 +461,111 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/user/api-keys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 列出我的 API Key（含已吊销） */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        /**
+         * 创建 API Key（明文 key 仅本次响应返回一次）
+         * @description 签名接口凭 Key 调用：Authorization: Bearer fcb_sk_xxx 或 X-API-Key: fcb_sk_xxx（不接受 query 传参）。无效 Key 一律 401，连续失败将触发 IP 锁定。
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description 密钥名称，默认 API Key */
+                        name?: string;
+                        /**
+                         * Format: date-time
+                         * @description 过期时间（与 expires_in_days 二选一）
+                         */
+                        expires_at?: string;
+                        /** @description N 天后过期；都不传则永久有效（建议设置过期） */
+                        expires_in_days?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description ok（data.key 为明文密钥，仅此一次；data.api_key 为元信息） */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user/api-keys/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 吊销 API Key（即时生效） */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description ok */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/user/files": {
         parameters: {
             query?: never;

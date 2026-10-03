@@ -394,6 +394,94 @@
         }
       }
     },
+    "/user/api-keys": {
+      "get": {
+        "tags": [
+          "user"
+        ],
+        "summary": "列出我的 API Key（含已吊销）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "user"
+        ],
+        "summary": "创建 API Key（明文 key 仅本次响应返回一次）",
+        "description": "签名接口凭 Key 调用：Authorization: Bearer fcb_sk_xxx 或 X-API-Key: fcb_sk_xxx（不接受 query 传参）。无效 Key 一律 401，连续失败将触发 IP 锁定。",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "密钥名称，默认 API Key"
+                  },
+                  "expires_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "过期时间（与 expires_in_days 二选一）"
+                  },
+                  "expires_in_days": {
+                    "type": "integer",
+                    "description": "N 天后过期；都不传则永久有效（建议设置过期）"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ok（data.key 为明文密钥，仅此一次；data.api_key 为元信息）"
+          }
+        }
+      }
+    },
+    "/user/api-keys/{id}": {
+      "delete": {
+        "tags": [
+          "user"
+        ],
+        "summary": "吊销 API Key（即时生效）",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "ok"
+          }
+        }
+      }
+    },
     "/user/files": {
       "get": {
         "tags": [
@@ -1067,7 +1155,14 @@
       "bearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "bearerFormat": "JWT"
+        "bearerFormat": "JWT",
+        "description": "用户 JWT；在上传/分享管理与 /user/api-keys 之外的第三方调用中，也可传 API Key 明文（fcb_sk_ 前缀，按前缀自动识别）"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "用户级 API Key（用户中心 /user/tokens 签发）；等价形式：Authorization: Bearer fcb_sk_xxx / Authorization: ApiKey fcb_sk_xxx"
       }
     },
     "schemas": {
