@@ -17,3 +17,7 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      # 镜像正式发布在 server 仓 release.yml（与 server 同版本列车），此处仅验证
+      # Dockerfile 可构建（nginx 模板/产物拷贝路径变更能被 PR 及时发现）
+      - name: Docker build smoke
+        run: docker build --build-arg NPM_REGISTRY=https://registry.npmjs.org -t filecodebox-frontend:ci .
