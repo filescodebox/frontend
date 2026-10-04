@@ -12,7 +12,7 @@
         class="notify-banner"
         @close="handleClose(banner.id)"
       >
-        <template v-if="banner.type" #title>
+        <template v-if="banner.type && typeLabel(banner.type)" #title>
           <span class="banner-title">
             <el-tag size="small" :type="mapLevel(banner.level) as 'info' | 'success' | 'warning' | 'error'" effect="light" round>
               {{ typeLabel(banner.type) }}
@@ -102,7 +102,7 @@ const typeLabel = (type: string): string => {
     case 'maintenance':
       return t('notify.maintenance')
     default:
-      return type
+      return '' // 未知类型不展示 chip（避免裸 key 露出）
   }
 }
 

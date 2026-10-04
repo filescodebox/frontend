@@ -3,11 +3,11 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <h3>文件分享</h3>
+          <h3>{{ t('share.fileShare') }}</h3>
           <el-radio-group v-model="activeTab">
-            <el-radio-button label="upload">上传文件</el-radio-button>
-            <el-radio-button label="text">分享文本</el-radio-button>
-            <el-radio-button label="get">获取分享</el-radio-button>
+            <el-radio-button label="upload">{{ t('share.tabUpload') }}</el-radio-button>
+            <el-radio-button label="text">{{ t('share.tabText') }}</el-radio-button>
+            <el-radio-button label="get">{{ t('share.tabGet') }}</el-radio-button>
           </el-radio-group>
         </div>
       </template>
@@ -25,11 +25,11 @@
     </el-card>
     
     <!-- 分享成功对话框 -->
-    <el-dialog v-model="showSuccessDialog" title="分享成功" width="500px">
+    <el-dialog v-model="showSuccessDialog" :title="t('share.successTitle')" width="500px">
       <div class="success-content">
-        <el-result icon="success" title="分享成功">
+        <el-result icon="success" :title="t('share.successTitle')">
           <template #sub-title>
-            您的分享链接已生成
+            {{ t('share.successDesc') }}
           </template>
         </el-result>
         
@@ -42,8 +42,8 @@
       </div>
       
       <template #footer>
-        <el-button @click="showSuccessDialog = false">关闭</el-button>
-        <el-button type="primary" @click="copyUrl">复制链接</el-button>
+        <el-button @click="showSuccessDialog = false">{{ t('share.close') }}</el-button>
+        <el-button type="primary" @click="copyUrl">{{ t('share.copyLink') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -52,6 +52,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { CopyDocument } from '@element-plus/icons-vue'
 import { copyToClipboard } from '@/utils/clipboard'
@@ -60,6 +61,7 @@ import TextShare from '@/components/upload/TextShare.vue'
 import GetShare from '@/components/upload/GetShare.vue'
 
 const route = useRoute()
+const { t } = useI18n()
 const activeTab = ref('upload')
 const showSuccessDialog = ref(false)
 const shareUrl = ref('')
@@ -79,8 +81,8 @@ const handleSuccess = (result: ShareResult) => {
 
 const copyUrl = async () => {
   const ok = await copyToClipboard(shareUrl.value)
-  if (ok) ElMessage.success('链接已复制到剪贴板')
-  else ElMessage.error('复制失败，请手动复制')
+  if (ok) ElMessage.success(t('share.linkCopied'))
+  else ElMessage.error(t('share.copyFailedManual'))
 }
 
 // 检查 URL 中是否有分享码

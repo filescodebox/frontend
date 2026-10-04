@@ -6,36 +6,36 @@
         <!-- 加载状态 -->
         <div v-if="loading" class="loading-section">
           <el-icon class="loading-icon" :size="60"><Loading /></el-icon>
-          <p>加载中...</p>
+          <p>{{ t('share.loading') }}</p>
         </div>
 
         <!-- 错误状态 -->
         <div v-else-if="error" class="error-section">
           <el-result icon="error" :title="error">
             <template #extra>
-              <el-button type="primary" @click="$router.push('/')">返回首页</el-button>
+              <el-button type="primary" @click="$router.push('/')">{{ t('share.backHome') }}</el-button>
             </template>
           </el-result>
         </div>
 
         <!-- 需要密码 -->
         <div v-else-if="needPassword" class="password-section">
-          <el-result icon="warning" title="需要访问密码">
+          <el-result icon="warning" :title="t('share.passwordTitle')">
             <template #sub-title>
-              此分享内容需要密码才能访问
+              {{ t('share.passwordDesc') }}
             </template>
             <template #extra>
               <el-input
                 v-model="password"
                 type="password"
-                placeholder="请输入访问密码"
+                :placeholder="t('share.passwordPlaceholder')"
                 show-password
                 @keyup.enter="fetchShareWithPassword"
                 style="width: 300px; margin-bottom: 16px;"
               />
               <br />
               <el-button type="primary" @click="fetchShareWithPassword" :loading="loading">
-                确认访问
+                {{ t('share.confirmAccess') }}
               </el-button>
             </template>
           </el-result>
@@ -47,7 +47,7 @@
           <el-alert
             v-if="shareData.encrypted && !e2eKey"
             type="warning"
-            title="此分享已端到端加密，但当前链接缺少解密密钥（key 参数），无法解密内容"
+            :title="t('share.e2eKeyMissing')"
             :closable="false"
             show-icon
             style="margin-bottom: 16px"
@@ -67,13 +67,13 @@
                 <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
               </div>
               <div class="logo-text">
-                <h1>分享内容</h1>
-                <p>分享码: {{ shareCode }}</p>
+                <h1>{{ t('share.contentTitle') }}</h1>
+                <p>{{ t('share.codeWithLabel', { code: shareCode }) }}</p>
               </div>
             </div>
             <el-button class="home-btn" @click="$router.push('/')">
               <el-icon><HomeFilled /></el-icon>
-              返回首页
+              {{ t('share.backHome') }}
             </el-button>
           </div>
 
@@ -87,9 +87,9 @@
               <div class="multi-header">
                 <div class="multi-title">
                   <el-icon class="icon-primary"><Folder /></el-icon>
-                  <span>{{ shareFiles.length }} 个文件</span>
+                  <span>{{ t('share.filesCount', { n: shareFiles.length }) }}</span>
                   <el-tag type="info" size="small">{{ formatFileSize(totalShareSize) }}</el-tag>
-                  <el-tag v-if="shareData.encrypted" type="warning" size="small">端到端加密</el-tag>
+                  <el-tag v-if="shareData.encrypted" type="warning" size="small">{{ t('share.e2eTag') }}</el-tag>
                 </div>
                 <el-button
                   v-if="!shareData.encrypted"
@@ -98,7 +98,7 @@
                   @click="downloadAll"
                 >
                   <el-icon><Download /></el-icon>
-                  打包下载 ZIP
+                  {{ t('share.zipDownload') }}
                 </el-button>
               </div>
               <div class="multi-file-list">
@@ -126,13 +126,13 @@
                     {{ formatFileSize(shareData.size || shareData.file_size || 0) }}
                   </el-tag>
                   <el-tag v-if="shareData.upload_type" type="success" size="large">
-                    {{ shareData.upload_type === 'text' ? '文本分享' : '文件分享' }}
+                    {{ shareData.upload_type === 'text' ? t('share.textShare') : t('share.fileShare') }}
                   </el-tag>
                 </div>
               </div>
               <el-button type="primary" size="large" class="download-btn" @click="downloadFile()">
                 <el-icon><Download /></el-icon>
-                下载文件
+                {{ t('share.downloadFile') }}
               </el-button>
             </div>
           </div>
@@ -141,8 +141,8 @@
           <div v-else-if="hasTextContent" class="text-share-content">
             <div class="content-label">
               <el-icon><Document /></el-icon>
-              <span>文本内容</span>
-              <el-tag v-if="shareData.encrypted" type="warning" size="small">端到端加密</el-tag>
+              <span>{{ t('share.textContent') }}</span>
+              <el-tag v-if="shareData.encrypted" type="warning" size="small">{{ t('share.e2eTag') }}</el-tag>
             </div>
             <div class="text-box">
               <pre>{{ displayText }}</pre>
@@ -150,7 +150,7 @@
             <div class="actions">
               <el-button type="primary" @click="copyText">
                 <el-icon><CopyDocument /></el-icon>
-                复制文本
+                {{ t('share.copyText') }}
               </el-button>
             </div>
           </div>
@@ -158,12 +158,12 @@
           <!-- 分享信息 -->
           <div class="share-info">
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="分享码">
+              <el-descriptions-item :label="t('share.codeLabel')">
                 <el-tag>{{ shareCode }}</el-tag>
               </el-descriptions-item>
-              <el-descriptions-item label="分享类型">
+              <el-descriptions-item :label="t('share.typeLabel')">
                 <el-tag :type="hasFileContent ? 'primary' : 'success'">
-                  {{ hasFileContent ? '文件' : '文本' }}
+                  {{ hasFileContent ? t('share.typeFile') : t('share.typeText') }}
                 </el-tag>
               </el-descriptions-item>
             </el-descriptions>
@@ -177,6 +177,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import {
   HomeFilled, Document, Folder, Download, CopyDocument, Loading
@@ -186,6 +187,7 @@ import { decryptBytes, decryptText } from '@/utils/e2e'
 import { copyToClipboard } from '@/utils/clipboard'
 
 const route = useRoute()
+const { t } = useI18n()
 
 const shareCode = ref('')
 const loading = ref(false)
@@ -228,18 +230,18 @@ const fetchShare = async (pwd?: string) => {
         try {
           decryptedText.value = await decryptText(e2eKey.value, res.data.text)
         } catch {
-          e2eError.value = '解密失败：密钥不匹配或密文已损坏'
+          e2eError.value = t('share.decryptFailed')
         }
       }
     } else if (res.code === 403 || res.data?.has_password) {
       needPassword.value = true
     } else if (res.code === 404) {
-      error.value = res.message || '分享不存在或已过期'
+      error.value = res.message || t('share.not_found')
     } else {
-      error.value = res.message || '分享不存在或已过期'
+      error.value = res.message || t('share.not_found')
     }
   } catch (err: any) {
-    error.value = err.message || '获取分享失败'
+    error.value = err.message || t('share.fetchFailed')
   } finally {
     loading.value = false
   }
@@ -247,7 +249,7 @@ const fetchShare = async (pwd?: string) => {
 
 const fetchShareWithPassword = () => {
   if (!password.value.trim()) {
-    ElMessage.warning('请输入访问密码')
+    ElMessage.warning(t('share.passwordPlaceholder'))
     return
   }
   fetchShare(password.value)
@@ -258,8 +260,8 @@ const copyText = async () => {
   if (!text) return
 
   const ok = await copyToClipboard(text)
-  if (ok) ElMessage.success('文本已复制到剪贴板')
-  else ElMessage.error('复制失败')
+  if (ok) ElMessage.success(t('share.copyTextOk'))
+  else ElMessage.error(t('share.copyFailed'))
 }
 
 const buildDownloadUrl = (fileId?: number): string => {
@@ -292,7 +294,7 @@ const displayText = computed(() => {
   if (shareData.value?.encrypted) return decryptedText.value || t2ePendingText()
   return shareData.value?.text || ''
 })
-const t2ePendingText = () => (e2eKey.value ? '解密中...' : '（缺少密钥，无法解密）')
+const t2ePendingText = () => (e2eKey.value ? t('share.decrypting') : t('share.noKeyNoDecrypt'))
 
 const isEncrypted = computed(() => !!shareData.value?.encrypted)
 
@@ -302,7 +304,7 @@ const fetchDecryptSave = async (url: string, name: string) => {
   e2eError.value = ''
   try {
     const resp = await fetch(url)
-    if (!resp.ok) throw new Error(`下载失败 HTTP ${resp.status}`)
+    if (!resp.ok) throw new Error(t('share.downloadFailedHttp', { status: resp.status }))
     const buf = await resp.arrayBuffer()
     const plain = await decryptBytes(e2eKey.value, buf)
     const blob = new Blob([plain], { type: 'application/octet-stream' })
@@ -314,7 +316,7 @@ const fetchDecryptSave = async (url: string, name: string) => {
     a.remove()
     setTimeout(() => URL.revokeObjectURL(a.href), 10_000)
   } catch (e: unknown) {
-    e2eError.value = e instanceof Error ? `解密失败：${e.message}` : '解密失败'
+    e2eError.value = e instanceof Error ? t('share.decryptFailedMsg', { msg: e.message }) : t('share.decryptFailedShort')
   } finally {
     e2eBusy.value = false
   }
@@ -328,7 +330,7 @@ const downloadFile = (fileId?: number, name?: string) => {
     || `${shareCode.value}.bin`
   if (isEncrypted.value) {
     if (!e2eKey.value) {
-      e2eError.value = '缺少解密密钥（链接需携带 key 参数）'
+      e2eError.value = t('share.keyMissingParam')
       return
     }
     void fetchDecryptSave(buildDownloadUrl(fileId), fallbackName)
@@ -349,7 +351,7 @@ onMounted(() => {
     shareCode.value = code
     fetchShare()
   } else {
-    error.value = '分享码不存在'
+    error.value = t('share.codeRequired')
   }
 })
 </script>
