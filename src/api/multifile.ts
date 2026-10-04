@@ -102,16 +102,49 @@ export async function chunkUploadFile(
     const blob = file.slice(start, Math.min(start + chunkSize, file.size))
     const form = new FormData()
     form.append('chunk', blob, `${file.name}.part${index}`)
-    await request<ApiResponse<unknown>>({
-      url: `/chunk/upload/chunk/${uploadId}/${index}`,
-      method: 'POST',
-      data: form,
-      timeout: 300000,
-      signal,
-    })
+    // 分片期望哈希（SHA-256，服务端恒时比对，不符返回 422）：传输损坏限定在单片内，
+    // 客户端重传该分片即可；非安全上下文(无 crypto.subtle)自动降级为不携带。
+    const hash = await sha256Hex(blob)
+    if (hash) form.append('hash', hash)
+    await uploadChunkWithRetry(uploadId, index, form, signal)
     onProgress?.(Math.min(start + blob.size, file.size), file.size)
   }
   return uploadId
+}
+
+/** 逐片 SHA-256；非安全上下文(subtle 不可用)返回 null */
+async function sha256Hex(blob: Blob): Promise<string | null> {
+  if (!globalThis.crypto?.subtle) return null
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', await blob.arrayBuffer())
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+/** 上传单片；422（服务端哈希校验失败）时重传，最多 2 次 */
+async function uploadChunkWithRetry(
+  uploadId: string,
+  index: number,
+  form: FormData,
+  signal?: AbortSignal,
+  maxRetries = 2
+): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await request<ApiResponse<unknown>>({
+        url: `/chunk/upload/chunk/${uploadId}/${index}`,
+        method: 'POST',
+        data: form,
+        timeout: 300000,
+        signal,
+      })
+      return
+    } catch (e) {
+      const code = (e as { code?: number })?.code
+      if (code === 422 && attempt < maxRetries) continue
+      throw e
+    }
+  }
 }
 
 /** 把若干 chunk 会话/对象 key 绑定为一个多文件分享 */

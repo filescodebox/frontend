@@ -11,6 +11,8 @@ export interface PublicConfig {
   registerEnabled?: boolean
   /** OIDC 单点登录开关（P2 SSO；security.oidc.enabled） */
   oidcEnabled?: boolean
+  /** 管理后台入口可见性（ui.show_admin_addr；/admin 路由始终可达，仅控制页脚入口展示） */
+  showAdminAddr?: boolean
   expireStyle: string[]
   initialized?: boolean
 }

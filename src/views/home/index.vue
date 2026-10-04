@@ -159,6 +159,11 @@
             <el-icon><Link /></el-icon>
             GitHub
           </a>
+          <!-- 管理入口（ui.show_admin_addr 控制；/admin 路由始终可达，仅控制此入口展示） -->
+          <a v-if="configStore.config?.showAdminAddr" href="#/admin/login">
+            <el-icon><Setting /></el-icon>
+            {{ t('admin.title') }}
+          </a>
         </div>
       </footer>
     </div>
@@ -256,7 +261,7 @@ import { useI18n } from 'vue-i18n'
 import {
   ArrowDown, User, SwitchButton, Upload, Document,
   Download, Link, CopyDocument, Postcard, UploadFilled, Share,
-  Promotion, Folder, PictureFilled, Loading
+  Promotion, Folder, PictureFilled, Loading, Setting
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
