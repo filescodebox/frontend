@@ -49,13 +49,16 @@ const handleCommand = (value: AppLocale) => {
 
 <style scoped>
 .locale-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
+  // 主题感知：此前写死白字白底（为深色顶栏设计），放进浅色侧栏即隐形
+  background: var(--color-muted);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
 }
 
 .locale-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--primary-bg);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
   transform: translateY(-2px);
 }
 

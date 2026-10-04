@@ -6,39 +6,39 @@ import { resolveAccent, ACCENT_CACHE_KEY } from '../accent'
 describe('resolveAccent', () => {
   const V = (raw: string, dark: boolean) => resolveAccent(raw, dark)!.vars
 
-  it('浅色：主色原值，light-N 向白混，dark-2 向黑混', () => {
-    const v = V('#7c3aed', false)
-    expect(v['--el-color-primary']).toBe('rgb(124, 58, 237)')
-    expect(v['--el-color-primary-light-3']).toBe('rgb(163, 117, 242)')
-    expect(v['--el-color-primary-light-5']).toBe('rgb(190, 157, 246)')
-    expect(v['--el-color-primary-light-7']).toBe('rgb(216, 196, 250)')
-    expect(v['--el-color-primary-light-8']).toBe('rgb(229, 216, 251)')
-    expect(v['--el-color-primary-light-9']).toBe('rgb(239, 231, 253)')
-    expect(v['--el-color-primary-dark-2']).toBe('rgb(99, 46, 190)')
-    expect(v['--primary-color']).toBe('rgb(124, 58, 237)')
-    expect(v['--primary-hover']).toBe('rgb(148, 93, 240)')
-    expect(v['--primary-active']).toBe('rgb(87, 41, 166)')
-    expect(v['--primary-bg']).toBe('rgb(242, 235, 253)')
-    expect(v['--primary-color-rgb']).toBe('124, 58, 237')
+  it('浅色：主色原值（品牌靛蓝=图标渐变深端），light-N 向白混，dark-2 向黑混', () => {
+    const v = V('#5e6ad2', false)
+    expect(v['--el-color-primary']).toBe('rgb(94, 106, 210)')
+    expect(v['--el-color-primary-light-3']).toBe('rgb(142, 151, 224)')
+    expect(v['--el-color-primary-light-5']).toBe('rgb(175, 181, 233)')
+    expect(v['--el-color-primary-light-7']).toBe('rgb(207, 210, 242)')
+    expect(v['--el-color-primary-light-8']).toBe('rgb(223, 225, 246)')
+    expect(v['--el-color-primary-light-9']).toBe('rgb(236, 237, 250)')
+    expect(v['--el-color-primary-dark-2']).toBe('rgb(75, 85, 168)')
+    expect(v['--primary-color']).toBe('rgb(94, 106, 210)')
+    expect(v['--primary-hover']).toBe('rgb(123, 133, 218)')
+    expect(v['--primary-active']).toBe('rgb(66, 74, 147)')
+    expect(v['--primary-bg']).toBe('rgb(239, 240, 251)')
+    expect(v['--primary-color-rgb']).toBe('94, 106, 210')
     expect(v['--primary-gradient']).toBe(
-      'linear-gradient(135deg, rgb(124, 58, 237) 0%, rgb(124, 58, 237) 100%)'
+      'linear-gradient(135deg, rgb(94, 106, 210) 0%, rgb(94, 106, 210) 100%)'
     )
   })
 
   it('深色：主色提亮 30%，light-N 向 #0a0a0a 混，dark-2 向白混', () => {
-    const v = V('#7c3aed', true)
-    expect(v['--el-color-primary']).toBe('rgb(163, 117, 242)')
-    expect(v['--el-color-primary-light-3']).toBe('rgb(117, 85, 172)')
-    expect(v['--el-color-primary-light-5']).toBe('rgb(87, 64, 126)')
-    expect(v['--el-color-primary-light-7']).toBe('rgb(56, 42, 80)')
-    expect(v['--el-color-primary-light-8']).toBe('rgb(41, 31, 56)')
-    expect(v['--el-color-primary-light-9']).toBe('rgb(28, 23, 38)')
-    expect(v['--el-color-primary-dark-2']).toBe('rgb(181, 145, 245)')
-    expect(v['--primary-color']).toBe('rgb(163, 117, 242)')
-    expect(v['--primary-hover']).toBe('rgb(135, 98, 200)')
-    expect(v['--primary-active']).toBe('rgb(191, 158, 246)')
-    expect(v['--primary-bg']).toBe('rgba(163, 117, 242, 0.14)')
-    expect(v['--primary-color-rgb']).toBe('163, 117, 242')
+    const v = V('#5e6ad2', true)
+    expect(v['--el-color-primary']).toBe('rgb(142, 151, 224)')
+    expect(v['--el-color-primary-light-3']).toBe('rgb(102, 109, 160)')
+    expect(v['--el-color-primary-light-5']).toBe('rgb(76, 81, 117)')
+    expect(v['--el-color-primary-light-7']).toBe('rgb(50, 52, 74)')
+    expect(v['--el-color-primary-light-8']).toBe('rgb(36, 38, 53)')
+    expect(v['--el-color-primary-light-9']).toBe('rgb(26, 27, 36)')
+    expect(v['--el-color-primary-dark-2']).toBe('rgb(165, 172, 230)')
+    expect(v['--primary-color']).toBe('rgb(142, 151, 224)')
+    expect(v['--primary-hover']).toBe('rgb(118, 126, 185)')
+    expect(v['--primary-active']).toBe('rgb(176, 182, 233)')
+    expect(v['--primary-bg']).toBe('rgba(142, 151, 224, 0.14)')
+    expect(v['--primary-color-rgb']).toBe('142, 151, 224')
   })
 
   it('3 位 hex 规范化为 6 位', () => {
