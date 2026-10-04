@@ -1,208 +1,84 @@
-# FileCodeBox 前端项目
+# frontend · Web 前端
 
-基于 Vue 3 + Vite + Element Plus 的现代化文件分享平台前端。
+[![CI](https://github.com/filescodebox/frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/filescodebox/frontend/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/filescodebox/frontend)](LICENSE)
+
+FilesCodeBox(文件快递柜)Web 前端:Vue 3 + Vite + Element Plus。自 v0.9.0 起与后端**分离部署**——静态资源与 API 反代由 nginx 镜像承担,作为前后端分离形态的统一对外入口。
+
+> 🗂️ [FilesCodeBox 生态](https://github.com/orgs/filescodebox)成员仓 · 总览与部署见 [装配仓 filescodebox](https://github.com/filescodebox/filescodebox) · [架构图集](https://github.com/filescodebox/filescodebox/blob/main/docs/architecture.md)
 
 ## 技术栈
 
-- **框架**: Vue 3 (Composition API + script setup)
-- **构建工具**: Vite 5
-- **UI 组件库**: Element Plus
+- **框架**: Vue 3(Composition API + script setup)
+- **构建工具**: Vite 7
+- **UI 组件库**: Element Plus(按需自动引入)
 - **状态管理**: Pinia
-- **路由**: Vue Router 4
-- **数据请求**: Axios + TanStack Query
-- **工具函数**: VueUse
-- **类型检查**: TypeScript
-- **样式**: SCSS
+- **路由**: Vue Router 5
+- **国际化**: vue-i18n
+- **数据请求**: Axios
+- **类型检查**: TypeScript 5.9
 
 ## 项目结构
 
 ```
 src/
-├── api/                # API 接口封装
-│   ├── share.ts        # 分享相关 API
-│   ├── user.ts         # 用户相关 API
-│   └── admin.ts        # 管理后台 API
-├── components/         # 组件
-│   ├── upload/         # 上传相关组件
-│   │   ├── FileUpload.vue
-│   │   ├── TextShare.vue
-│   │   └── GetShare.vue
-│   └── common/         # 通用组件
-├── composables/        # 组合式函数
-├── router/             # 路由配置
-├── stores/             # Pinia 状态管理
-│   └── user.ts         # 用户状态
-├── styles/             # 全局样式
-│   └── main.scss
-├── types/              # TypeScript 类型定义
-│   ├── common.ts
-│   └── user.ts
-├── utils/              # 工具函数
-│   └── request.ts      # Axios 封装
-├── views/              # 页面组件
-│   ├── home/           # 首页
-│   ├── share/          # 分享详情页
-│   ├── user/           # 用户相关页面
-│   │   ├── Login.vue
-│   │   ├── Register.vue
-│   │   └── Dashboard.vue
-│   └── admin/          # 管理后台
-│       ├── index.vue
-│       ├── Dashboard.vue
-│       ├── Files.vue
-│       ├── Users.vue
-│       └── Config.vue
-├── App.vue
-└── main.ts
+├── api/            # API 接口封装(share / user / admin ...)
+├── components/     # 通用组件 + 上传组件(upload/)
+├── composables/    # 组合式函数
+├── router/         # 路由配置
+├── stores/         # Pinia 状态
+├── styles/         # 全局样式(SCSS)
+├── types/          # 手写 TS 类型
+├── utils/          # Axios 封装等工具
+└── views/          # 页面(home / share / user / admin)
 ```
 
 ## 开发指南
 
-### 安装依赖
-
 ```bash
 npm install
+npm run dev         # http://localhost:3000
+npm run typecheck   # vue-tsc --noEmit
+npm run test        # vitest
+npm run build       # vue-tsc -b && vite build
 ```
 
-### 启动开发服务器
+开发环境下,后端 API 路由统一代理到本地后端(`vite.config.ts`):
+
+- `/share /user /admin /chunk /api /anonymous /download /notifies /presign` → `http://localhost:12345`
+
+API 规范真相源是后端运行时生成的 `/openapi.json`(Swagger UI 见前端 `/#/api-docs` 页);本仓不维护 openapi 快照与生成类型,手写类型见 `src/types/`。
+
+## 分离镜像
+
+发布版镜像 **`ghcr.io/filescodebox/frontend`**(多架构,由 [server](https://github.com/filescodebox/server) 仓 release 工作流随同一 `v*` tag 同步发布):
+
+- 基于 `nginx-unprivileged`:静态资源 + 反代 `BACKEND_HOST:BACKEND_PORT`(envsubst 注入,默认后端服务名 `filecodebox:12345`)
+- 承接全部对外流量:静态 + `/share /user /admin ...` 反代到后端 API
+
+本地试跑:
 
 ```bash
-npm run dev
+docker build -t fcb-frontend .
+docker run -p 8080:8080 -e BACKEND_HOST=host.docker.internal -e BACKEND_PORT=12345 fcb-frontend
 ```
 
-访问 http://localhost:3000
-
-### 构建生产版本
-
-```bash
-npm run build
-```
-
-### 类型检查
-
-```bash
-npm run type-check
-```
-
-## API 代理配置
-
-开发环境下，API 请求会被代理到后端服务器：
-
-- `/api/*` → `http://localhost:8888`
-- `/share/*` → `http://localhost:8888`
-- `/user/*` → `http://localhost:8888`
-- `/admin/*` → `http://localhost:8888`
-- `/chunk/*` → `http://localhost:8888`
+自托管编排(compose / Helm / Ingress 示例)见 hub 仓 [docs/DEPLOY-COMPOSE.md](https://github.com/filescodebox/filescodebox/blob/main/docs/DEPLOY-COMPOSE.md) 与 [charts](https://github.com/filescodebox/charts)。
 
 ## 主要功能
 
-### 1. 文件分享
-- 拖拽上传
-- 进度显示
-- 过期时间设置
-- 密码保护
-
-### 2. 文本分享
-- 大文本支持
-- 字数限制
-- 格式保留
-
-### 3. 获取分享
-- 分享码输入
-- 密码验证
-- 文件下载
-- 文本复制
-
-### 4. 用户系统
-- 注册/登录
-- 用户中心
-- 配额管理
-- 上传统计
-
-### 5. 管理后台
-- 仪表盘统计
-- 文件管理
-- 用户管理
-- 系统配置
+- 📤 **文件分享**:拖拽上传、分片/断点续传、进度显示、过期时间、密码保护
+- 📝 **文本分享**:大文本、格式保留
+- 📥 **获取分享**:分享码取件、密码验证、下载/复制
+- 👤 **用户系统**:注册/登录、我的分享、API 令牌管理
+- 🛠 **管理后台**:仪表盘、分享/文件管理、用户管理、站点配置(存库持久化)
 
 ## 代码规范
 
-- 使用 Composition API + `<script setup>`
-- 使用 TypeScript 类型检查
-- 组件命名：PascalCase
-- 文件命名：kebab-case
-- 样式使用 SCSS + scoped
+- Composition API + `<script setup>` + TypeScript
+- 组件命名 PascalCase,文件命名 kebab-case
+- 样式 SCSS + scoped
 
-## 下一步开发
+## License
 
-### 待完成功能
-
-1. **用户页面**
-   - [ ] Login.vue - 登录页面
-   - [ ] Register.vue - 注册页面
-   - [ ] Dashboard.vue - 用户中心
-
-2. **管理后台页面**
-   - [ ] admin/index.vue - 后台布局
-   - [ ] admin/Dashboard.vue - 仪表盘
-   - [ ] admin/Files.vue - 文件管理
-   - [ ] admin/Users.vue - 用户管理
-   - [ ] admin/Config.vue - 系统配置
-
-3. **分片上传**
-   - [ ] ChunkUpload 组件
-   - [ ] 断点续传
-   - [ ] 秒传功能
-
-4. **性能优化**
-   - [ ] 路由懒加载
-   - [ ] 组件按需加载
-   - [ ] 图片懒加载
-
-5. **功能增强**
-   - [ ] 深色模式
-   - [ ] 国际化
-   - [ ] PWA 支持
-   - [ ] WebSocket 实时通知
-
-## 部署
-
-### Docker 构建
-
-```bash
-docker build -t filecodebox-frontend .
-docker run -p 80:80 filecodebox-frontend
-```
-
-### Nginx 配置
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-
-    location / {
-        root /usr/share/nginx/html;
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api {
-        proxy_pass http://backend:8888;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
-
-## 许可证
-
-MIT License
-
-## API 文档与契约
-
-OpenAPI 规范由后端在启动时从运行时路由表生成(core `openapi_gen.go`),与实际注册路由零漂移:
-
-- Swagger UI:前端 `/#/api-docs` 页(数据源 `/openapi.json`,开发环境经 vite 代理、生产由后端静态服务同源提供)
-- 字段级请求/响应 schema 的真相源在 contracts 仓 thrift IDL
-
-本仓不再维护 openapi.json 快照与生成类型(原快照与路由长期漂移且无消费方,已移除);前端手写类型见 `src/types/common.ts`、`src/api/*.ts`。
+[Apache-2.0](LICENSE)
