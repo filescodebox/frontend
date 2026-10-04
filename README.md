@@ -45,7 +45,7 @@ npm run build       # vue-tsc -b && vite build
 
 开发环境下,后端 API 路由统一代理到本地后端(`vite.config.ts`):
 
-- `/share /user /admin /chunk /api /anonymous /download /notifies /presign` → `http://localhost:12345`
+- `/share /user /admin /chunk /api /anonymous /download /notifies /presign /openapi.json /ping` → `http://localhost:12345`
 
 API 规范真相源是后端运行时生成的 `/openapi.json`(Swagger UI 见前端 `/#/api-docs` 页);本仓不维护 openapi 快照与生成类型,手写类型见 `src/types/`。
 
