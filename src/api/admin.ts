@@ -544,4 +544,33 @@ export const adminApi = {
       method: 'GET',
     })
   },
+
+  // ===== 存储管理（信息/配置/切换/Probe）=====
+  getStorageInfo: () => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/storage',
+      method: 'GET',
+    })
+  },
+  // 扁平形态：请求体即完整候选配置（后端整体校验→Probe→热切换→持久化）
+  updateStorageConfig: (data: Record<string, unknown>) => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/storage/config',
+      method: 'PUT',
+      data,
+    })
+  },
+  switchStorage: (type: string) => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/storage/switch',
+      method: 'POST',
+      data: { type },
+    })
+  },
+  testStorage: (type: string) => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: `/admin/storage/test/${type}`,
+      method: 'GET',
+    })
+  },
 }
