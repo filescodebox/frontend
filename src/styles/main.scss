@@ -36,15 +36,15 @@
   --color-text-secondary: #737373;
   --color-text-tertiary: #a3a3a3;
 
-	// 功能色 —— 降饱和、更冷调
+	// 功能色 —— 降饱和、更冷调（浅色文字色加深保对比度；深色在 html.dark 回调亮）
 	--color-success: #15803d;        // green-700：浅底标签文字对比度 ≥4.5:1（#16a34a 仅 3.2）
 	--color-success-bg: #f0fdf4;
-  --color-warning: #ca8a04;
-  --color-warn-bg: #fefce8;
-  --color-danger: #dc2626;
-  --color-danger-bg: #fef2f2;
-  --color-info: #6b7280;
-  --color-alert-bg: #f8fafc;
+	--color-warning: #a16207;        // yellow-700：#ca8a04 作文字仅 2.8
+	--color-warn-bg: #fefce8;
+	--color-danger: #dc2626;
+	--color-danger-bg: #fef2f2;
+	--color-info: #6b7280;
+	--color-alert-bg: #f8fafc;
 
   // 间距 —— 紧凑、信息密度高
   --spacing-xs: 4px;
@@ -87,11 +87,11 @@
   --el-color-primary-light-9: #efe8fd;
   --el-color-primary-dark-2: #632ebe;
 
-  --el-color-success: #16a34a;
-  --el-color-warning: #ca8a04;
-  --el-color-danger: #dc2626;
-  --el-color-error: #dc2626;
-  --el-color-info: #6b7280;
+	--el-color-success: #15803d;
+	--el-color-warning: #a16207;
+	--el-color-danger: #dc2626;
+	--el-color-error: #dc2626;
+	--el-color-info: #6b7280;
 
   --el-border-radius-base: 6px;
   --el-border-radius-small: 4px;
@@ -147,10 +147,16 @@ html.dark {
   --color-text-secondary: #a3a3a3;
   --color-text-tertiary: #737373;
 
-  --color-success-bg: rgba(22, 163, 74, 0.12);
-  --color-warn-bg: rgba(202, 138, 4, 0.12);
-  --color-danger-bg: rgba(220, 38, 38, 0.12);
-  --color-alert-bg: #1a1a1a;
+	--color-success-bg: rgba(22, 163, 74, 0.12);
+	--color-warn-bg: rgba(202, 138, 4, 0.12);
+	--color-danger-bg: rgba(220, 38, 38, 0.12);
+	--color-alert-bg: #1a1a1a;
+
+	// 深色下功能文字回调亮（浅色加深的反向平衡，保 ≥4.5:1）
+	--color-success: #22c55e;
+	--color-warning: #d29a0a;
+	--el-color-success: #22c55e;
+	--el-color-warning: #d29a0a;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);

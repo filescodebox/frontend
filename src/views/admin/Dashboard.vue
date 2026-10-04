@@ -607,6 +607,12 @@ const generateMockFileTypeDist = () => {
 .stat-icon {
   position: relative;
   z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
   margin-bottom: 16px;
   background: var(--primary-bg);
   color: var(--primary-color);
