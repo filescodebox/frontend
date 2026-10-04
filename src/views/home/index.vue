@@ -385,6 +385,33 @@ onMounted(async () => {
   document.documentElement.lang = localeStore.locale
   // 加载配置
   await configStore.fetchConfig()
+  // 安全版主题：背景图（后端已白名单校验 http(s)）+ 主题色（#hex）
+  const cfg = configStore.config
+  if (cfg?.background) {
+    const dark = document.documentElement.classList.contains('dark')
+    const overlay = dark ? 'rgba(17, 17, 17, 0.78)' : 'rgba(255, 255, 255, 0.82)'
+    const body = document.body
+    body.style.backgroundImage = `linear-gradient(${overlay}, ${overlay}), url("${cfg.background}")`
+    body.style.backgroundSize = 'cover'
+    body.style.backgroundAttachment = 'fixed'
+    body.style.backgroundPosition = 'center'
+  }
+  if (cfg?.accentColor && /^#[0-9a-fA-F]{3,8}$/.test(cfg.accentColor)) {
+    const root = document.documentElement
+    root.style.setProperty('--el-color-primary', cfg.accentColor)
+    // Element Plus 派生色阶（light-3/5/7/9 常用于 hover/边框/浅底）
+    const n = parseInt(cfg.accentColor.slice(1), 16)
+    const mix = (ratio: number) => {
+      const r = Math.round(((n >> 16) & 255) + (255 - ((n >> 16) & 255)) * ratio)
+      const g = Math.round(((n >> 8) & 255) + (255 - ((n >> 8) & 255)) * ratio)
+      const b = Math.round((n & 255) + (255 - (n & 255)) * ratio)
+      return `rgb(${r}, ${g}, ${b})`
+    }
+    root.style.setProperty('--el-color-primary-light-3', mix(0.3))
+    root.style.setProperty('--el-color-primary-light-5', mix(0.5))
+    root.style.setProperty('--el-color-primary-light-7', mix(0.7))
+    root.style.setProperty('--el-color-primary-light-9', mix(0.9))
+  }
 })
 </script>
 

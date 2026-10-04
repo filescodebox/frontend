@@ -13,6 +13,10 @@ export interface PublicConfig {
   oidcEnabled?: boolean
   /** 管理后台入口可见性（ui.show_admin_addr；/admin 路由始终可达，仅控制页脚入口展示） */
   showAdminAddr?: boolean
+  /** 背景图 URL（后端已白名单校验 http(s)） */
+  background?: string
+  /** 主题色（#hex，后端已校验） */
+  accentColor?: string
   expireStyle: string[]
   initialized?: boolean
 }
