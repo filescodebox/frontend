@@ -6,7 +6,7 @@
 # 规则语义与 hub deploy/nginx/nginx.conf（单容器反代模板）对齐：
 #   - 下载/分片/预签名：流式透传（关缓冲 + 长超时）
 #   - 其余 API 前缀：反代后端（清单 = vite.config.ts dev proxy + hash 路由
-#     页所需 /request /setup；/presign 保留兼容旧入口）
+#     页所需 /request /setup + ops 探测路径；/presign 保留兼容旧入口）
 #   - /assets/：本地长缓存（构建产物文件名含 hash，内容变更即改名）
 #   - 其余路径：本地文件 + SPA 回退（hash 路由，页面路径恒为 /）
 #   - client_max_body_size 须 >= server 配置 upload.upload_size（默认 10MB）
@@ -63,7 +63,10 @@ server {
     }
 
     # ── 其余 API：反代后端 ─────────────────────────────────────
-    location ~ ^/(share|user|admin|chunk|api|anonymous|download|notifies|presign|request|setup|ping|openapi\.json)(/|$) {
+    # 清单 = vite dev proxy + hash 路由页所需 /request /setup + ops 探测路径
+    # (/health /live /ready /readyz /version——反代链路(openresty 等)指 frontend
+    #  时监控语义不变;/metrics 不放行,仅限集群内直连后端抓取)
+    location ~ ^/(share|user|admin|chunk|api|anonymous|download|notifies|presign|request|setup|ping|openapi\.json|health|live|ready|readyz|version)(/|$) {
         proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT};
         proxy_connect_timeout 15s;
         proxy_send_timeout 60s;
