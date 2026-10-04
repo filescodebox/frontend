@@ -25,6 +25,25 @@
             <el-option label="5 GB" :value="5120" />
           </el-select>
         </el-form-item>
+        <el-form-item :label="t('request.formExpire')">
+          <div class="expire-inputs">
+            <el-input-number
+              v-model="form.expire_value"
+              :min="1"
+              :max="999"
+              controls-position="right"
+              :disabled="form.expire_style === 'forever'"
+              style="width: 110px"
+            />
+            <el-select v-model="form.expire_style" style="width: 92px">
+              <el-option :label="t('request.unitDay')" value="day" />
+              <el-option :label="t('request.unitWeek')" value="week" />
+              <el-option :label="t('request.unitMonth')" value="month" />
+              <el-option :label="t('request.unitYear')" value="year" />
+              <el-option :label="t('request.unitForever')" value="forever" />
+            </el-select>
+          </div>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="creating" @click="create">{{ t('request.createBtn') }}</el-button>
         </el-form-item>
@@ -182,5 +201,10 @@ onMounted(load)
   margin-left: 6px;
   color: var(--color-text-secondary);
   font-size: 12px;
+}
+.create-form .expire-inputs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 </style>
