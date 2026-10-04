@@ -35,9 +35,9 @@
   --color-text-secondary: #737373;
   --color-text-tertiary: #a3a3a3;
 
-  // 功能色 —— 降饱和、更冷调
-  --color-success: #16a34a;
-  --color-success-bg: #f0fdf4;
+	// 功能色 —— 降饱和、更冷调
+	--color-success: #15803d;        // green-700：浅底标签文字对比度 ≥4.5:1（#16a34a 仅 3.2）
+	--color-success-bg: #f0fdf4;
   --color-warning: #ca8a04;
   --color-warn-bg: #fefce8;
   --color-danger: #dc2626;
