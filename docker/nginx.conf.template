@@ -66,7 +66,9 @@ server {
     # 清单 = vite dev proxy + hash 路由页所需 /request /setup + ops 探测路径
     # (/health /live /ready /readyz /version——反代链路(openresty 等)指 frontend
     #  时监控语义不变;/metrics 不放行,仅限集群内直连后端抓取)
-    location ~ ^/(share|user|admin|chunk|api|anonymous|download|notifies|presign|request|setup|ping|openapi\.json|health|live|ready|readyz|version)(/|$) {
+    # qrcode(生成端点)/preview(取件页预览图)/robots.txt(SEO)缺任一会被
+    # SPA fallback 吞掉(POST→405/文本→HTML),2026-10-04 生产实测教训。
+    location ~ ^/(share|user|admin|chunk|api|anonymous|download|notifies|presign|request|setup|ping|openapi\.json|health|live|ready|readyz|version|qrcode|preview|robots\.txt)(/|$) {
         proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT};
         proxy_connect_timeout 15s;
         proxy_send_timeout 60s;
