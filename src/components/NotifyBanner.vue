@@ -4,7 +4,7 @@
       <el-alert
         v-for="banner in visibleBanners"
         :key="banner.id"
-        :type="mapLevel(banner.level)"
+        :type="mapAlertLevel(banner.level)"
         :title="banner.title"
         :description="banner.content"
         :closable="true"
@@ -14,7 +14,7 @@
       >
         <template v-if="banner.type && typeLabel(banner.type)" #title>
           <span class="banner-title">
-            <el-tag size="small" :type="mapLevel(banner.level) as 'info' | 'success' | 'warning' | 'error'" effect="light" round>
+            <el-tag size="small" :type="mapTagType(banner.level)" effect="light" round>
               {{ typeLabel(banner.type) }}
             </el-tag>
             <span class="banner-title-text">{{ banner.title }}</span>
@@ -79,10 +79,28 @@ const severityRank = (level: string): number => {
   }
 }
 
-const mapLevel = (level: string): 'info' | 'success' | 'warning' | 'error' => {
+type TagType = 'info' | 'success' | 'warning' | 'danger'
+type AlertType = 'info' | 'success' | 'warning' | 'error'
+
+// el-alert 接受 error；el-tag 的对应值是 danger，两者分开映射
+const mapAlertLevel = (level: string): AlertType => {
   switch (level) {
     case 'error':
       return 'error'
+    case 'warning':
+      return 'warning'
+    case 'success':
+      return 'success'
+    case 'info':
+    default:
+      return 'info'
+  }
+}
+
+const mapTagType = (level: string): TagType => {
+  switch (level) {
+    case 'error':
+      return 'danger'
     case 'warning':
       return 'warning'
     case 'success':

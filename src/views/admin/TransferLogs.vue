@@ -149,14 +149,14 @@ const getOperationLabel = (operation: string): string => {
   return labels[operation] || operation
 }
 
-const getOperationType = (operation: string): string => {
-  const types: Record<string, string> = {
+const getOperationType = (operation: string): 'success' | 'primary' | 'danger' | 'info' => {
+  const types: Record<string, 'success' | 'primary' | 'danger' | 'info'> = {
     upload: 'success',
     download: 'primary',
     delete: 'danger',
     view: 'info'
   }
-  return types[operation] || ''
+  return types[operation] || 'info'
 }
 
 const fetchLogs = async () => {
