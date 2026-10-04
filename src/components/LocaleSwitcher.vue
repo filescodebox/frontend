@@ -49,7 +49,8 @@ const handleCommand = (value: AppLocale) => {
 
 <style scoped>
 .locale-btn {
-  // 主题感知：此前写死白字白底（为深色顶栏设计），放进浅色侧栏即隐形
+  /* 主题感知：此前写死白字白底（为深色顶栏设计），放进浅色侧栏即隐形 */
+>>>>>>> e663750 (fix(theme): 主色回归品牌靛蓝（呼应图标渐变）+ admin 侧栏隐形语言按钮 + 公告操作列折行)
   background: var(--color-muted);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
