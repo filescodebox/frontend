@@ -427,7 +427,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: stretch;
   padding: 16px;
-  background: #fafbfc;
+  background: var(--color-muted);
   border-radius: 8px;
 }
 
@@ -448,7 +448,7 @@ onMounted(() => {
 .code-content {
   width: 100%;
   overflow: auto;
-  background: #ffffff;
+  background: var(--color-surface);
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -533,7 +533,8 @@ onMounted(() => {
 .md-content {
   text-align: left;
   padding: 24px;
-  background: #ffffff;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
   overflow: auto;
 }
 
@@ -555,7 +556,7 @@ onMounted(() => {
   overflow-x: auto;
 }
 .md-rendered :deep(code) {
-  background: #f0f0f0;
+  background: var(--color-muted);
   padding: 2px 6px;
   border-radius: 3px;
   font-family: monospace;
@@ -600,7 +601,7 @@ onMounted(() => {
   align-items: center;
   gap: 16px;
   padding: 48px;
-  background: #ffffff;
+  background: var(--color-surface);
   border-radius: 8px;
   width: 100%;
 }

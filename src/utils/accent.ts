@@ -19,6 +19,7 @@ const ACCENT_PROPS = [
   '--el-color-primary-light-3',
   '--el-color-primary-light-5',
   '--el-color-primary-light-7',
+  '--el-color-primary-light-8',
   '--el-color-primary-light-9',
   '--el-color-primary-dark-2',
   '--primary-color',
@@ -28,6 +29,9 @@ const ACCENT_PROPS = [
   '--primary-color-rgb',
   '--primary-gradient',
 ]
+
+/** 已生效 accent 的缓存键：index.html 首帧引导读取，避免配置返回前主色跳变 */
+export const ACCENT_CACHE_KEY = 'app_accent'
 
 const WHITE: Rgb = { r: 255, g: 255, b: 255 }
 // 深色混合目标贴近 --color-bg(#0a0a0a) 而非纯黑，色阶过渡更顺
@@ -60,11 +64,19 @@ export function applyAccent(raw?: string | null): void {
   const accent = parseHex(raw || '')
   if (!accent) {
     for (const p of ACCENT_PROPS) root.style.removeProperty(p)
+    try { localStorage.removeItem(ACCENT_CACHE_KEY) } catch { /* noop */ }
     return
   }
+  try {
+    // 规范化为 6 位 hex：index.html 的首帧引导只按 6 位解析
+    const norm = '#' + [accent.r, accent.g, accent.b]
+      .map((v) => v.toString(16).padStart(2, '0'))
+      .join('')
+    localStorage.setItem(ACCENT_CACHE_KEY, norm)
+  } catch { /* noop */ }
 
   const dark = root.classList.contains('dark')
-  // 深色下主色提亮（与 main.scss 的 #5e6ad2→#7c87f0 同思路），保证对比度
+  // 深色下主色提亮（与 main.scss html.dark 同公式），保证 #0a0a0a 底对比度
   const base = dark ? lighten(accent, 0.3) : accent
   const toward = dark ? DARK_BASE : WHITE
   const set = (p: string, v: string) => root.style.setProperty(p, v)
@@ -74,6 +86,7 @@ export function applyAccent(raw?: string | null): void {
   set('--el-color-primary-light-3', rgb(mix(base, toward, 0.3)))
   set('--el-color-primary-light-5', rgb(mix(base, toward, 0.5)))
   set('--el-color-primary-light-7', rgb(mix(base, toward, 0.7)))
+  set('--el-color-primary-light-8', rgb(mix(base, toward, 0.8)))
   set('--el-color-primary-light-9', rgb(mix(base, toward, 0.88)))
   set('--el-color-primary-dark-2', rgb(mix(base, dark ? WHITE : { r: 0, g: 0, b: 0 }, 0.2)))
 

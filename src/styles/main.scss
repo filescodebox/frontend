@@ -10,13 +10,14 @@
 }
 
 :root {
-  // 主色 / 强调色 —— 单色,去渐变化
-  --primary-color: #5e6ad2;        // Linear 紫蓝,仅用于按钮/链接/激活态
-  --primary-hover: #4f5ac1;
-  --primary-active: #444eb0;
-  --primary-bg: #eef0fc;           // 强调色浅底(tag/选中行/hover)
-  --primary-color-rgb: 94, 106, 210;
-  --primary-gradient: linear-gradient(135deg, #5e6ad2 0%, #5e6ad2 100%); // 兼容旧引用,实为单色
+  // 主色 / 强调色 —— 紫罗兰(与配置中心默认 accent 一致,运行时 admin 可改,
+  // 见 utils/accent.ts;此处为权威默认值与首帧值,色阶公式与 accent.ts 相同)
+  --primary-color: #7c3aed;
+  --primary-hover: #945df0;        // mix(white, 0.18)
+  --primary-active: #5729a6;       // mix(black, 0.30)
+  --primary-bg: #f2ebfd;           // mix(white, 0.90),强调色浅底(tag/选中行/hover)
+  --primary-color-rgb: 124, 58, 237;
+  --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #7c3aed 100%); // 兼容旧引用,实为单色
 
   // 中性色(亮色模式)—— 纯净、锐利
   --color-bg: #fafafa;
@@ -78,13 +79,13 @@
   // =============================================================================
   // Element Plus 全局主题覆盖 —— 所有 EP 组件自动跟随
   // =============================================================================
-  --el-color-primary: #5e6ad2;
-  --el-color-primary-light-3: #828bee;
-  --el-color-primary-light-5: #a4abf3;
-  --el-color-primary-light-7: #c6ccf8;
-  --el-color-primary-light-8: #d7dbfa;
-  --el-color-primary-light-9: #eef0fc;
-  --el-color-primary-dark-2: #4f5ac1;
+  --el-color-primary: #7c3aed;
+  --el-color-primary-light-3: #a375f2;
+  --el-color-primary-light-5: #be9df6;
+  --el-color-primary-light-7: #d8c4fa;
+  --el-color-primary-light-8: #e5d8fb;
+  --el-color-primary-light-9: #efe8fd;
+  --el-color-primary-dark-2: #632ebe;
 
   --el-color-success: #16a34a;
   --el-color-warning: #ca8a04;
@@ -124,11 +125,12 @@
 // 暗色模式(由 theme store 注入 .dark class)
 // =============================================================================
 html.dark {
-  --primary-color: #7c87f0;
-  --primary-hover: #8d96f2;
-  --primary-active: #6b76ee;
-  --primary-bg: rgba(124, 135, 240, 0.12);
-  --primary-color-rgb: 124, 135, 240;
+  // 深色主色 = 浅色主色提亮 30%(与 accent.ts 同公式),保证 #0a0a0a 底对比度
+  --primary-color: #a375f2;
+  --primary-hover: #8762c8;        // mix(#0a0a0a, 0.18)
+  --primary-active: #be9df6;       // mix(white, 0.30)
+  --primary-bg: rgba(163, 117, 242, 0.14);
+  --primary-color-rgb: 163, 117, 242;
 
   --color-bg: #0a0a0a;
   --color-surface: #141414;
@@ -155,14 +157,14 @@ html.dark {
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 
-  // EP 暗色覆盖
-  --el-color-primary: #7c87f0;
-  --el-color-primary-light-3: #5e6ad2;
-  --el-color-primary-light-5: #4f5ac1;
-  --el-color-primary-light-7: #3d4596;
-  --el-color-primary-light-8: #2f3678;
-  --el-color-primary-light-9: rgba(124, 135, 240, 0.12);
-  --el-color-primary-dark-2: #8d96f2;
+  // EP 暗色覆盖（light-N 向深底混,供浅底/hover/边框用）
+  --el-color-primary: #a375f2;
+  --el-color-primary-light-3: #7555ac;
+  --el-color-primary-light-5: #57407e;
+  --el-color-primary-light-7: #32254a;
+  --el-color-primary-light-8: #221932;
+  --el-color-primary-light-9: #150f20;
+  --el-color-primary-dark-2: #b597f5;
 
   --el-border-color: #262626;
   --el-border-color-light: #262626;

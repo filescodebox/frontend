@@ -60,7 +60,7 @@
         v-if="uploadPath"
         :d="uploadPath"
         fill="none"
-        stroke="#5e6ad2"
+        class="line-upload"
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -71,7 +71,7 @@
         v-if="downloadPath"
         :d="downloadPath"
         fill="none"
-        stroke="#f56c6c"
+        class="line-download"
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -86,6 +86,7 @@
           :cx="p.x"
           :cy="p.uploadY"
           r="3"
+          class="dot-upload"
           fill="#5e6ad2"
         />
       </g>
@@ -93,8 +94,8 @@
       <!-- 定义渐变 -->
       <defs>
         <linearGradient id="uploadGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#5e6ad2" stop-opacity="0.6" />
-          <stop offset="100%" stop-color="#5e6ad2" stop-opacity="0" />
+          <stop offset="0%" class="area-stop" stop-color="#5e6ad2" stop-opacity="0.6" />
+          <stop offset="100%" class="area-stop" stop-color="#5e6ad2" stop-opacity="0" />
         </linearGradient>
       </defs>
     </svg>
@@ -234,10 +235,27 @@ const gridLines = computed(() => {
 }
 
 .legend-dot.upload {
-  background: #5e6ad2;
+  background: var(--primary-color);
 }
 
 .legend-dot.download {
-  background: #f56c6c;
+  background: var(--color-danger);
+}
+
+/* SVG 折线/数据点/渐变跟随主题主色（CSS 属性优先级高于表现属性） */
+.line-upload {
+  stroke: var(--primary-color);
+}
+
+.line-download {
+  stroke: var(--color-danger);
+}
+
+.dot-upload {
+  fill: var(--primary-color);
+}
+
+.area-stop {
+  stop-color: var(--primary-color);
 }
 </style>
