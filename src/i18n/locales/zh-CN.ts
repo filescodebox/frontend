@@ -140,6 +140,11 @@ export default {
     codeCopied: '取件码已复制',
     apiDocs: 'API 文档',
   },
+  federation: {
+    title: '联邦取件',
+    confirm: '在联邦节点「{name}」发现该口令。是否前往取件？文件将从源节点直接下载。',
+    go: '前往取件',
+  },
   anonymous: {
     title: '匿名取件',
     subtitle: '输入取件码或分享码，即可取文件',

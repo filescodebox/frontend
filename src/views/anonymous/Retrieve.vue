@@ -92,9 +92,11 @@ import {
   Postcard, Key, Lock, InfoFilled
 } from '@element-plus/icons-vue'
 import { anonymousApi } from '@/api/anonymous'
+import { federationApi } from '@/api/federation'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
+import { ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
@@ -128,6 +130,39 @@ const onCodeInput = (val: string) => {
   form.code = val.replace(/[^A-Za-z0-9]/g, '').slice(0, 8)
 }
 
+// 联邦回退（P2P M2）：本站查无此码时问联邦注册中心。
+// 命中 → 弹确认框，用户同意后跳源节点取件页预填口令（hash 路由）；
+// 未命中/未启用/网络失败 → 静默返回 false，回退本地错误提示。
+const tryFederationJump = async (): Promise<boolean> => {
+  const code = form.code
+  if (!code) return false
+  try {
+    const res = await federationApi.resolve(code)
+    const data = res.data
+    if ((res.code === 200 || res.code === 0) && data?.available && data.url) {
+      try {
+        await ElMessageBox.confirm(
+          t('federation.confirm', { name: data.name || data.url }),
+          t('federation.title'),
+          {
+            confirmButtonText: t('federation.go'),
+            cancelButtonText: t('common.cancel'),
+            type: 'info',
+          },
+        )
+      } catch {
+        return true // 用户取消：视为已处理，不再弹本地错误
+      }
+      const base = data.url.endsWith('/') ? data.url : `${data.url}/`
+      window.location.href = `${base}#/retrieve?code=${encodeURIComponent(code)}`
+      return true
+    }
+  } catch {
+    // registry 不可达/未启用：静默降级为纯单站体验
+  }
+  return false
+}
+
 const handleRetrieve = async () => {
   if (!formRef.value) return
   try {
@@ -150,7 +185,11 @@ const handleRetrieve = async () => {
         query: { data: encodeURIComponent(JSON.stringify(res.data)) },
       })
     } else {
-      handleError({ code: res.code, message: res.message, trace_id: res.trace_id })
+      // 本站未命中 → 联邦回退（P2P M2）：命中则引导直跳源节点取件页
+      const jumped = await tryFederationJump()
+      if (!jumped) {
+        handleError({ code: res.code, message: res.message, trace_id: res.trace_id })
+      }
     }
   } catch (e) {
     handleError(e)

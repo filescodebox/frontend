@@ -139,6 +139,11 @@ export default {
     codeCopied: 'Code copied',
     apiDocs: 'API Docs',
   },
+  federation: {
+    title: 'Federated retrieval',
+    confirm: 'Passcode found on federated node "{name}". Go there to retrieve? The file downloads directly from the source node.',
+    go: 'Go to retrieve',
+  },
   anonymous: {
     title: 'Anonymous retrieve',
     subtitle: 'Enter a pickup code or share code to retrieve your file',
