@@ -45,6 +45,7 @@ import {
   CopyDocument, Close
 } from '@element-plus/icons-vue'
 import type { ErrorToastItem } from '@/composables/useErrorHandler'
+import { copyToClipboard } from '@/utils/clipboard'
 
 const items = ref<ErrorToastItem[]>([])
 const { t } = useI18n()
@@ -75,12 +76,10 @@ function dismiss(id: number) {
   if (idx >= 0) items.value.splice(idx, 1)
 }
 
-function copyTrace(traceId: string) {
-  if (!navigator.clipboard) return
-  navigator.clipboard.writeText(traceId).then(
-    () => ElMessage.success(t('common.copied')),
-    () => ElMessage.error(t('common.failed'))
-  )
+async function copyTrace(traceId: string) {
+  const ok = await copyToClipboard(traceId)
+  if (ok) ElMessage.success(t('common.copied'))
+  else ElMessage.error(t('common.failed'))
 }
 
 function onPush(e: Event) {

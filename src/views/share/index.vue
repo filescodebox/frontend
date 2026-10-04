@@ -54,6 +54,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { CopyDocument } from '@element-plus/icons-vue'
+import { copyToClipboard } from '@/utils/clipboard'
 import FileUpload from '@/components/upload/FileUpload.vue'
 import TextShare from '@/components/upload/TextShare.vue'
 import GetShare from '@/components/upload/GetShare.vue'
@@ -77,12 +78,9 @@ const handleSuccess = (result: ShareResult) => {
 }
 
 const copyUrl = async () => {
-  try {
-    await navigator.clipboard.writeText(shareUrl.value)
-    ElMessage.success('链接已复制到剪贴板')
-  } catch {
-    ElMessage.error('复制失败，请手动复制')
-  }
+  const ok = await copyToClipboard(shareUrl.value)
+  if (ok) ElMessage.success('链接已复制到剪贴板')
+  else ElMessage.error('复制失败，请手动复制')
 }
 
 // 检查 URL 中是否有分享码

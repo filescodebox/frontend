@@ -264,6 +264,7 @@ import {
   Promotion, Folder, PictureFilled, Loading, Setting
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { copyToClipboard } from '@/utils/clipboard'
 import { useConfigStore } from '@/stores/config'
 import { useLocaleStore } from '@/stores/locale'
 import FileUpload from '@/components/upload/FileUpload.vue'
@@ -350,21 +351,15 @@ const handleShareSuccess = async (result: ShareResult) => {
 }
 
 const copyShareUrl = async () => {
-  try {
-    await navigator.clipboard.writeText(shareUrl.value)
-    ElMessage.success(t('home.linkCopied'))
-  } catch (error) {
-    ElMessage.error(t('home.copyLinkFailed'))
-  }
+  const ok = await copyToClipboard(shareUrl.value)
+  if (ok) ElMessage.success(t('home.linkCopied'))
+  else ElMessage.error(t('home.copyLinkFailed'))
 }
 
 const copyShareCode = async () => {
-  try {
-    await navigator.clipboard.writeText(shareCode.value)
-    ElMessage.success(t('home.codeCopied') || t('home.linkCopied'))
-  } catch (error) {
-    ElMessage.error(t('home.copyLinkFailed'))
-  }
+  const ok = await copyToClipboard(shareCode.value)
+  if (ok) ElMessage.success(t('home.codeCopied') || t('home.linkCopied'))
+  else ElMessage.error(t('home.copyLinkFailed'))
 }
 
 const handleUserCommand = (command: string) => {

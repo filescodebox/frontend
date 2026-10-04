@@ -4,17 +4,15 @@
 import { request } from '@/utils/request'
 import type { ApiResponse } from '@/types/common'
 
+/** 字段与 core model.FileRequest 的 json tag（snake_case）对齐；gorm.Model 内嵌字段前端未用 */
 export interface FileRequestItem {
-  ID: number
-  Token: string
-  Title: string
-  UserID: number
-  MaxFiles: number
-  MaxBytes: number
-  ExpiredAt: string | null
-  UsedCount: number
-  RecvBytes: number
-  CreatedAt: string
+  token: string
+  title: string
+  max_files: number
+  max_bytes: number
+  expired_at: string | null
+  used_count: number
+  recv_bytes: number
 }
 
 export interface RequestPublicView {

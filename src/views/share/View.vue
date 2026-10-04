@@ -183,6 +183,7 @@ import {
 } from '@element-plus/icons-vue'
 import { shareApi } from '@/api/share'
 import { decryptBytes, decryptText } from '@/utils/e2e'
+import { copyToClipboard } from '@/utils/clipboard'
 
 const route = useRoute()
 
@@ -256,12 +257,9 @@ const copyText = async () => {
   const text = displayText.value
   if (!text) return
 
-  try {
-    await navigator.clipboard.writeText(text)
-    ElMessage.success('文本已复制到剪贴板')
-  } catch {
-    ElMessage.error('复制失败')
-  }
+  const ok = await copyToClipboard(text)
+  if (ok) ElMessage.success('文本已复制到剪贴板')
+  else ElMessage.error('复制失败')
 }
 
 const buildDownloadUrl = (fileId?: number): string => {

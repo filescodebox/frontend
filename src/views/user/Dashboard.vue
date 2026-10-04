@@ -216,6 +216,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { userApi, shareApi } from '@/api'
+import { copyToClipboard } from '@/utils/clipboard'
 import type { UserInfo, UserStats } from '@/types/user'
 
 interface RecentShare {
@@ -334,13 +335,10 @@ const viewShare = (code: string) => {
 }
 
 const copyShareLink = async (code: string) => {
-  try {
-    const url = `${window.location.origin}/#/share/${code}`
-    await navigator.clipboard.writeText(url)
-    ElMessage.success(t('common.copied'))
-  } catch (error) {
-    ElMessage.error(t('common.failed'))
-  }
+  const url = `${window.location.origin}/#/share/${code}`
+  const ok = await copyToClipboard(url)
+  if (ok) ElMessage.success(t('common.copied'))
+  else ElMessage.error(t('common.failed'))
 }
 
 const deleteShare = async (code: string) => {

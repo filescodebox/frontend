@@ -35,8 +35,8 @@
     <el-card shadow="never" style="margin-top: 16px">
       <template #header>{{ t('request.listTitle') }}</template>
       <el-table :data="list" v-loading="loadingList" style="width: 100%">
-        <el-table-column :label="t('request.formTitle')" prop="Title" min-width="160">
-          <template #default="{ row }">{{ row.Title || t('request.noTitle') }}</template>
+        <el-table-column :label="t('request.formTitle')" prop="title" min-width="160">
+          <template #default="{ row }">{{ row.title || t('request.noTitle') }}</template>
         </el-table-column>
         <el-table-column :label="t('request.statusCol')" width="100">
           <template #default="{ row }">
@@ -45,17 +45,17 @@
           </template>
         </el-table-column>
         <el-table-column :label="t('request.usageCol')" width="140">
-          <template #default="{ row }">{{ t('request.usedTimes', { n: row.UsedCount }) }} / {{ formatSize(row.RecvBytes) }}</template>
+          <template #default="{ row }">{{ t('request.usedTimes', { n: row.used_count ?? 0 }) }} / {{ formatSize(row.recv_bytes) }}</template>
         </el-table-column>
         <el-table-column :label="t('request.expireCol')" width="170">
-          <template #default="{ row }">{{ row.ExpiredAt ? new Date(row.ExpiredAt).toLocaleString() : t('request.forever') }}</template>
+          <template #default="{ row }">{{ row.expired_at ? new Date(row.expired_at).toLocaleString() : t('request.forever') }}</template>
         </el-table-column>
         <el-table-column :label="t('request.actionsCol')" width="220" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="primary" text @click="copyLink(row.Token)">
+            <el-button size="small" type="primary" text @click="copyLink(row.token)">
               <el-icon><CopyDocument /></el-icon> {{ t('request.copyLink') }}
             </el-button>
-            <el-popconfirm :title="t('request.revokeConfirm')" @confirm="remove(row.Token)">
+            <el-popconfirm :title="t('request.revokeConfirm')" @confirm="remove(row.token)">
               <template #reference>
                 <el-button size="small" type="danger" text>{{ t('request.revoke') }}</el-button>
               </template>
@@ -69,10 +69,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { CopyDocument } from '@element-plus/icons-vue'
 import { requestApi, type FileRequestItem } from '@/api/request'
+import { copyToClipboard } from '@/utils/clipboard'
 
 const { t } = useI18n()
 
@@ -89,7 +90,7 @@ const form = reactive({
 })
 
 const isExpired = (row: FileRequestItem) =>
-  !!row.ExpiredAt && new Date(row.ExpiredAt).getTime() < Date.now()
+  !!row.expired_at && new Date(row.expired_at).getTime() < Date.now()
 
 const formatSize = (bytes: number): string => {
   if (!bytes) return '0 B'
@@ -125,7 +126,7 @@ const create = async () => {
       ElMessage.success(t('request.created'))
       await load()
       const last = list.value[0]
-      if (last) await copyLink(last.Token)
+      if (last) await copyLink(last.token)
     } else {
       throw new Error(res.message || '创建失败')
     }
@@ -137,11 +138,13 @@ const create = async () => {
 }
 
 const copyLink = async (token: string) => {
-  try {
-    await navigator.clipboard.writeText(buildLink(token))
+  const link = buildLink(token)
+  const ok = await copyToClipboard(link)
+  if (ok) {
     ElMessage.success(t('request.copied'))
-  } catch {
-    ElMessage.error(buildLink(token))
+  } else {
+    // 剪贴板完全不可用（极旧浏览器等）：把链接摆出来让用户手动复制
+    ElMessageBox.alert(link, t('request.copyLink'), { confirmButtonText: t('common.confirm') })
   }
 }
 

@@ -154,6 +154,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Plus, CopyDocument, Delete } from '@element-plus/icons-vue'
 import { userApi, type ApiKeyItem } from '@/api/user'
+import { copyToClipboard } from '@/utils/clipboard'
 
 const { t } = useI18n()
 
@@ -215,27 +216,7 @@ const submitCreate = async () => {
 
 const copyKey = async () => {
   const key = createdKey.value
-  try {
-    await navigator.clipboard.writeText(key)
-    copied.value = true
-    return
-  } catch {
-    // 继续走 execCommand 降级
-  }
-  // 非安全上下文（HTTP 部署）clipboard API 不可用：隐藏 textarea + execCommand
-  const ta = document.createElement('textarea')
-  ta.value = key
-  ta.style.position = 'fixed'
-  ta.style.opacity = '0'
-  document.body.appendChild(ta)
-  ta.select()
-  let ok = false
-  try {
-    ok = document.execCommand('copy')
-  } catch {
-    ok = false
-  }
-  document.body.removeChild(ta)
+  const ok = await copyToClipboard(key)
   if (ok) {
     copied.value = true
   } else {

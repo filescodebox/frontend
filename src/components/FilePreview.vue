@@ -189,6 +189,7 @@ import {
 import { marked } from 'marked'
 import hljs from 'highlight.js/lib/core'
 import { sanitizeHtml } from '@/utils/sanitize'
+import { copyToClipboard } from '@/utils/clipboard'
 import plaintext from 'highlight.js/lib/languages/plaintext'
 import javascript from 'highlight.js/lib/languages/javascript'
 import typescript from 'highlight.js/lib/languages/typescript'
@@ -390,12 +391,9 @@ const openInOfficeOnline = () => {
 // ============ 共用 ============
 const copyText = async (s: string | undefined) => {
   if (!s) return
-  try {
-    await navigator.clipboard.writeText(s)
-    ElMessage.success(t('preview.copied'))
-  } catch {
-    ElMessage.error(t('preview.copyFailed'))
-  }
+  const ok = await copyToClipboard(s)
+  if (ok) ElMessage.success(t('preview.copied'))
+  else ElMessage.error(t('preview.copyFailed'))
 }
 const downloadFile = () => emit('download')
 

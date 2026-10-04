@@ -225,6 +225,7 @@ import {
   Search, Refresh, Delete, Link, Postcard, Clock, View, RefreshLeft
 } from '@element-plus/icons-vue'
 import { userSharesApi, type UserShareItem } from '@/api/userShares'
+import { copyToClipboard } from '@/utils/clipboard'
 
 const { t } = useI18n()
 
@@ -281,13 +282,15 @@ const loadList = async (resetPage?: number) => {
 
 const copyLink = async (row: UserShareItem) => {
   const url = `${window.location.origin}/#/share/${row.code}`
-  await navigator.clipboard.writeText(url)
-  ElMessage.success(t('user.shares.linkCopied'))
+  const ok = await copyToClipboard(url)
+  if (ok) ElMessage.success(t('user.shares.linkCopied'))
+  else ElMessage.error(t('common.failed'))
 }
 
 const copyCode = async (row: UserShareItem) => {
-  await navigator.clipboard.writeText(row.code)
-  ElMessage.success(t('user.shares.codeCopied'))
+  const ok = await copyToClipboard(row.code)
+  if (ok) ElMessage.success(t('user.shares.codeCopied'))
+  else ElMessage.error(t('common.failed'))
 }
 
 const confirmDelete = async (row: UserShareItem) => {
