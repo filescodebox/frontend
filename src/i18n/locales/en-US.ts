@@ -424,6 +424,7 @@ export default {
     dashboard_title: 'Dashboard',
     files: 'Files',
     localFiles: 'Local files',
+    announcements: 'Announcements',
     users: 'Users',
     config: 'Configuration',
     storage: 'Storage',

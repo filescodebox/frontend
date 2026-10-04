@@ -67,6 +67,11 @@
             <el-icon><Tools /></el-icon>
             <span>{{ t('admin.maintenance') }}</span>
           </el-menu-item>
+
+          <el-menu-item index="/admin/announcements">
+            <el-icon><Bell /></el-icon>
+            <span>{{ t('admin.announcements') }}</span>
+          </el-menu-item>
         </el-menu>
 
         <div class="sidebar-footer">
@@ -132,7 +137,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  Monitor, Folder, FolderOpened, User, Setting, ArrowDown,
+  Monitor, Folder, FolderOpened, User, Setting, ArrowDown, Bell,
   Box, Document, Tools, Promotion, SwitchButton, List, View } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'

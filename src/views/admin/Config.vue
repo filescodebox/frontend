@@ -141,6 +141,124 @@
             </el-form-item>
           </el-form>
         </el-tab-pane>
+
+        <el-tab-pane label="外观主题" name="appearance">
+          <el-form label-width="150px">
+            <el-form-item label="背景图 URL">
+              <el-input v-model="exForm.ui.background" placeholder="https://...（http(s) 图片地址）" clearable />
+            </el-form-item>
+            <el-form-item label="主题色">
+              <el-input v-model="exForm.ui.accent_color" placeholder="#409eff" style="width: 220px" />
+              <span class="field-hint">#RRGGBB，保存后全站主色即时生效</span>
+            </el-form-item>
+            <el-form-item label="页脚展示管理入口">
+              <el-switch v-model="exForm.ui.show_admin_addr" />
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" :loading="exSaving.ui" @click="saveSection('ui', exForm.ui, '外观已保存并全站生效')">保存外观</el-button>
+        </el-tab-pane>
+
+        <el-tab-pane label="下载设置" name="download">
+          <el-form label-width="150px">
+            <el-form-item label="S3 直下（302）">
+              <el-switch v-model="exForm.download.s3_direct_download" />
+              <span class="field-hint">S3 后端时下载 302 到预签名 URL，流量不过服务器</span>
+            </el-form-item>
+            <el-form-item label="下载超时（秒）">
+              <el-input-number v-model="exForm.download.download_timeout" :min="30" :max="3600" />
+            </el-form-item>
+            <el-form-item label="取件需登录">
+              <el-switch v-model="exForm.download.require_login" />
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" :loading="exSaving.download" @click="saveSection('download', exForm.download, '下载设置已保存')">保存下载设置</el-button>
+        </el-tab-pane>
+
+        <el-tab-pane label="通知与邮件" name="notify">
+          <el-form label-width="150px">
+            <el-form-item label="Webhook URL">
+              <el-input v-model="exForm.notify.webhook_url" placeholder="notify.created 事件 POST 地址，留空禁用" clearable />
+            </el-form-item>
+            <el-divider content-position="left">SMTP 邮件</el-divider>
+            <el-form-item label="SMTP 主机">
+              <el-input v-model="exForm.notify.smtp.host" placeholder="smtp.example.com:465" />
+            </el-form-item>
+            <el-form-item label="用户名">
+              <el-input v-model="exForm.notify.smtp.username" />
+            </el-form-item>
+            <el-form-item label="密码">
+              <el-input v-model="exForm.notify.smtp.password" type="password" show-password />
+            </el-form-item>
+            <el-form-item label="发件人">
+              <el-input v-model="exForm.notify.smtp.from" placeholder="FilesCodeBox <no-reply@example.com>" />
+            </el-form-item>
+            <el-form-item label="测试发信">
+              <el-input v-model="smtpTestTo" placeholder="收件邮箱" style="width: 260px" />
+              <el-button class="ml8" :loading="smtpTesting" @click="doSMTPTest">发送测试邮件</el-button>
+              <span class="field-hint">先保存再测试；测的是当前生效配置</span>
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" :loading="exSaving.notify" @click="saveNotify">保存通知设置</el-button>
+        </el-tab-pane>
+
+        <el-tab-pane label="登录集成 OIDC" name="oidc">
+          <el-form label-width="150px">
+            <el-form-item label="启用 OIDC">
+              <el-switch v-model="exForm.oidc.enabled" />
+            </el-form-item>
+            <el-form-item label="Issuer">
+              <el-input v-model="exForm.oidc.issuer" placeholder="https://sso.example.com/realms/main" />
+            </el-form-item>
+            <el-form-item label="Client ID">
+              <el-input v-model="exForm.oidc.client_id" />
+            </el-form-item>
+            <el-form-item label="Client Secret">
+              <el-input v-model="exForm.oidc.client_secret" type="password" show-password />
+            </el-form-item>
+            <el-form-item label="回调地址">
+              <el-input :model-value="`${origin}/#/oidc/callback`" readonly />
+              <span class="field-hint">填到 IdP 客户端的 redirect URI</span>
+            </el-form-item>
+            <el-form-item label="测试连接">
+              <el-button :loading="oidcTesting" @click="doOIDCTest">验证 discovery</el-button>
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" :loading="exSaving.oidc" @click="saveSection('oidc', exForm.oidc, 'OIDC 配置已保存并热生效')">保存 OIDC</el-button>
+        </el-tab-pane>
+
+        <el-tab-pane label="本地导入" name="localimport">
+          <el-form label-width="150px">
+            <el-form-item label="启用本地导入">
+              <el-switch v-model="exForm.local_import.enabled" />
+              <span class="field-hint">服务器本地/NAS 目录内文件免上传生成提取码</span>
+            </el-form-item>
+            <el-form-item label="白名单目录">
+              <el-input
+                v-model="localImportRootsText"
+                type="textarea"
+                :rows="3"
+                placeholder="绝对路径，逗号分隔；需容器内可达（如 /app/data/import）"
+              />
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" :loading="exSaving.local_import" @click="saveLocalImport">保存本地导入</el-button>
+        </el-tab-pane>
+
+        <el-tab-pane label="API Token" name="apitoken">
+          <el-form label-width="150px">
+            <el-form-item label="认证总开关">
+              <el-switch v-model="exForm.api_token.enabled" />
+              <span class="field-hint">关闭后携带 fcb_sk_ Key 的请求一律 401（紧急停用）</span>
+            </el-form-item>
+            <el-form-item label="单 Key QPS">
+              <el-input-number v-model="exForm.api_token.per_key_qps" :min="1" :max="1000" />
+            </el-form-item>
+            <el-form-item label="单 Key Burst">
+              <el-input-number v-model="exForm.api_token.per_key_burst" :min="1" :max="5000" />
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" :loading="exSaving.api_token" @click="saveSection('api_token', exForm.api_token, 'API Token 设置已保存并热生效')">保存</el-button>
+        </el-tab-pane>
       </el-tabs>
     </el-card>
   </div>
@@ -194,6 +312,8 @@ const fetchConfig = async () => {
       if (res.data.transfer) {
         Object.assign(configForm.transfer, res.data.transfer)
       }
+      // v0.7.3 扩容设置段预填
+      fetchExSections(res.data as Record<string, unknown>)
       // 用户配置走独立端点（此前随通用配置保存会被后端丢弃——假开关）
       await fetchUserSettings()
     }
@@ -262,6 +382,103 @@ const saveConfig = async () => {
     ElMessage.error('保存配置失败')
   } finally {
     saving.value = false
+  }
+}
+
+// ==================== v0.7.3 扩容设置段（ui/download/notify/oidc/local_import/api_token）====================
+// 扁平契约：每段独立保存（adminApi.updateConfig({ 段名: 值 })），后端 nil-保留未提交段
+const exForm = reactive({
+  ui: { background: '', accent_color: '', show_admin_addr: false },
+  download: { s3_direct_download: false, download_timeout: 300, require_login: false },
+  notify: { webhook_url: '', smtp: { host: '', port: 465, username: '', password: '', from: '' } },
+  oidc: { enabled: false, issuer: '', client_id: '', client_secret: '', scopes: 'openid profile email', frontend_callback: '' },
+  local_import: { enabled: false, roots: [] as string[] },
+  api_token: { enabled: true, per_key_qps: 20, per_key_burst: 40 },
+})
+const exSaving = reactive<Record<string, boolean>>({})
+const origin = window.location.origin
+const localImportRootsText = computed({
+  get: () => exForm.local_import.roots.join(', '),
+  set: (v: string) => { exForm.local_import.roots = v.split(/[,,]/).map(x => x.trim()).filter(Boolean) },
+})
+
+const fetchExSections = (data: Record<string, unknown>) => {
+  const sec = data as Record<string, any>
+  if (sec.ui) Object.assign(exForm.ui, sec.ui)
+  if (sec.download) Object.assign(exForm.download, sec.download)
+  if (sec.notify) {
+    Object.assign(exForm.notify, sec.notify)
+    if (sec.notify.smtp) Object.assign(exForm.notify.smtp, sec.notify.smtp)
+  }
+  if (sec.oidc) Object.assign(exForm.oidc, sec.oidc)
+  if (sec.local_import) Object.assign(exForm.local_import, sec.local_import)
+  if (sec.api_token) Object.assign(exForm.api_token, sec.api_token)
+}
+
+const saveSection = async (section: string, payload: Record<string, unknown>, msg: string) => {
+  exSaving[section] = true
+  try {
+    const res = await adminApi.updateConfig({ [section]: payload })
+    if (res.code === 0 || res.code === 200) {
+      ElMessage.success(msg)
+      await configStore.refreshConfig()
+      const res2 = await adminApi.getConfig()
+      if (res2.code === 200 && res2.data) fetchExSections(res2.data as Record<string, unknown>)
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch (e) {
+    ElMessage.error(e instanceof Error ? e.message : '保存失败')
+  } finally {
+    exSaving[section] = false
+  }
+}
+
+const saveNotify = async () => {
+  const payload: Record<string, unknown> = {
+    webhook_url: exForm.notify.webhook_url,
+    smtp: { ...exForm.notify.smtp },
+  }
+  await saveSection('notify', payload, '通知设置已保存并热生效')
+}
+
+const saveLocalImport = async () => {
+  await saveSection('local_import', {
+    enabled: exForm.local_import.enabled,
+    roots: exForm.local_import.roots,
+  }, '本地导入设置已保存并热生效')
+}
+
+const smtpTestTo = ref('')
+const smtpTesting = ref(false)
+const doSMTPTest = async () => {
+  if (!smtpTestTo.value) {
+    ElMessage.warning('请填收件邮箱')
+    return
+  }
+  smtpTesting.value = true
+  try {
+    const res = await adminApi.testSMTP(smtpTestTo.value)
+    if (res.code === 0 || res.code === 200) ElMessage.success('测试邮件已发送')
+    else ElMessage.error(res.message || '发送失败')
+  } catch (e) {
+    ElMessage.error(e instanceof Error ? e.message : '发送失败')
+  } finally {
+    smtpTesting.value = false
+  }
+}
+
+const oidcTesting = ref(false)
+const doOIDCTest = async () => {
+  oidcTesting.value = true
+  try {
+    const res = await adminApi.testOIDC()
+    if (res.code === 0 || res.code === 200) ElMessage.success('discovery 验证通过')
+    else ElMessage.error(res.message || '验证失败')
+  } catch (e) {
+    ElMessage.error(e instanceof Error ? e.message : '验证失败')
+  } finally {
+    oidcTesting.value = false
   }
 }
 
@@ -343,6 +560,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.field-hint {
+  margin-left: 10px;
+  color: var(--el-text-color-secondary);
+  font-size: 12px;
+}
+.ml8 {
+  margin-left: 8px;
+}
+
 .system-config {
   padding: 0;
 }

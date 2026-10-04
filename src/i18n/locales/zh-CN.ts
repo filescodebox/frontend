@@ -425,6 +425,7 @@ export default {
     dashboard_title: '仪表盘',
     files: '文件管理',
     localFiles: '本地文件',
+    announcements: '公告管理',
     users: '用户管理',
     config: '系统配置',
     storage: '存储管理',

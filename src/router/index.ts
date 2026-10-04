@@ -183,6 +183,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/admin/Maintenance.vue'),
         meta: { title: '维护工具' },
       },
+      {
+        path: 'announcements',
+        name: 'AdminAnnouncements',
+        component: () => import('@/views/admin/Announcements.vue'),
+        meta: { title: '公告管理' },
+      },
     ],
   },
 ]

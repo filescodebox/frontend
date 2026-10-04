@@ -573,4 +573,48 @@ export const adminApi = {
       method: 'GET',
     })
   },
+
+  // ===== 设置测试（SMTP 发信 / OIDC discovery）=====
+  testSMTP: (to: string) => {
+    return request<ApiResponse<null>>({
+      url: '/admin/notify/smtp/test',
+      method: 'POST',
+      data: { to },
+    })
+  },
+  testOIDC: () => {
+    return request<ApiResponse<null>>({
+      url: '/admin/oidc/test',
+      method: 'POST',
+    })
+  },
+
+  // ===== 公告管理（/admin/notifies CRUD）=====
+  listNotifies: (params?: { page?: number; page_size?: number; type?: string }) => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/notifies',
+      method: 'GET',
+      params,
+    })
+  },
+  createNotify: (data: Record<string, unknown>) => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: '/admin/notifies',
+      method: 'POST',
+      data,
+    })
+  },
+  updateNotify: (id: number, data: Record<string, unknown>) => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: `/admin/notifies/${id}`,
+      method: 'PUT',
+      data,
+    })
+  },
+  deleteNotify: (id: number) => {
+    return request<ApiResponse<Record<string, unknown>>>({
+      url: `/admin/notifies/${id}`,
+      method: 'DELETE',
+    })
+  },
 }
