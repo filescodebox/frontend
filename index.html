@@ -9,6 +9,24 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FilesCodeBox</title>
+    <script>
+      // 主题引导：必须在首帧前同步执行，否则深色用户每次加载都先渲染
+      // 浅色再跳深色（FOUC）。语义与 src/stores/theme.ts 严格一致：
+      // app_theme = light/dark/auto，缺省 auto 跟随系统。
+      ;(function () {
+        try {
+          var m = localStorage.getItem('app_theme')
+          var dark =
+            m === 'dark' ||
+            ((m === null || m === 'auto') &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) document.documentElement.classList.add('dark')
+          document.documentElement.style.colorScheme = dark ? 'dark' : 'light'
+        } catch (e) {
+          /* noop */
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

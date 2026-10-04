@@ -8,7 +8,7 @@
           <div class="logo-icon">
             <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
           </div>
-          <span class="logo-text">FilesCodeBox</span>
+          <span class="logo-text">{{ configStore.siteName() }}</span>
         </div>
       </div>
 
@@ -137,12 +137,16 @@ import {
   Document, Bell, House, Fold, Key, Postcard
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { useConfigStore } from '@/stores/config'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 import NotifyBell from '@/components/NotifyBell.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+const configStore = useConfigStore()
+// 站点名称来自 /api/config（管理后台可改），进布局即拉取（store 内已去重）
+configStore.fetchConfig()
 const { t } = useI18n()
 
 const drawerVisible = ref(false)
