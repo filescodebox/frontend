@@ -108,8 +108,7 @@ const handleLogin = async () => {
     try {
       const res = await adminApi.login(loginForm)
       if (res.code === 200) {
-        localStorage.setItem('token', res.data.token)
-        userStore.token = res.data.token
+        // 会话 Cookie 由服务端下发（HttpOnly），前端不再持久化令牌
 
         // 登录后用 token 拉取用户信息获取 role（不再浏览器 atob 解析 JWT）
         await userStore.fetchUserInfo()

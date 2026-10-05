@@ -602,13 +602,12 @@ const submitEdit = async () => {
 
 const downloadFile = async (row: any) => {
   // 管理端下载：/admin/files/:id 受 AdminMiddleware 保护，window.open 带不上
-  // Authorization 头必然 401——改为带令牌的 fetch → blob → 触发保存
+  // 凭证——改为同源 fetch（自动携带会话 Cookie）→ blob → 触发保存
   try {
     const { default: axios } = await import('axios')
-    const token = localStorage.getItem('token') || ''
     const res = await axios.get(adminApi.fileDownloadUrl(row.id), {
       responseType: 'blob',
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
+      withCredentials: true
     })
     const url = URL.createObjectURL(res.data)
     const a = document.createElement('a')

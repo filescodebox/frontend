@@ -4,22 +4,27 @@ import axios from 'axios'
 import { userApi } from '@/api/user'
 import type { UserInfo } from '@/types/user'
 
+// 会话承载（2026-10-05 遗留修复）：JWT 迁 HttpOnly Cookie——服务端在
+// 登录/刷新/OIDC 回调时下发，前端不再持久化令牌。localStorage 仅存非敏感
+// 的会话标记（路由守卫 UX 用，真实鉴权在服务端，HttpOnly 令牌 JS 不可读）。
+const SESSION_FLAG = 'fcb_session'
+
 export const useUserStore = defineStore('user', () => {
-  const token = ref<string>(localStorage.getItem('token') || '')
   const userInfo = ref<UserInfo | null>(null)
-  // 登出进行中标志：阻断在途请求 401 → refreshToken 用旧 token 换新写回，
-  // 造成"已退出登录但刷新页面会话复活"的竞态（2026-10-03 自测复现一次）
+  // 登出进行中标志：阻断在途请求 401 → refreshToken 造成"已退出登录但刷新
+  // 页面会话复活"的竞态（2026-10-03 自测复现一次）
   let loggingOut = false
 
-  const isLoggedIn = computed(() => !!token.value)
+  const isLoggedIn = computed(
+    () => !!userInfo.value || localStorage.getItem(SESSION_FLAG) === '1'
+  )
   const isAdmin = computed(() => userInfo.value?.role === 'admin')
 
   const login = async (username: string, password: string) => {
     const res = await userApi.login({ username, password })
     if (res.code === 200) {
-      token.value = res.data.token
       userInfo.value = res.data.user
-      localStorage.setItem('token', res.data.token)
+      localStorage.setItem(SESSION_FLAG, '1')
       loggingOut = false
       return true
     }
@@ -27,26 +32,23 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const logout = () => {
-    // 服务端注销：token 进黑名单即刻失效（fire-and-forget，失败不阻断本地登出）
-    const tk = token.value
+    // 服务端注销：吊销 Cookie 中的 token 并清 Cookie（fire-and-forget，
+    // 失败不阻断本地登出）。CSRF 头必须携带（Cookie 认证的写请求）。
     loggingOut = true
-    if (tk) {
-      axios
-        .post('/api/v1/user/logout', null, {
-          headers: { Authorization: `Bearer ${tk}` },
-        })
-        .catch(() => {
-          // 后端不可达时本地登出仍生效
-        })
-    }
-    token.value = ''
+    axios
+      .post('/api/v1/user/logout', null, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+      .catch(() => {
+        // 后端不可达时本地登出仍生效
+      })
     userInfo.value = null
-    localStorage.removeItem('token')
+    localStorage.removeItem(SESSION_FLAG)
     localStorage.removeItem('userRole')
   }
 
   const fetchUserInfo = async () => {
-    if (!token.value) return
+    if (!isLoggedIn.value) return
     try {
       const res = await userApi.getUserInfo()
       if (res.code === 200) {
@@ -57,31 +59,24 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  // refreshToken 用旧 token 换新 token（401 拦截器调用）。
+  // refreshToken：Cookie 通道续期（服务端轮换并下发新 Cookie）。
   // 用裸 axios 避免触发 request.ts 的拦截器递归。
-  const refreshToken = async (): Promise<string | null> => {
-    const oldToken = token.value
-    // 登出流程中的 401 不做续期（否则新 token 写回即"会话复活"）
-    if (!oldToken || loggingOut) return null
+  const refreshToken = async (): Promise<boolean> => {
+    // 登出流程中的 401 不做续期
+    if (loggingOut || localStorage.getItem(SESSION_FLAG) !== '1') return false
     try {
       const res = await axios.post('/api/v1/user/refresh', null, {
         baseURL: import.meta.env.VITE_API_BASE_URL || '',
-        headers: { Authorization: `Bearer ${oldToken}` },
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
       })
-      const newToken = res.data?.data?.token
-      if (newToken) {
-        token.value = newToken
-        localStorage.setItem('token', newToken)
-        return newToken
-      }
+      return res.data?.code === 200
     } catch {
-      // refresh 失败，返回 null，调用方处理登出
+      // refresh 失败，返回 false，调用方处理登出
+      return false
     }
-    return null
   }
 
   return {
-    token,
     userInfo,
     isLoggedIn,
     isAdmin,

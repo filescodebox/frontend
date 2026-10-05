@@ -36,8 +36,8 @@ const epLocale = computed(() => (locale.value === 'zh-CN' ? zhCn as any : en as 
 const syncAccent = () => applyAccent(configStore.config?.accentColor)
 
 onMounted(async () => {
-  // 如果有 token，获取用户信息
-  if (userStore.token) {
+  // 有会话标记则拉取用户信息（令牌在 HttpOnly Cookie，真实校验在服务端）
+  if (userStore.isLoggedIn) {
     userStore.fetchUserInfo()
   }
   await configStore.fetchConfig()

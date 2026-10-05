@@ -205,8 +205,9 @@ router.beforeEach((to, _from, next) => {
 
   // 检查是否需要登录
   if (to.meta.requiresAuth) {
-    const token = localStorage.getItem('token')
-    if (!token) {
+    // 会话标记（非敏感）：真实鉴权在服务端（HttpOnly Cookie + 中间件）
+    const session = localStorage.getItem('fcb_session')
+    if (!session) {
       // 如果是管理后台，跳转到管理员登录页面
       if (to.path.startsWith('/admin')) {
         next('/admin/login')

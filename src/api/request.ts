@@ -47,8 +47,6 @@ export function guestSubmit(
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `/api/v1/request/${encodeURIComponent(token)}/upload`)
-    const t = localStorage.getItem('token')
-    if (t) xhr.setRequestHeader('Authorization', `Bearer ${t}`)
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100))
     }

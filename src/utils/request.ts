@@ -12,9 +12,10 @@ const instance: AxiosInstance = axios.create({
 // 请求拦截器
 instance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    // 会话走 HttpOnly Cookie（同源自动携带）；Cookie 认证的写请求须带
+    // CSRF 自定义头——全局补齐（GET 携带无副作用）
+    if (!config.headers['X-Requested-With']) {
+      config.headers['X-Requested-With'] = 'XMLHttpRequest'
     }
     // 让后端把 trace_id 通过 X-Trace-Id 透传
     const existingTid = (config.headers['X-Trace-Id'] as string) || ''
@@ -36,7 +37,7 @@ instance.interceptors.request.use(
 // 响应拦截器 — 不在这里弹 toast，由调用方 useErrorHandler 处理。
 // 401 自动刷新：token 过期时调 /user/refresh 换新，重放原请求；刷新失败跳登录。
 // 防并发：多个 401 共享同一次 refresh（refreshPromise）。
-let refreshPromise: Promise<string | null> | null = null
+let refreshPromise: Promise<boolean> | null = null
 
 instance.interceptors.response.use(
   (response) => {
@@ -78,9 +79,9 @@ instance.interceptors.response.use(
             refreshPromise = null
           })
       }
-      const newToken = await refreshPromise
-      if (newToken) {
-        originalRequest.headers.Authorization = `Bearer ${newToken}`
+      const refreshed = await refreshPromise
+      if (refreshed) {
+        // Cookie 已由服务端轮换下发，重放原请求即可（不再回填 Authorization）
         return instance(originalRequest)
       }
       // refresh 失败 → 跳登录页。应用是 hash 路由，/login 不是有效路径

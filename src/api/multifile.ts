@@ -47,8 +47,7 @@ export function multiDirect(
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', '/api/v1/share/multi-direct')
-    const token = localStorage.getItem('token')
-    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
     if (signal) {
       signal.addEventListener('abort', () => xhr.abort())
     }
