@@ -100,10 +100,7 @@
       </el-table-column>
       <el-table-column :label="t('user.shares.expireAt')" width="160">
         <template #default="{ row }">
-          <span v-if="!row.expired_at" class="muted">{{ t('user.shares.forever') }}</span>
-          <span v-else :class="{ 'is-expired': row.is_expired }">
-            {{ formatDate(row.expired_at) }}
-          </span>
+          <ExpireText :value="row.expired_at" :expired="row.is_expired" />
         </template>
       </el-table-column>
       <el-table-column :label="t('user.shares.usedCount')" width="120">
@@ -226,6 +223,7 @@ import { userSharesApi, type UserShareItem } from '@/api/userShares'
 import { copyToClipboard } from '@/utils/clipboard'
 import { useTableQuery } from '@/composables/useTableQuery'
 import PageHeader from '@/components/data/PageHeader.vue'
+import ExpireText from '@/components/data/ExpireText.vue'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 
 const { handleError } = useErrorHandler()
