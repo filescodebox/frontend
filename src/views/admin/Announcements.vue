@@ -96,6 +96,9 @@ import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '@/api/admin'
 import { useTableQuery } from '@/composables/useTableQuery'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 interface NotifyRow {
   id: number
@@ -128,7 +131,7 @@ const { list: items, total, page, loading, reload, handlePageChange } = useTable
       }
       return { items: [], total: 0 }
     } catch (e) {
-      ElMessage.error(e instanceof Error ? e.message : '加载公告失败')
+      handleError(e)
       return { items: [], total: 0 }
     }
   },

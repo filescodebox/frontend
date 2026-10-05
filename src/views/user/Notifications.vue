@@ -76,6 +76,9 @@ import { useI18n } from 'vue-i18n'
 import { Check, Bell, Setting, Tools, Share, CircleCheck } from '@element-plus/icons-vue'
 import { userNotifyApi, type UserNotifyItem } from '@/api/userNotify'
 import { useTableQuery } from '@/composables/useTableQuery'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 import { usePolling } from '@/composables/usePolling'
 
 const { t } = useI18n()
@@ -100,7 +103,7 @@ const { list, total, page, pageSize, loading, reload, handlePageChange, handleSi
       unread.value = res.data.unread
       return { items: res.data.items, total: res.data.total }
     } catch (e) {
-      ElMessage.error(t('user.notifications.loadFailed'))
+      handleError(e)
       return { items: [], total: 0 }
     }
   })

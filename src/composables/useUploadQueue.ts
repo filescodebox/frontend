@@ -89,7 +89,11 @@ export function useUploadQueue(opts: {
       ctrl.abort()
       controllers.delete(id)
     }
-    // multi 进行中的取消仅标记本任务（不中断共享控制器——钉现状）
+    // W3 语义改进：multi 进行中取消任一任务=中止整批（multi-bind 需全部文件，
+    // 单独移除一个无法成享；原行为仅标记、最终仍被成功覆盖且文件留在分享内）
+    if (multiAbort) {
+      multiAbort.abort()
+    }
     task.status = 'error'
     task.error = t('upload.presign.abort')
     task.statusText = ''

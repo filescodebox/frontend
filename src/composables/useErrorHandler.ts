@@ -1,7 +1,6 @@
 // 统一错误处理 composable：把 BizError / AxiosError / 普通 Error 翻译成 i18n 文案
 // 并通过 window event 触发 ErrorToast 组件显示
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
 import { BizError, ERRCODE_KEY_MAP, translateError } from '@/utils/api-interceptor'
 
 export interface ErrorToastItem {
@@ -55,7 +54,8 @@ export function useErrorHandler() {
       return translated
     }
 
-    // 3. 触发全局 toast 事件
+    // 3. 触发全局 toast 事件（ErrorToast 已在 App.vue 全局挂载，为唯一错误 toast 通道；
+    //    原 ElMessage 兼容通道造成双弹，2026-10-06 W3 移除）
     const detail: Omit<ErrorToastItem, 'id'> = {
       level: opts.level ?? 'error',
       title,
@@ -64,15 +64,6 @@ export function useErrorHandler() {
       duration: opts.duration ?? 5000,
     }
     window.dispatchEvent(new CustomEvent('app:error-toast', { detail }))
-
-    // 4. 兼容：同时调一次 ElMessage（不阻塞）
-    if (translated.code !== null) {
-      ElMessage({
-        type: detail.level,
-        message: detail.title + (detail.message ? `: ${detail.message}` : ''),
-        duration: 3000,
-      })
-    }
 
     return translated
   }

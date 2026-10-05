@@ -74,6 +74,9 @@ import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
 import { useTableQuery } from '@/composables/useTableQuery'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const logs = ref<any[]>([])
 const filterAction = ref('')
@@ -94,7 +97,7 @@ const { total, page, pageSize, loading, load, reload, handleSizeChange, handlePa
       ElMessage.error(res.message || '获取审计日志失败')
       return { items: [], total: 0 }
     } catch (e: any) {
-      ElMessage.error(e.message || '获取审计日志失败')
+      handleError(e)
       return { items: [], total: 0 }
     }
   })

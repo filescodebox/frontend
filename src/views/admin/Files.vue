@@ -286,6 +286,9 @@ import {
 } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
 import { useTableQuery } from '@/composables/useTableQuery'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 type FileStatus = 'normal' | 'blocked' | 'pending_review'
 
@@ -309,8 +312,7 @@ const { list: filesList, total, page, pageSize, loading, reload, handleSizeChang
       }
       return { items: [], total: 0 }
     } catch (error) {
-      console.error('获取文件列表失败:', error)
-      ElMessage.error('获取文件列表失败')
+      handleError(error)
       return { items: [], total: 0 }
     }
   })

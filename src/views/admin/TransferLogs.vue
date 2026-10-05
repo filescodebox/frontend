@@ -103,10 +103,12 @@
 <script setup lang="ts">
 import { formatFileSize, toLocaleDateTime as formatDate } from '@/utils/format'
 import { reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
 import { useTableQuery } from '@/composables/useTableQuery'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const stats = reactive({
   totalOperations: 0,
@@ -156,8 +158,7 @@ const { list: logsList, total, page, pageSize, loading, reload, handleSizeChange
       }
       return { items: [], total: 0 }
     } catch (error) {
-      console.error('获取日志失败:', error)
-      ElMessage.error('获取日志失败')
+      handleError(error)
       return { items: [], total: 0 }
     }
   })

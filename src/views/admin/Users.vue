@@ -172,6 +172,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
 import { useTableQuery } from '@/composables/useTableQuery'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const saving = ref(false)
 
@@ -321,8 +324,7 @@ const { list: usersList, total, page, pageSize, loading, reload, handleSizeChang
       }
       return { items: [], total: 0 }
     } catch (error) {
-      console.error('获取用户列表失败:', error)
-      ElMessage.error('获取用户列表失败')
+      handleError(error)
       return { items: [], total: 0 }
     }
   })

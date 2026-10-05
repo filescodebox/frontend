@@ -92,10 +92,12 @@
 import { formatDateTime as formatDate } from '@/utils/format'
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ElMessage } from 'element-plus'
 import { Search, Refresh } from '@element-plus/icons-vue'
 import { userSharesApi, type UserShareItem } from '@/api/userShares'
 import { useTableQuery } from '@/composables/useTableQuery'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const { t } = useI18n()
 
@@ -118,7 +120,7 @@ const { list, total, page, pageSize, loading, reload, handlePageChange, handleSi
       })
       return { items: res.data.items, total: res.data.total }
     } catch (e) {
-      ElMessage.error(t('user.history.loadFailed'))
+      handleError(e)
       return { items: [], total: 0 }
     }
   })

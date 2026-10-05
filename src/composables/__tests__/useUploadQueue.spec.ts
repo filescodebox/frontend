@@ -153,6 +153,24 @@ describe('useUploadQueue', () => {
     expect(q.tasks.value[0]!.error).toBe('upload.presign.abort')
   })
 
+  it('W3 语义：multi 进行中取消任一任务=中止整批（其余任务标 Cancelled）', async () => {
+    // chunkUploadFile 挂起直到 signal abort
+    mocked.chunkUploadFile.mockImplementation((_f, _id, _c, _p, signal) =>
+      new Promise((_resolve, reject) => {
+        signal?.addEventListener('abort', () => reject(new Error('Cancelled')))
+      })
+    )
+    const q = useUploadQueue({ settings: baseSettings(), t, bodyCap: () => 1 * MB })
+    q.addFiles([mkFile('a.bin', 5 * MB), mkFile('b.bin', 5 * MB)])
+    const startPromise = q.start()
+    await new Promise((r) => setTimeout(r, 20)) // 等第一个文件进入上传
+    q.cancel(q.tasks.value[0]!.id)
+    const out = await startPromise
+    expect(out).toBeNull()
+    expect(q.tasks.value[1]!.status).toBe('error')
+    expect(q.tasks.value[1]!.error).toBe('Cancelled')
+  })
+
   it('canStart/isUploading 计算正确', () => {
     const q = useUploadQueue({ settings: baseSettings(), t })
     expect(q.canStart.value).toBe(false)

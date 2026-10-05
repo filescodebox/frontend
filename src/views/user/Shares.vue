@@ -228,6 +228,9 @@ import {
 import { userSharesApi, type UserShareItem } from '@/api/userShares'
 import { copyToClipboard } from '@/utils/clipboard'
 import { useTableQuery } from '@/composables/useTableQuery'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const { t } = useI18n()
 
@@ -269,7 +272,7 @@ const { list, total, page, pageSize, loading, load, reload, handlePageChange, ha
       })
       return { items: res.data.items, total: res.data.total }
     } catch (e) {
-      ElMessage.error(t('user.shares.loadFailed'))
+      handleError(e)
       return { items: [], total: 0 }
     }
   })
