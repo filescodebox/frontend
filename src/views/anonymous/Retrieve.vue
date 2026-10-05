@@ -192,7 +192,12 @@ const handleRetrieve = async () => {
       }
     }
   } catch (e) {
-    handleError(e)
+    // 本站 miss 表现为 HTTP 404 → request util 抛异常走这里（而非 else 分支）:
+    // 联邦回退必须在 catch 路径同样尝试,否则 404 形态的未命中永远绕过全网取件
+    const jumped = await tryFederationJump()
+    if (!jumped) {
+      handleError(e)
+    }
   } finally {
     loading.value = false
   }
