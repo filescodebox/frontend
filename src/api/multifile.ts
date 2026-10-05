@@ -6,6 +6,7 @@
  *  - chunkUploadFile + multiBind：大文件走分片通道，全部传完后一次性绑定为一个分享
  */
 import { request } from '@/utils/request'
+import { xhrSend } from '@/api/_xhr'
 import type { ApiResponse } from '@/types/common'
 
 export interface MultiShareOptions {
@@ -27,7 +28,7 @@ export interface MultiShareResult {
 export const isOkCode = (code?: number) => code === 0 || code === 200
 
 /** 多文件直传（multipart，字段名 files；总体积需 ≤ 后端单请求体上限） */
-export function multiDirect(
+export async function multiDirect(
   files: File[],
   opts: MultiShareOptions,
   onProgress?: (loaded: number, total: number) => void,
@@ -44,32 +45,16 @@ export function multiDirect(
   if (opts.encrypted) formData.append('encrypted', 'true')
   if (opts.custom_code) formData.append('custom_code', opts.custom_code)
 
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
-    xhr.open('POST', '/api/v1/share/multi-direct')
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest')
-    if (signal) {
-      signal.addEventListener('abort', () => xhr.abort())
-    }
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) onProgress?.(e.loaded, e.total)
-    }
-    xhr.onload = () => {
-      try {
-        const data = JSON.parse(xhr.responseText) as ApiResponse<MultiShareResult>
-        if (xhr.status >= 200 && xhr.status < 300 && isOkCode(data.code) && data.data) {
-          resolve(data.data)
-        } else {
-          reject(new Error(data.message || `HTTP ${xhr.status}`))
-        }
-      } catch (e) {
-        reject(e instanceof Error ? e : new Error('Parse error'))
-      }
-    }
-    xhr.onerror = () => reject(new Error('Network error'))
-    xhr.onabort = () => reject(new Error('Cancelled'))
-    xhr.send(formData)
+  // 原内联 XHR 无超时（timeout=0=不限），钉现状
+  const res = await xhrSend<MultiShareResult>({
+    url: '/api/v1/share/multi-direct',
+    form: formData,
+    onProgress,
+    signal,
+    timeout: 0,
   })
+  if (!res.data) throw new Error(res.message || 'multi-direct failed')
+  return res.data
 }
 
 /** 分片上传单个文件，返回 upload_id（绑定用；不调 complete——multi-bind 服务端负责合并+标记） */

@@ -1,4 +1,5 @@
 import { request } from '@/utils/request'
+import { xhrSend } from '@/api/_xhr'
 import type { ApiResponse, PaginatedResponse } from '@/types/common'
 
 export const shareApi = {
@@ -105,4 +106,53 @@ export const shareApi = {
       method: 'DELETE'
     })
   },
+}
+
+/**
+ * 分享文件（multipart，XHR 通道支持进度与中断）。
+ * 2026-10-06 W2 收编自 FileUpload 内联 XHR；encrypted/custom_code 由调用方按
+ * 原语义传入（e2e 且密文已生成才传 encrypted；登录且非空才传 custom_code）。
+ */
+export interface UploadFileResult {
+  code: string
+  url: string
+  share_url?: string
+  full_share_url?: string
+  qr_code_data?: string
+}
+
+export async function uploadFile(
+  file: File,
+  opts: {
+    expire_value: number
+    expire_style: string
+    require_auth: boolean
+    password?: string
+    encrypted: boolean
+    custom_code?: string
+  },
+  onProgress?: (loaded: number, total: number) => void,
+  signal?: AbortSignal
+): Promise<UploadFileResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('expire_value', String(opts.expire_value))
+  formData.append('expire_style', opts.expire_style)
+  if (opts.require_auth) {
+    formData.append('require_auth', 'true')
+    if (opts.password) formData.append('password', opts.password)
+  }
+  if (opts.encrypted) formData.append('encrypted', 'true')
+  if (opts.custom_code) formData.append('custom_code', opts.custom_code)
+
+  // 原内联 XHR 无超时（timeout=0=不限），钉现状
+  const res = await xhrSend<UploadFileResult>({
+    url: '/share/file/',
+    form: formData,
+    onProgress,
+    signal,
+    timeout: 0,
+  })
+  if (!res.data) throw new Error(res.message || 'Upload failed')
+  return res.data
 }

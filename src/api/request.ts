@@ -2,6 +2,7 @@
  * 寄件码/反向收件 API（P2）
  */
 import { request } from '@/utils/request'
+import { xhrSend } from '@/api/_xhr'
 import type { ApiResponse } from '@/types/common'
 
 /** 字段与 core model.FileRequest 的 json tag（snake_case）对齐；gorm.Model 内嵌字段前端未用 */
@@ -36,30 +37,19 @@ export const requestApi = {
     request<ApiResponse<RequestPublicView>>({ url: `/request/${token}`, method: 'GET' }),
 }
 
-/** 访客投递（multipart，XHR 以支持进度） */
-export function guestSubmit(
+/** 访客投递（multipart，XHR 通道以支持进度） */
+export async function guestSubmit(
   token: string,
   files: File[],
   onProgress?: (percent: number) => void
 ): Promise<void> {
   const formData = new FormData()
   for (const f of files) formData.append('files', f)
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest()
-    xhr.open('POST', `/api/v1/request/${encodeURIComponent(token)}/upload`)
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100))
-    }
-    xhr.onload = () => {
-      try {
-        const data = JSON.parse(xhr.responseText) as ApiResponse<unknown>
-        if (xhr.status >= 200 && xhr.status < 300 && (data.code === 200 || data.code === 0)) resolve()
-        else reject(new Error(data.message || `HTTP ${xhr.status}`))
-      } catch (e) {
-        reject(e instanceof Error ? e : new Error('Parse error'))
-      }
-    }
-    xhr.onerror = () => reject(new Error('Network error'))
-    xhr.send(formData)
+  // 原内联 XHR 无超时（timeout=0=不限），钉现状
+  await xhrSend({
+    url: `/api/v1/request/${encodeURIComponent(token)}/upload`,
+    form: formData,
+    onProgress: (loaded, total) => onProgress?.(Math.round((loaded / Math.max(total, 1)) * 100)),
+    timeout: 0,
   })
 }
