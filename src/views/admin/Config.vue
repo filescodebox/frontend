@@ -269,6 +269,9 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '@/api/admin'
 import { useConfigStore } from '@/stores/config'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const loading = ref(false)
 const saving = ref(false)
@@ -355,7 +358,7 @@ const saveUserSettings = async () => {
       ElMessage.success('用户配置已保存并即时生效')
       await configStore.refreshConfig()
     } else {
-      ElMessage.error(res.message || '保存失败')
+      handleError(new Error(res.message || '保存失败'))
     }
   } catch (error) {
     console.error('保存用户配置失败:', error)
@@ -375,7 +378,7 @@ const saveConfig = async () => {
       await configStore.refreshConfig()
       await fetchConfig()
     } else {
-      ElMessage.error(res.message || '保存失败')
+      handleError(new Error(res.message || '保存失败'))
     }
   } catch (error) {
     console.error('保存配置失败:', error)
@@ -425,10 +428,10 @@ const saveSection = async (section: string, payload: Record<string, unknown>, ms
       const res2 = await adminApi.getConfig()
       if (res2.code === 200 && res2.data) fetchExSections(res2.data as Record<string, unknown>)
     } else {
-      ElMessage.error(res.message || '保存失败')
+      handleError(new Error(res.message || '保存失败'))
     }
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '保存失败')
+    handleError(e)
   } finally {
     exSaving[section] = false
   }
@@ -460,9 +463,9 @@ const doSMTPTest = async () => {
   try {
     const res = await adminApi.testSMTP(smtpTestTo.value)
     if (res.code === 0 || res.code === 200) ElMessage.success('测试邮件已发送')
-    else ElMessage.error(res.message || '发送失败')
+    else handleError(new Error(res.message || '发送失败'))
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '发送失败')
+    handleError(e)
   } finally {
     smtpTesting.value = false
   }
@@ -474,9 +477,9 @@ const doOIDCTest = async () => {
   try {
     const res = await adminApi.testOIDC()
     if (res.code === 0 || res.code === 200) ElMessage.success('discovery 验证通过')
-    else ElMessage.error(res.message || '验证失败')
+    else handleError(new Error(res.message || '验证失败'))
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '验证失败')
+    handleError(e)
   } finally {
     oidcTesting.value = false
   }
@@ -526,10 +529,10 @@ const saveRateLimit = async () => {
     if (res.code === 0 || res.code === 200) {
       ElMessage.success('限流配置已保存并热更新')
     } else {
-      ElMessage.error(res.message || '保存失败')
+      handleError(new Error(res.message || '保存失败'))
     }
   } catch (e: any) {
-    ElMessage.error(e.message || '保存失败')
+    handleError(e)
   } finally {
     rlSaving.value = false
   }
@@ -544,10 +547,10 @@ const fetchRateLimitStatus = async () => {
     if (res.code === 0 || res.code === 200) {
       rlStatus.value = res.data || null
     } else {
-      ElMessage.error(res.message || '获取运行状态失败')
+      handleError(new Error(res.message || '获取运行状态失败'))
     }
   } catch (e: any) {
-    ElMessage.error(e.message || '获取运行状态失败')
+    handleError(e)
   } finally {
     rlStatusLoading.value = false
   }

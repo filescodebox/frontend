@@ -224,10 +224,10 @@ const submitCreate = async () => {
       createVisible.value = false
       await fetchUsers()
     } else {
-      ElMessage.error(res.message || '创建失败')
+      handleError(new Error(res.message || '创建失败'))
     }
   } catch (e: any) {
-    ElMessage.error(e.message || '创建失败')
+    handleError(e)
   } finally {
     saving.value = false
   }
@@ -251,10 +251,10 @@ const submitReset = async () => {
       ElMessage.success('密码已重置')
       resetVisible.value = false
     } else {
-      ElMessage.error(res.message || '重置失败')
+      handleError(new Error(res.message || '重置失败'))
     }
   } catch (e: any) {
-    ElMessage.error(e.message || '重置失败')
+    handleError(e)
   } finally {
     saving.value = false
   }
@@ -276,10 +276,10 @@ const removeUser = async (user: any) => {
       ElMessage.success('已删除')
       await fetchUsers()
     } else {
-      ElMessage.error(res.message || '删除失败')
+      handleError(new Error(res.message || '删除失败'))
     }
   } catch (e: any) {
-    ElMessage.error(e.message || '删除失败')
+    handleError(e)
   }
 }
 
@@ -347,7 +347,7 @@ const toggleUserStatus = async (user: any) => {
       ElMessage.success('操作成功')
       await fetchUsers()
     } else {
-      ElMessage.error(res.message || '操作失败')
+      handleError(new Error(res.message || '操作失败'))
     }
   } catch (error: any) {
     if (error !== 'cancel') {

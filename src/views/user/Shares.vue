@@ -401,7 +401,7 @@ const doExtend = async () => {
     showBatchExtend.value = false
     await loadList()
   } catch (e) {
-    ElMessage.error(t('user.shares.extendFailed'))
+    handleError(e)
   } finally {
     extending.value = false
   }

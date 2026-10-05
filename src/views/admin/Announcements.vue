@@ -178,10 +178,10 @@ const doSave = async () => {
       dlg.value = false
       load()
     } else {
-      ElMessage.error(res.message || '保存失败')
+      handleError(new Error(res.message || '保存失败'))
     }
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '保存失败')
+    handleError(e)
   } finally {
     saving.value = false
   }
@@ -196,10 +196,10 @@ const setStatus = async (row: NotifyRow, status: number) => {
       ElMessage.success(status === 1 ? '已发布' : '已下线')
       load()
     } else {
-      ElMessage.error(res.message || '操作失败')
+      handleError(new Error(res.message || '操作失败'))
     }
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '操作失败')
+    handleError(e)
   }
 }
 
@@ -214,7 +214,7 @@ const onDelete = async (row: NotifyRow) => {
     ElMessage.success('已删除')
     load()
   } else {
-    ElMessage.error(res.message || '删除失败')
+    handleError(new Error(res.message || '删除失败'))
   }
 }
 

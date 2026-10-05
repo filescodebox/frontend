@@ -114,7 +114,7 @@ const markAllRead = async () => {
     ElMessage.success(t('user.notifications.markAllReadSuccess'))
     await reload()
   } catch (e) {
-    ElMessage.error(t('user.notifications.markAllReadFailed'))
+    handleError(e)
   } finally {
     marking.value = false
   }

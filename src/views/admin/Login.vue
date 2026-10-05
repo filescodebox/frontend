@@ -77,6 +77,9 @@ import { adminApi } from '@/api/admin'
 
 const isDev = import.meta.env.DEV
 import { useUserStore } from '@/stores/user'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -126,10 +129,10 @@ const handleLogin = async () => {
         ElMessage.success('登录成功')
         router.push('/admin')
       } else {
-        ElMessage.error(res.message || '登录失败')
+        handleError(new Error(res.message || '登录失败'))
       }
     } catch (error: any) {
-      ElMessage.error(error.message || '登录失败，请检查账号密码')
+      handleError(error)
     } finally {
       loading.value = false
     }

@@ -99,6 +99,9 @@ import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Document, Folder } from '@element-plus/icons-vue'
 import { localFilesApi, type LocalFileEntry } from '@/api/localFiles'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const roots = ref<string[]>([])
 const rootIdx = ref(0)
@@ -126,7 +129,7 @@ const load = async () => {
       ElMessage.error(resp.message || '加载本地文件失败')
     }
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '加载本地文件失败')
+    handleError(e)
   } finally {
     loading.value = false
   }
@@ -157,7 +160,7 @@ const onDelete = async (row: LocalFileEntry) => {
     ElMessage.success('已删除')
     load()
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '删除失败')
+    handleError(e)
   }
 }
 
@@ -214,7 +217,7 @@ const doImport = async () => {
       ElMessage({ message: `分享链接已复制：${data.share_url}`, type: 'success', duration: 5000 })
     }
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '导入失败')
+    handleError(e)
   } finally {
     importing.value = false
   }

@@ -92,6 +92,9 @@ import { CopyDocument } from '@element-plus/icons-vue'
 import { requestApi, type FileRequestItem } from '@/api/request'
 import { copyToClipboard } from '@/utils/clipboard'
 import PageHeader from '@/components/data/PageHeader.vue'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const { t } = useI18n()
 
@@ -142,7 +145,7 @@ const create = async () => {
       throw new Error(res.message || '创建失败')
     }
   } catch (e: unknown) {
-    ElMessage.error(e instanceof Error ? e.message : '创建失败')
+    handleError(e)
   } finally {
     creating.value = false
   }
@@ -165,7 +168,7 @@ const remove = async (token: string) => {
     ElMessage.success(t('request.revoked'))
     await load()
   } else {
-    ElMessage.error(res.message || '撤销失败')
+    handleError(new Error(res.message || '撤销失败'))
   }
 }
 

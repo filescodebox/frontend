@@ -210,6 +210,7 @@ import { formatFileSize, toLocaleDateTime } from '@/utils/format'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 import { useI18n } from 'vue-i18n'
 import {
   User, Calendar, Upload, Folder, PieChart, Plus, Document,
@@ -230,6 +231,7 @@ interface RecentShare {
 
 const router = useRouter()
 const { t, locale } = useI18n()
+const { handleError } = useErrorHandler()
 const userStore = useUserStore()
 
 const editMode = ref(false)
@@ -277,7 +279,7 @@ const fetchUserInfo = async () => {
       }
     }
   } catch (error) {
-    ElMessage.error(t('user.fetchInfoFailed'))
+    handleError(error)
   }
 }
 
@@ -288,7 +290,7 @@ const fetchUserStats = async () => {
       userStats.value = res.data
     }
   } catch (error) {
-    ElMessage.error(t('user.fetchStatsFailed'))
+    handleError(error)
   }
 }
 
@@ -300,7 +302,7 @@ const fetchRecentShares = async () => {
       recentShares.value = res.data.items || []
     }
   } catch (error) {
-    ElMessage.error(t('user.fetchSharesFailed'))
+    handleError(error)
   } finally {
     sharesLoading.value = false
   }
@@ -317,7 +319,7 @@ const saveUserInfo = async () => {
       ElMessage.error(res.message || t('common.failed'))
     }
   } catch (error) {
-    ElMessage.error(t('user.updateFailed'))
+    handleError(error)
   }
 }
 
@@ -353,7 +355,7 @@ const deleteShare = async (code: string) => {
     }
   } catch (error: unknown) {
     if (error !== 'cancel') {
-      ElMessage.error(t('user.deleteFailed'))
+      handleError(error)
     }
   }
 }

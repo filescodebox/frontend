@@ -475,7 +475,7 @@ const deleteFile = async (file: any) => {
       ElMessage.success('删除成功')
       await fetchFiles()
     } else {
-      ElMessage.error(res.message || '删除失败')
+      handleError(new Error(res.message || '删除失败'))
     }
   } catch (error: any) {
     if (error !== 'cancel') {
@@ -510,10 +510,10 @@ const batchDelete = async () => {
       ElMessage.success(`已删除 ${res.data?.deleted ?? selectedIds.value.length} 个`)
       await fetchFiles()
     } else {
-      ElMessage.error(res.message || '批量删除失败')
+      handleError(new Error(res.message || '批量删除失败'))
     }
   } catch (e: any) {
-    ElMessage.error(e.message || '批量删除失败')
+    handleError(e)
   } finally {
     saving.value = false
   }
@@ -530,10 +530,10 @@ const submitBatchExtend = async () => {
       batchExtendVisible.value = false
       await fetchFiles()
     } else {
-      ElMessage.error(res.message || '批量延期失败')
+      handleError(new Error(res.message || '批量延期失败'))
     }
   } catch (e: any) {
-    ElMessage.error(e.message || '批量延期失败')
+    handleError(e)
   } finally {
     saving.value = false
   }
@@ -564,10 +564,10 @@ const submitEdit = async () => {
       editVisible.value = false
       await fetchFiles()
     } else {
-      ElMessage.error(res.message || '保存失败')
+      handleError(new Error(res.message || '保存失败'))
     }
   } catch (e: any) {
-    ElMessage.error(e.message || '保存失败')
+    handleError(e)
   } finally {
     saving.value = false
   }

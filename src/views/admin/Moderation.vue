@@ -126,10 +126,10 @@ const act = async (row: any, status: 'normal' | 'blocked') => {
       ElMessage.success(status === 'normal' ? '已通过' : '已拒绝并禁用')
       await reload()
     } else {
-      ElMessage.error(res.message || '操作失败')
+      handleError(new Error(res.message || '操作失败'))
     }
   } catch (e: any) {
-    ElMessage.error(e.message || '操作失败')
+    handleError(e)
   } finally {
     acting.value = null
   }

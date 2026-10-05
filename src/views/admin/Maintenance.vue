@@ -141,6 +141,9 @@ import {
   DocumentChecked
 } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 const cleaningExpired = ref(false)
 const optimizing = ref(false)
@@ -171,7 +174,7 @@ const cleanExpiredFiles = async () => {
       ElMessage.success(`已清理 ${res.data.deleted_count || 0} 个过期文件`)
       await fetchSystemInfo()
     } else {
-      ElMessage.error(res.message || '清理失败')
+      handleError(new Error(res.message || '清理失败'))
     }
   } catch (error: any) {
     if (error !== 'cancel') {
@@ -194,7 +197,7 @@ const optimizeDatabase = async () => {
     if (res.code === 200) {
       ElMessage.success('数据库优化完成')
     } else {
-      ElMessage.error(res.message || '优化失败')
+      handleError(new Error(res.message || '优化失败'))
     }
   } catch (error: any) {
     if (error !== 'cancel') {

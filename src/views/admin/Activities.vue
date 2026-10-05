@@ -70,7 +70,6 @@
 <script setup lang="ts">
 import { toLocaleDateTime as formatDate } from '@/utils/format'
 import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
 import { useTableQuery } from '@/composables/useTableQuery'
@@ -94,7 +93,7 @@ const { total, page, pageSize, loading, load, reload, handleSizeChange, handlePa
         const items = Array.isArray(data) ? data : data?.list || []
         return { items, total: Array.isArray(data) ? data.length : data?.total ?? 0 }
       }
-      ElMessage.error(res.message || '获取审计日志失败')
+      handleError(new Error(res.message || '获取审计日志失败'))
       return { items: [], total: 0 }
     } catch (e: any) {
       handleError(e)

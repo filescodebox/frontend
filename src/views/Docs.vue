@@ -52,7 +52,9 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useConfigStore } from '@/stores/config'
-import { ElMessage } from 'element-plus'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 import { Refresh, Link, Loading } from '@element-plus/icons-vue'
 // Swagger UI 集成说明：
 // 1. 用默认导入（import SwaggerUIBundle），Vite 对 CommonJS 模块的默认导入互操作最可靠。
@@ -103,7 +105,7 @@ const loadSpec = async () => {
     })
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e)
-    ElMessage.error(t('docs.loadFailed'))
+    handleError(e)
   } finally {
     loading.value = false
   }

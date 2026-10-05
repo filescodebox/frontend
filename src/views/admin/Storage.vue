@@ -72,6 +72,9 @@ import { formatFileSize } from '@/utils/format'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { adminApi } from '@/api/admin'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+
+const { handleError } = useErrorHandler()
 
 interface FieldDef {
   key: string
@@ -213,7 +216,7 @@ const load = async () => {
       quota.value = Number(d.storage_quota || 0)
     }
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '加载存储信息失败')
+    handleError(e)
   } finally {
     loading.value = false
   }
@@ -265,10 +268,10 @@ const doSwitch = async () => {
       ElMessage.success('已切换并持久化')
       load()
     } else {
-      ElMessage.error(res.message || '切换失败')
+      handleError(new Error(res.message || '切换失败'))
     }
   } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '切换失败（Probe 未通过？）')
+    handleError(e)
   } finally {
     switching.value = false
   }
