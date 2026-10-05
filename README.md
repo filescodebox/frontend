@@ -22,16 +22,40 @@ FilesCodeBox(文件快递柜)Web 前端:Vue 3 + Vite + Element Plus。自 v0.9.0
 
 ```
 src/
-├── api/            # API 接口封装(share / user / admin ...)
-├── components/     # 通用组件 + 上传组件(upload/)
-├── composables/    # 组合式函数
+├── api/            # API 接口封装(share / user / admin ...；_xhr.ts=XHR 通道统一出口)
+├── components/     # 通用组件(upload/ 上传、share/ 分享表单与结果弹窗、layout/ 导航、data/ 展示)
+├── composables/    # 组合式函数(上传队列/表格查询/分享设置/轮询/拖拽等)
+├── config/         # 前端配置数据(menu.ts 导航单一数据源)
 ├── router/         # 路由配置
-├── stores/         # Pinia 状态
+├── stores/         # Pinia 状态(config / locale / theme / user)
 ├── styles/         # 全局样式(SCSS)
 ├── types/          # 手写 TS 类型
-├── utils/          # Axios 封装等工具
-└── views/          # 页面(home / share / user / admin)
+├── utils/          # 纯函数工具(format.ts 全站唯一格式化实现、request.ts axios 封装等)
+└── views/          # 页面(home / share / user / admin)——只做装配
 ```
+
+## 架构分层（2026-10-06 起强制）
+
+六层单向依赖，只允许向下 import，禁止反向（spec：`docs/specs/2026-10-06-frontend-architecture-design.md`，仓库根）：
+
+```
+views(装配,软上限~400行) → components(共享组件) → composables(领域编排)
+                        → stores(跨页状态) → api(端点封装,零 Vue 依赖) → utils/types(纯函数)
+```
+
+新代码落位约定：
+
+| 要做的事 | 落位 |
+|---|---|
+| 格式化大小/日期 | `utils/format.ts`（勿在页面重写，全站唯一实现） |
+| 上传（任意入口） | `composables/useUploadQueue` + `useFileDrop`，大文件弹窗 `PresignUploadDialog.open()`（Promise） |
+| 分享设置表单 / 分享成功弹窗 | `components/share/ShareSettingsForm` + `ShareResultDialog`（含 `types/share.ts` 契约） |
+| 表格+分页列表 | `composables/useTableQuery`（fetcher 由页面提供，负责筛选/错误提示/形状归一） |
+| 导航菜单 | `config/menu.ts`（router 注册 + menu.ts 加一项，双端 UI 自动生效） |
+| 定时轮询 | `composables/usePolling`（页面隐藏自动暂停） |
+| 错误提示 | catch 分支用 `useErrorHandler().handleError(e)`（ErrorToast 全局唯一通道，带 trace_id）；成功/校验类提示用 ElMessage |
+| XHR 上传类请求 | `api/_xhr.ts`（xhrSend JSON 通道 / xhrRaw 裸请求），勿再手写 XMLHttpRequest |
+| i18n | 新文案一律 key 化，zh-CN 与 en-US 同 commit 补齐 |
 
 ## 开发指南
 
