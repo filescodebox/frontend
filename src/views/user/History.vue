@@ -12,13 +12,13 @@
         :placeholder="t('user.shares.searchPlaceholder')"
         clearable
         class="search-input"
-        @keyup.enter="loadList(1)"
+        @keyup.enter="reload()"
       >
         <template #prefix>
           <el-icon><Search /></el-icon>
         </template>
       </el-input>
-      <el-button @click="loadList(1)">
+      <el-button @click="reload()">
         <el-icon><Refresh /></el-icon>
         {{ t('common.refresh') }}
       </el-button>
@@ -81,8 +81,8 @@
         :total="total"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="loadList(1)"
-        @current-change="loadList()"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
       />
     </div>
   </div>
@@ -91,19 +91,15 @@
 <script setup lang="ts">
 import { formatDateTime as formatDate } from '@/utils/format'
 import { ref, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 import { Search, Refresh } from '@element-plus/icons-vue'
 import { userSharesApi, type UserShareItem } from '@/api/userShares'
+import { useTableQuery } from '@/composables/useTableQuery'
 
 const { t } = useI18n()
 
 const search = ref('')
-const page = ref(1)
-const pageSize = ref(20)
-const total = ref(0)
-const loading = ref(false)
-const list = ref<UserShareItem[]>([])
 
 // 只展示有 viewer_at 的（即至少被取件过一次）
 const viewedShares = computed(() => {
@@ -111,27 +107,23 @@ const viewedShares = computed(() => {
     .sort((a, b) => (b.viewer_at || '').localeCompare(a.viewer_at || ''))
 })
 
-const loadList = async (resetPage?: number) => {
-  if (resetPage) page.value = resetPage
-  loading.value = true
-  try {
-    const res = await userSharesApi.list({
-      status: 'all',
-      search: search.value || undefined,
-      page: page.value,
-      page_size: pageSize.value,
-    })
-    list.value = res.data.items
-    total.value = res.data.total
-  } catch (e) {
-    ElMessage.error(t('user.history.loadFailed'))
-  } finally {
-    loading.value = false
-  }
-}
+const { list, total, page, pageSize, loading, reload, handlePageChange, handleSizeChange } =
+  useTableQuery<UserShareItem>(async ({ page, page_size }) => {
+    try {
+      const res = await userSharesApi.list({
+        status: 'all',
+        search: search.value || undefined,
+        page,
+        page_size,
+      })
+      return { items: res.data.items, total: res.data.total }
+    } catch (e) {
+      ElMessage.error(t('user.history.loadFailed'))
+      return { items: [], total: 0 }
+    }
+  })
 
-
-onMounted(() => loadList(1))
+onMounted(() => reload())
 </script>
 
 <style scoped>

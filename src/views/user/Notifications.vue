@@ -61,8 +61,8 @@
         :total="total"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="loadList(1)"
-        @current-change="loadList()"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
       />
     </div>
   </div>
@@ -75,16 +75,12 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Check, Bell, Setting, Tools, Share, CircleCheck } from '@element-plus/icons-vue'
 import { userNotifyApi, type UserNotifyItem } from '@/api/userNotify'
+import { useTableQuery } from '@/composables/useTableQuery'
 
 const { t } = useI18n()
 
-const page = ref(1)
-const pageSize = ref(20)
-const total = ref(0)
 const unread = ref(0)
-const loading = ref(false)
 const marking = ref(false)
-const list = ref<UserNotifyItem[]>([])
 
 const iconForType = (type: string) => {
   switch (type) {
@@ -96,30 +92,24 @@ const iconForType = (type: string) => {
   }
 }
 
-const loadList = async (resetPage?: number) => {
-  if (resetPage) page.value = resetPage
-  loading.value = true
-  try {
-    const res = await userNotifyApi.list({
-      page: page.value,
-      page_size: pageSize.value,
-    })
-    list.value = res.data.items
-    total.value = res.data.total
-    unread.value = res.data.unread
-  } catch (e) {
-    ElMessage.error(t('user.notifications.loadFailed'))
-  } finally {
-    loading.value = false
-  }
-}
+const { list, total, page, pageSize, loading, reload, handlePageChange, handleSizeChange } =
+  useTableQuery<UserNotifyItem>(async ({ page, page_size }) => {
+    try {
+      const res = await userNotifyApi.list({ page, page_size })
+      unread.value = res.data.unread
+      return { items: res.data.items, total: res.data.total }
+    } catch (e) {
+      ElMessage.error(t('user.notifications.loadFailed'))
+      return { items: [], total: 0 }
+    }
+  })
 
 const markAllRead = async () => {
   marking.value = true
   try {
     await userNotifyApi.markAllRead()
     ElMessage.success(t('user.notifications.markAllReadSuccess'))
-    await loadList()
+    await reload()
   } catch (e) {
     ElMessage.error(t('user.notifications.markAllReadFailed'))
   } finally {
@@ -132,7 +122,7 @@ const formatDate = (s: string): string => formatDateTime(s, '')
 // 每 60s 自动刷新未读数（顶栏铃铛会复用）
 let timer: number | undefined
 onMounted(() => {
-  loadList(1)
+  reload()
   timer = window.setInterval(() => {
     userNotifyApi.unreadCount().then(r => {
       unread.value = r.data.unread

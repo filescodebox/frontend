@@ -56,7 +56,7 @@
           <el-icon><RefreshLeft /></el-icon>
           {{ t('user.shares.batchRestore') }}
         </el-button>
-        <el-button @click="loadList(1)">
+        <el-button @click="reload()">
           <el-icon><Refresh /></el-icon>
           {{ t('common.refresh') }}
         </el-button>
@@ -185,8 +185,8 @@
         :total="total"
         :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next, jumper"
-        @size-change="loadList(1)"
-        @current-change="loadList()"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
       />
     </div>
 
@@ -227,16 +227,12 @@ import {
 } from '@element-plus/icons-vue'
 import { userSharesApi, type UserShareItem } from '@/api/userShares'
 import { copyToClipboard } from '@/utils/clipboard'
+import { useTableQuery } from '@/composables/useTableQuery'
 
 const { t } = useI18n()
 
 const activeStatus = ref<'all' | 'active' | 'expired' | 'text' | 'file' | 'deleted'>('all')
 const search = ref('')
-const page = ref(1)
-const pageSize = ref(20)
-const total = ref(0)
-const loading = ref(false)
-const list = ref<UserShareItem[]>([])
 
 const selectedRows = ref<UserShareItem[]>([])
 const selectedCodes = computed(() => selectedRows.value.map(r => r.code))
@@ -262,24 +258,24 @@ const handleSelectionChange = (rows: UserShareItem[]) => {
   selectedRows.value = rows
 }
 
-const loadList = async (resetPage?: number) => {
-  if (resetPage) page.value = resetPage
-  loading.value = true
-  try {
-    const res = await userSharesApi.list({
-      status: activeStatus.value,
-      search: search.value || undefined,
-      page: page.value,
-      page_size: pageSize.value,
-    })
-    list.value = res.data.items
-    total.value = res.data.total
-  } catch (e) {
-    ElMessage.error(t('user.shares.loadFailed'))
-  } finally {
-    loading.value = false
-  }
-}
+const { list, total, page, pageSize, loading, load, reload, handlePageChange, handleSizeChange } =
+  useTableQuery<UserShareItem>(async ({ page, page_size }) => {
+    try {
+      const res = await userSharesApi.list({
+        status: activeStatus.value,
+        search: search.value || undefined,
+        page,
+        page_size,
+      })
+      return { items: res.data.items, total: res.data.total }
+    } catch (e) {
+      ElMessage.error(t('user.shares.loadFailed'))
+      return { items: [], total: 0 }
+    }
+  })
+
+// 操作后刷新适配器：带参=跳页，无参=刷新当前页
+const loadList = (resetPage?: number) => (resetPage ? load(resetPage) : load())
 
 const copyLink = async (row: UserShareItem) => {
   const url = `${window.location.origin}/#/share/${row.code}`
@@ -415,7 +411,7 @@ const doExtend = async () => {
 
 
 onMounted(() => {
-  loadList(1)
+  reload()
 })
 </script>
 
