@@ -1,24 +1,11 @@
 <template>
   <div class="app-layout">
     <!-- 顶部导航 -->
-    <header class="app-header">
-      <div class="header-left">
+    <TopNav variant="app" @command="handleCommand">
+      <template #leading>
         <el-icon class="menu-toggle" @click="drawerVisible = true"><Fold /></el-icon>
-        <div class="logo-section" @click="$router.push('/')">
-          <div class="logo-icon">
-            <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
-          </div>
-          <span class="logo-text">{{ configStore.siteName() }}</span>
-        </div>
-      </div>
-
-      <div class="header-right">
-        <LocaleSwitcher />
-        <ThemeSwitcher />
-        <NotifyBell />
-        <UserMenu show-home @command="handleCommand" />
-      </div>
-    </header>
+      </template>
+    </TopNav>
 
     <div class="app-body">
       <!-- 侧边栏 -->
@@ -80,12 +67,9 @@ import {
   Fold
 } from '@element-plus/icons-vue'
 import { userNavItems } from '@/config/menu'
-import UserMenu from '@/components/layout/UserMenu.vue'
+import TopNav from '@/components/layout/TopNav.vue'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
-import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
-import NotifyBell from '@/components/NotifyBell.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -117,53 +101,6 @@ const handleCommand = (command: string) => {
 .app-layout {
   min-height: 100vh;
   background: var(--color-bg);
-}
-
-/* 顶部导航 —— 扁平 */
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 56px;
-  padding: 0 var(--spacing-xl);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.logo-section {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  cursor: pointer;
-}
-
-.logo-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.logo-img {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.logo-text {
-  font-size: var(--text-base);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  letter-spacing: -0.01em;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
 }
 
 /* 主体:侧边栏 + 内容 */
@@ -223,10 +160,6 @@ const handleCommand = (command: string) => {
 @media (max-width: 768px) {
   .menu-toggle {
     display: inline-flex;
-  }
-
-  .app-header {
-    padding: 0 var(--spacing-md);
   }
 
   .app-sidebar {

@@ -2,21 +2,9 @@
   <div class="home-container">
     <!-- 主容器 -->
     <div class="main-wrapper">
-      <!-- 顶部导航 —— 扁平纯色 + 1px 底边框 -->
-      <header class="top-nav">
-        <div class="logo-section">
-          <div class="logo-icon">
-            <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
-          </div>
-          <div class="logo-text">
-            <h1>{{ configStore.siteName() }}</h1>
-          </div>
-        </div>
-
-        <div class="user-section">
-          <LocaleSwitcher />
-          <ThemeSwitcher />
-          <NotifyBell v-if="userStore.isLoggedIn" />
+      <!-- 顶部导航 —— TopNav home 变体（站名/语言/主题/铃铛/用户菜单内聚于组件） -->
+      <TopNav variant="home" @command="handleUserCommand">
+        <template #nav-extra>
           <el-button text @click="$router.push('/api-docs')">
             <el-icon><Document /></el-icon>
             {{ t('home.apiDocs') }}
@@ -25,16 +13,11 @@
             <el-icon><Postcard /></el-icon>
             {{ t('home.retrieve') }}
           </el-button>
-          <template v-if="userStore.isLoggedIn">
-            <UserMenu @command="handleUserCommand" />
-          </template>
-          <template v-else>
-            <el-button type="primary" @click="$router.push('/user/login')">
-              {{ t('home.login') }}
-            </el-button>
-          </template>
-        </div>
-      </header>
+          <el-button v-if="!userStore.isLoggedIn" type="primary" @click="$router.push('/user/login')">
+            {{ t('home.login') }}
+          </el-button>
+        </template>
+      </TopNav>
 
       <!-- 主内容区 -->
       <main class="content-area">
@@ -250,10 +233,7 @@ import { useLocaleStore } from '@/stores/locale'
 import FileUpload from '@/components/upload/FileUpload.vue'
 import TextShare from '@/components/upload/TextShare.vue'
 import GetShare from '@/components/upload/GetShare.vue'
-import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
-import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
-import NotifyBell from '@/components/NotifyBell.vue'
-import UserMenu from '@/components/layout/UserMenu.vue'
+import TopNav from '@/components/layout/TopNav.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -392,53 +372,7 @@ onMounted(async () => {
   flex-direction: column;
 }
 
-/* 顶部导航 —— 扁平纯色 + 1px 底边框 */
-.top-nav {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 56px;
-  padding: 0 var(--spacing-md);
-  margin-bottom: var(--spacing-2xl);
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.logo-section {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.logo-img {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.logo-text h1 {
-  margin: 0;
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  letter-spacing: -0.01em;
-}
-
-.user-section {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
+/* 顶部导航样式内聚于 TopNav 组件（variant="home"） */
 
 /* 主内容区 */
 .content-area {
@@ -701,19 +635,6 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .main-wrapper {
     padding: var(--spacing-md);
-  }
-
-  .top-nav {
-    height: auto;
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
-  }
-
-  .user-section {
-    justify-content: flex-end;
-    flex-wrap: wrap;
   }
 
   .intro-section h2 {
