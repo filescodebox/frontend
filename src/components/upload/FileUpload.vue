@@ -99,74 +99,7 @@
     </transition-group>
 
     <!-- 共享设置（对所有文件生效） -->
-    <div v-if="fileList.length > 0" class="upload-settings">
-      <div class="setting-group">
-        <label class="setting-label">
-          <el-icon><Clock /></el-icon>
-          {{ t('upload.expire') }}
-        </label>
-        <div class="expire-inputs">
-          <el-input-number
-            v-model="form.expire_value"
-            :min="1"
-            :max="999"
-            controls-position="right"
-          />
-          <el-select v-model="form.expire_style" class="expire-select">
-            <el-option :label="t('common.minutes')" value="minute" />
-            <el-option :label="t('common.hours')" value="hour" />
-            <el-option :label="t('common.days')" value="day" />
-            <el-option :label="t('common.weeks')" value="week" />
-            <el-option :label="t('common.months')" value="month" />
-            <el-option :label="t('common.years')" value="year" />
-            <el-option :label="t('common.forever')" value="forever" />
-          </el-select>
-        </div>
-      </div>
-
-      <div class="setting-group">
-        <label class="setting-label">
-          <el-icon><Lock /></el-icon>
-          {{ t('upload.requirePassword') }}
-        </label>
-        <el-switch
-          v-model="form.require_auth"
-          :active-text="t('upload.needPassword')"
-          :inactive-text="t('upload.publicAccess')"
-        />
-        <el-input
-          v-if="form.require_auth"
-          v-model="form.password"
-          type="password"
-          :placeholder="t('upload.passwordPlaceholder')"
-          show-password
-          maxlength="64"
-          style="margin-top: 8px"
-        />
-      </div>
-
-      <div v-if="userStore.isLoggedIn" class="setting-group">
-        <label class="setting-label">
-          <el-icon><EditPen /></el-icon>
-          {{ t('upload.customCode') }}
-        </label>
-        <el-input
-          v-model="form.custom_code"
-          :placeholder="t('upload.customCodePlaceholder')"
-          maxlength="32"
-          style="max-width: 280px"
-        />
-      </div>
-
-      <div class="setting-group">
-        <label class="setting-label">
-          <el-icon><Key /></el-icon>
-          {{ t('upload.e2e.title') }}
-        </label>
-        <el-switch v-model="form.e2e" :active-text="t('upload.e2e.on')" :inactive-text="t('upload.e2e.off')" />
-        <div class="e2e-hint">{{ t('upload.e2e.hint') }}</div>
-      </div>
-    </div>
+    <ShareSettingsForm v-if="fileList.length > 0" :settings="form" />
 
     <!-- 上传按钮 -->
     <el-button
@@ -198,19 +131,21 @@
 
 <script setup lang="ts">
 import { formatFileSize } from '@/utils/format'
-import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage, type UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  UploadFilled, Document, InfoFilled, Close, Clock,
-  Lock, Upload, CircleCheckFilled, CircleCloseFilled, Key, EditPen
+  UploadFilled, Document, InfoFilled, Close,
+  Upload, CircleCheckFilled, CircleCloseFilled
 } from '@element-plus/icons-vue'
 import { type PresignCompleteData } from '@/api/presign'
 import { multiDirect, chunkUploadFile, multiBind, type MultiShareOptions, type MultiShareResult } from '@/api/multifile'
 import { useConfigStore } from '@/stores/config'
 import { useUserStore } from '@/stores/user'
 import { generateKeyB64, encryptFile } from '@/utils/e2e'
+import { useShareSettings } from '@/composables/useShareSettings'
 import PresignUploadDialog from './PresignUploadDialog.vue'
+import ShareSettingsForm from '@/components/share/ShareSettingsForm.vue'
 
 const { t } = useI18n()
 const configStore = useConfigStore()
@@ -235,14 +170,8 @@ interface FileItem {
 const fileList = ref<FileItem[]>([])
 const isDragging = ref(false)
 
-const form = reactive({
-  expire_value: 1,
-  expire_style: 'day',
-  require_auth: false,
-  password: '',
-  e2e: false,
-  custom_code: '',
-})
+// 分享设置（过期/密码/自定义码/E2E）——状态与校验收敛于 useShareSettings，模板由 ShareSettingsForm 承载
+const { settings: form, validate } = useShareSettings()
 
 // E2E 密钥（本次上传生成；随成功事件交给分享对话框拼进链接）
 const e2eKey = ref('')
@@ -411,7 +340,7 @@ const uploadOne = (item: FileItem) => {
 }
 
 const handleUploadAll = async () => {
-  if (form.require_auth && !form.password) {
+  if (!validate()) {
     ElMessage.warning(t('upload.passwordRequired'))
     return
   }
@@ -816,47 +745,7 @@ onBeforeUnmount(() => {
   margin-top: 8px;
 }
 
-/* 设置 */
-.upload-settings {
-  margin-bottom: 16px;
-  padding: 20px;
-  background: var(--color-muted);
-  border-radius: var(--radius-lg);
-}
-
-.setting-group {
-  margin-bottom: 16px;
-}
-
-.setting-group:last-child {
-  margin-bottom: 0;
-}
-
-.e2e-hint {
-  margin-top: 8px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-}
-
-.setting-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  font-weight: 600;
-  color: var(--color-text-regular);
-  font-size: 14px;
-}
-
-.expire-inputs {
-  display: flex;
-  gap: 12px;
-}
-
-.expire-select {
-  width: 120px;
-}
+/* 设置表单样式内聚于 ShareSettingsForm 组件 */
 
 .upload-btn {
   width: 100%;
