@@ -16,31 +16,7 @@
         <LocaleSwitcher />
         <ThemeSwitcher />
         <NotifyBell />
-        <el-dropdown trigger="click" @command="handleCommand">
-          <div class="user-info">
-            <el-avatar :size="32" class="user-avatar">
-              {{ userStore.userInfo?.username?.charAt(0).toUpperCase() }}
-            </el-avatar>
-            <span class="user-name">{{ userStore.userInfo?.username }}</span>
-            <el-icon><ArrowDown /></el-icon>
-          </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="dashboard">
-                <el-icon><User /></el-icon>
-                {{ t('home.userCenter') }}
-              </el-dropdown-item>
-              <el-dropdown-item command="home">
-                <el-icon><House /></el-icon>
-                {{ t('home.title') }}
-              </el-dropdown-item>
-              <el-dropdown-item command="logout" divided>
-                <el-icon><SwitchButton /></el-icon>
-                {{ t('home.logout') }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+        <UserMenu show-home @command="handleCommand" />
       </div>
     </header>
 
@@ -101,9 +77,10 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  ArrowDown, User, SwitchButton, House, Fold
+  Fold
 } from '@element-plus/icons-vue'
 import { userNavItems } from '@/config/menu'
+import UserMenu from '@/components/layout/UserMenu.vue'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
@@ -189,33 +166,6 @@ const handleCommand = (command: string) => {
   gap: var(--spacing-xs);
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-xs) var(--spacing-xs);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background: var(--color-muted);
-  }
-}
-
-.user-avatar {
-  background: var(--primary-color);
-  color: #fff;
-  font-weight: 600;
-  font-size: var(--text-xs);
-}
-
-.user-name {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--color-text-primary);
-}
-
 /* 主体:侧边栏 + 内容 */
 .app-body {
   display: flex;
@@ -285,10 +235,6 @@ const handleCommand = (command: string) => {
 
   .app-main {
     padding: var(--spacing-lg) var(--spacing-md);
-  }
-
-  .user-name {
-    display: none;
   }
 }
 </style>

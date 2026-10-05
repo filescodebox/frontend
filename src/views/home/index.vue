@@ -26,27 +26,7 @@
             {{ t('home.retrieve') }}
           </el-button>
           <template v-if="userStore.isLoggedIn">
-            <el-dropdown trigger="click" @command="handleUserCommand">
-              <div class="user-info-card">
-                <el-avatar :size="32" class="user-avatar">
-                  {{ userStore.userInfo?.username?.charAt(0).toUpperCase() }}
-                </el-avatar>
-                <span class="user-name">{{ userStore.userInfo?.username }}</span>
-                <el-icon><ArrowDown /></el-icon>
-              </div>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="dashboard">
-                    <el-icon><User /></el-icon>
-                    {{ t('home.userCenter') }}
-                  </el-dropdown-item>
-                  <el-dropdown-item command="logout" divided>
-                    <el-icon><SwitchButton /></el-icon>
-                    {{ t('home.logout') }}
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <UserMenu @command="handleUserCommand" />
           </template>
           <template v-else>
             <el-button type="primary" @click="$router.push('/user/login')">
@@ -259,7 +239,7 @@ import { ElMessage } from 'element-plus'
 import QRCode from 'qrcode'
 import { useI18n } from 'vue-i18n'
 import {
-  ArrowDown, User, SwitchButton, Upload, Document,
+  Upload, Document,
   Download, Link, CopyDocument, Postcard, UploadFilled, Share,
   Promotion, Folder, PictureFilled, Loading, Setting
 } from '@element-plus/icons-vue'
@@ -273,6 +253,7 @@ import GetShare from '@/components/upload/GetShare.vue'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
 import NotifyBell from '@/components/NotifyBell.vue'
+import UserMenu from '@/components/layout/UserMenu.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -457,33 +438,6 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-}
-
-.user-info-card {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-xs) var(--spacing-xs);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-
-  &:hover {
-    background: var(--color-muted);
-  }
-}
-
-.user-avatar {
-  background: var(--primary-color);
-  color: #fff;
-  font-weight: 600;
-  font-size: var(--text-sm);
-}
-
-.user-name {
-  font-weight: 500;
-  color: var(--color-text-primary);
-  font-size: var(--text-sm);
 }
 
 /* 主内容区 */
