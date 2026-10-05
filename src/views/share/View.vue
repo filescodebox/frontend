@@ -268,7 +268,7 @@ const buildDownloadUrl = (fileId?: number): string => {
   // 优先使用取件接口下发的带令牌 download_url（security.download_token.enabled 时必需）；
   // 旧后端无此字段时回退到手工拼接
   const data = shareData.value as Record<string, unknown> | null
-  let url = (data?.download_url as string | undefined) || `/share/download?code=${shareCode.value}`
+  let url = (data?.download_url as string | undefined) || `/share/download?code=${encodeURIComponent(shareCode.value)}`
   if (password.value && !url.includes('password=')) {
     url += `&password=${encodeURIComponent(password.value)}`
   }

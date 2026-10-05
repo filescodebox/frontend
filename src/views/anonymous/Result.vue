@@ -145,11 +145,24 @@ const formatTime = (ts: number): string => {
   return d.toLocaleString()
 }
 
+// isSafeDownloadUrl 下载地址白名单校验（2026-10-05 审计 P2）：download_url
+// 来自 route.query 的 JSON（可被构造钓鱼链接注入），仅放行同源相对路径与
+// http(s) 绝对地址，堵 javascript:/data: 等 scheme 在本窗口执行。
+const isSafeDownloadUrl = (u: string): boolean => {
+  if (u.startsWith('/') && !u.startsWith('//')) return true
+  try {
+    const parsed = new URL(u)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
 const handleDownload = () => {
   if (!data.value) return
   // RetrieveData 里有 download_url，后端签名直链
   const target = (data.value as { download_url?: string }).download_url
-  if (target) {
+  if (target && isSafeDownloadUrl(target)) {
     window.open(target, '_blank', 'noopener')
   } else {
     ElMessage.error(t('anonymous.notFound'))
