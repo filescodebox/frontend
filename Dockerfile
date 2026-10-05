@@ -9,8 +9,9 @@
 # 发布链路: server 仓 release.yml 打 v* tag 时以同版本号构建推送
 #          ghcr.io/filescodebox/frontend（与 server 镜像同一版本列车）。
 
-# Stage 1: Build
-FROM node:20-alpine AS build
+# Stage 1: Build(--platform 钉宿主平台: JS 产物平台无关,避免 arm64 交叉
+# 构建被扔进 qemu 致 npm ci 级慢/挂起;运行时的 nginx 段仍用目标平台)
+FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 WORKDIR /src
 ARG NPM_REGISTRY=https://registry.npmmirror.com
 COPY package.json package-lock.json* ./
