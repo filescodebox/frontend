@@ -87,6 +87,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatFileSize as formatSize } from '@/utils/format'
 import { ref, onMounted, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -111,13 +112,6 @@ const form = reactive({
 const isExpired = (row: FileRequestItem) =>
   !!row.expired_at && new Date(row.expired_at).getTime() < Date.now()
 
-const formatSize = (bytes: number): string => {
-  if (!bytes) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
-}
 
 const buildLink = (token: string) => `${window.location.origin}/#/request/${token}`
 

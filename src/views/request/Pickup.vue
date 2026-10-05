@@ -62,6 +62,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatFileSize as formatSize } from '@/utils/format'
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -79,12 +80,6 @@ const uploading = ref(false)
 const progress = ref(0)
 const files = ref<File[]>([])
 
-const formatSize = (bytes: number): string => {
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
-}
 
 const handleChange = (f: UploadFile) => {
   if (f.raw) files.value.push(f.raw)

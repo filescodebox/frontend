@@ -206,6 +206,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatFileSize } from '@/utils/format'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -261,13 +262,6 @@ const greeting = computed(() => {
   return 'Good evening'
 })
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
 
 const formatDate = (dateStr?: string): string => {
   if (!dateStr) return ''

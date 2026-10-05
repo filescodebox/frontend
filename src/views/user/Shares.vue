@@ -218,6 +218,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatFileSize as formatSize } from '@/utils/format'
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -411,17 +412,6 @@ const doExtend = async () => {
   }
 }
 
-const formatSize = (bytes: number): string => {
-  if (!bytes) return '0 B'
-  const units = ['B', 'KB', 'MB', 'GB']
-  let i = 0
-  let n = bytes
-  while (n >= 1024 && i < units.length - 1) {
-    n /= 1024
-    i++
-  }
-  return `${n.toFixed(1)} ${units[i]}`
-}
 
 const formatDate = (s: string | null): string => {
   if (!s) return '—'

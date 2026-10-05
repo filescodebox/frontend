@@ -54,6 +54,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatFileSize } from '@/utils/format'
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -108,13 +109,6 @@ let xhr: XMLHttpRequest | null = null
 let currentUploadId = ''
 let currentToken = ''
 
-const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
 
 const doUpload = async (retryCount = 0) => {
   if (!props.file) return

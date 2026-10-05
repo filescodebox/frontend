@@ -166,6 +166,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatFileSize } from '@/utils/format'
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
@@ -286,13 +287,6 @@ const removeUser = async (user: any) => {
   }
 }
 
-const formatFileSize = (bytes: number): string => {
-  if (!bytes || bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
 
 const formatDate = (dateStr: string): string => {
   if (!dateStr) return '-'
