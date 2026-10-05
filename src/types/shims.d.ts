@@ -1,21 +1,7 @@
 // NOTE: @/api/* 和 @/types/user 的真实模块已存在且有完整类型，
 // 不再在此用 any 声明覆盖（避免降级类型检查）。仅保留无真实文件的类型声明。
-
-declare module '@/types/share' {
-  export interface ShareInfo {
-    code: string
-    filename: string
-    file_size: number
-    content_type: 'text' | 'file'
-    content?: string
-    has_password: boolean
-    created_at: string
-    expire_time?: string
-    download_count: number
-    max_downloads?: number
-    username?: string
-  }
-}
+// （原 @/types/share 垫片已删除：真实模块 src/types/share.ts 已建立，
+//   ambient declare module 会遮蔽真实文件——教训见 2026-10-06 W1）
 
 declare module 'swagger-ui-dist/swagger-ui-es-bundle' {
   export const SwaggerUIBundle: any

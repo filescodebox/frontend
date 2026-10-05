@@ -5,7 +5,7 @@
         v-model="textContent"
         type="textarea"
         :rows="8"
-        placeholder="请输入要分享的文本内容..."
+        :placeholder="t('upload.textPlaceholder')"
         resize="none"
         class="text-area"
         maxlength="10000"
@@ -27,7 +27,7 @@
       <template #icon>
         <el-icon v-if="!sharing"><Promotion /></el-icon>
       </template>
-      {{ sharing ? '分享中...' : '立即分享' }}
+      {{ sharing ? t('upload.textSharing') : t('upload.textShareBtn') }}
     </el-button>
   </div>
 </template>
@@ -36,12 +36,14 @@
 import { ref } from 'vue'
 import { shareApi } from '@/api/share'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { Promotion } from '@element-plus/icons-vue'
 import { encryptText, generateKeyB64 } from '@/utils/e2e'
 import { useUserStore } from '@/stores/user'
 import { useShareSettings } from '@/composables/useShareSettings'
 import ShareSettingsForm from '@/components/share/ShareSettingsForm.vue'
 
+const { t } = useI18n()
 const userStore = useUserStore()
 
 const emit = defineEmits<{
@@ -56,11 +58,11 @@ const { settings, validate } = useShareSettings()
 
 const handleShare = async () => {
   if (!textContent.value.trim()) {
-    ElMessage.warning('请输入文本内容')
+    ElMessage.warning(t('upload.textRequired'))
     return
   }
   if (!validate()) {
-    ElMessage.warning('开启密码保护时必须填写访问密码')
+    ElMessage.warning(t('upload.passwordRequired'))
     return
   }
 
@@ -83,7 +85,7 @@ const handleShare = async () => {
     })
 
     if (res.code === 200) {
-      ElMessage.success('分享成功')
+      ElMessage.success(t('upload.textShared'))
 
       const fullUrl = res.data.full_share_url || res.data.share_url || res.data.url || ''
       emit('success', {
@@ -97,10 +99,10 @@ const handleShare = async () => {
       // 重置
       textContent.value = ''
     } else {
-      throw new Error(res.message || '分享失败')
+      throw new Error(res.message || t('upload.textShareFailed'))
     }
   } catch (error: any) {
-    ElMessage.error(error.message || '分享失败')
+    ElMessage.error(error.message || t('upload.textShareFailed'))
   } finally {
     sharing.value = false
   }
