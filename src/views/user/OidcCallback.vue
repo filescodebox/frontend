@@ -32,6 +32,9 @@ onMounted(() => {
     return
   }
   localStorage.setItem('token', token)
+  // 清除地址栏中的 token（2026-10-05 审计 P2：token 留在 URL 会进浏览器
+  // 历史/剪贴板同步/扩展可见范围；hash 不发服务器但本地持久可见）
+  history.replaceState(null, '', location.pathname + location.search)
   ElMessage.success('登录成功')
   router.push('/user/dashboard')
 })

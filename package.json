@@ -16,7 +16,6 @@
     "dompurify": "^3.4.12",
     "element-plus": "^2.13.4",
     "highlight.js": "11.10.0",
-    "marked": "15.0.7",
     "pdfjs-dist": "4.10.38",
     "pinia": "^3.0.4",
     "qrcode": "^1.5.4",
