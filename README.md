@@ -45,7 +45,7 @@ npm run build       # vue-tsc -b && vite build
 
 开发环境下,后端 API 路由统一代理到本地后端(`vite.config.ts`):
 
-- `/share /user /admin /chunk /api /anonymous /download /notifies /presign /openapi.json /ping` → `http://localhost:12345`
+- `/share /user /admin /chunk /api /anonymous /download /notifies /presign /setup /request /preview /qrcode /openapi.json /ping` → `http://localhost:12345`
 
 API 规范真相源是后端运行时生成的 `/openapi.json`(Swagger UI 见前端 `/#/api-docs` 页);本仓不维护 openapi 快照与生成类型,手写类型见 `src/types/`。
 
@@ -67,10 +67,12 @@ docker run -p 8080:8080 -e BACKEND_HOST=host.docker.internal -e BACKEND_PORT=123
 
 ## 主要功能
 
-- 📤 **文件分享**:拖拽上传、分片/断点续传、进度显示、过期时间、密码保护
+- 📤 **文件分享**:拖拽上传、分片/断点续传、进度显示、过期时间、密码保护、多文件分享(zip 打包下载)
 - 📝 **文本分享**:大文本、格式保留
-- 📥 **获取分享**:分享码取件、密码验证、下载/复制
-- 👤 **用户系统**:注册/登录、我的分享、API 令牌管理
+- 📥 **获取分享**:分享码取件、密码验证、在线预览、下载/复制
+- 🔑 **预签名直传**:大文件浏览器直连对象存储(分片+进度条)
+- 📬 **寄件码**:创建投递链接,访客凭链接向柜子上传
+- 👤 **用户系统**:注册/登录、OIDC 单点登录、我的分享、API 令牌管理
 - 🛠 **管理后台**:仪表盘、分享/文件管理、用户管理、站点配置(存库持久化)
 
 ## 代码规范
