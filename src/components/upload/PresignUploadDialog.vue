@@ -55,41 +55,34 @@
 
 <script setup lang="ts">
 import { formatFileSize } from '@/utils/format'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
   Document, Loading, CircleCloseFilled
 } from '@element-plus/icons-vue'
 import { presignApi, type PresignCompleteData } from '@/api/presign'
+import { xhrRaw } from '@/api/_xhr'
 
+/**
+ * 预签名直传对话框（2026-10-06 W2 Promise 化：调用方 `ref.open(file, options)` 拿
+ * Promise，成功 resolve/终失败 reject 并自动关闭——此前调用方用 200ms setInterval
+ * 轮询组件状态。内部保留重试≤2 与秒传快路径；取消/中断类错误直接 reject 不重试
+ * （原实现 abort 后会落进重试分支静默重传，属存量 bug）。
+ */
 const { t } = useI18n()
 
-interface Props {
-  modelValue: boolean
-  file: File | null
-  options?: {
-    expire_value?: number
-    expire_style?: string
-    require_auth?: boolean
-    password?: string
-  }
+export interface PresignOptions {
+  expire_value: number
+  expire_style: string
+  require_auth: boolean
+  password?: string
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  options: () => ({}),
-})
+const file = ref<File | null>(null)
+const options = ref<PresignOptions>({ expire_value: 24, expire_style: 'hour', require_auth: false })
 
-const emit = defineEmits<{
-  'update:modelValue': [val: boolean]
-  success: [result: PresignCompleteData]
-  failed: [error: unknown]
-}>()
-
-const visible = computed({
-  get: () => props.modelValue,
-  set: (v) => emit('update:modelValue', v),
-})
+const visible = ref(false)
 
 const progress = ref(0)
 const statusText = ref('')
@@ -97,7 +90,6 @@ const failed = ref(false)
 const errorMessage = ref('')
 const completed = ref(false)
 const cancelling = ref(false)
-const result = ref<PresignCompleteData | null>(null)
 
 const progressStatus = computed(() => {
   if (failed.value) return 'exception'
@@ -105,13 +97,44 @@ const progressStatus = computed(() => {
   return ''
 })
 
-let xhr: XMLHttpRequest | null = null
+let activeResolve: ((r: PresignCompleteData) => void) | null = null
+let activeReject: ((e: unknown) => void) | null = null
+
+const open = (f: File, opts: PresignOptions): Promise<PresignCompleteData> => {
+  file.value = f
+  options.value = opts
+  failed.value = false
+  completed.value = false
+  errorMessage.value = ''
+  visible.value = true
+  return new Promise<PresignCompleteData>((resolve, reject) => {
+    activeResolve = resolve
+    activeReject = reject
+    void doUpload(0)
+  })
+}
+
+const finish = (result: PresignCompleteData) => {
+  activeResolve?.(result)
+  activeResolve = null
+  activeReject = null
+  close()
+}
+
+const fail = (e: unknown) => {
+  activeReject?.(e)
+  activeResolve = null
+  activeReject = null
+  close()
+}
+
+let putAbort: AbortController | null = null
 let currentUploadId = ''
 let currentToken = ''
 
-
 const doUpload = async (retryCount = 0) => {
-  if (!props.file) return
+  const f = file.value
+  if (!f) return
   failed.value = false
   completed.value = false
   progress.value = 0
@@ -120,17 +143,17 @@ const doUpload = async (retryCount = 0) => {
   try {
     // 0. 计算秒传指纹（大文件跳过，避免整文件进内存）
     statusText.value = t('upload.presign.hashing')
-    const fileHash = await presignApi.computeFileHash(props.file)
+    const fileHash = await presignApi.computeFileHash(f)
 
     // 1. 申请预签名 URL
     const initRes = await presignApi.init({
-      file_name: props.file.name,
-      file_size: props.file.size,
-      content_type: props.file.type || 'application/octet-stream',
-      expire_value: props.options.expire_value || 24,
-      expire_style: props.options.expire_style || 'hour',
-      require_auth: props.options.require_auth,
-      password: props.options.password,
+      file_name: f.name,
+      file_size: f.size,
+      content_type: f.type || 'application/octet-stream',
+      expire_value: options.value.expire_value || 24,
+      expire_style: options.value.expire_style || 'hour',
+      require_auth: options.value.require_auth,
+      password: options.value.password,
       file_hash: fileHash || undefined,
     })
     if (!presignApi.isOk(initRes.code) || !initRes.data) {
@@ -143,53 +166,36 @@ const doUpload = async (retryCount = 0) => {
       progress.value = 100
       completed.value = true
       statusText.value = t('upload.quickUploadHit')
-      const quickResult: PresignCompleteData = {
+      finish({
         code: initData.share_code,
         url: initData.share_url || '',
-        file_name: props.file.name,
-        file_size: props.file.size,
+        file_name: f.name,
+        file_size: f.size,
         download_url: initData.share_url || '',
-      }
-      result.value = quickResult
-      emit('success', quickResult)
+      })
       return
     }
 
     currentUploadId = initData.upload_id
     currentToken = initData.token
 
-    // 2. PUT 上传（用 XHR 以支持进度条 + 中断）
+    // 2. PUT 直传（xhrRaw：进度 + 中断 + 自定义签发头；进度封顶 95% 留给 complete）
     statusText.value = t('upload.presign.upload')
-    await new Promise<void>((resolve, reject) => {
-      const req = new XMLHttpRequest()
-      xhr = req
-      req.open(initData.method || 'PUT', initData.upload_url)
-      // 设置后端要求的 headers
-      Object.entries(initData.headers || {}).forEach(([k, v]) => {
-        req.setRequestHeader(k, v)
-      })
-      // 也要发 file 的 content-type
-      if (props.file?.type) {
-        req.setRequestHeader('Content-Type', props.file.type)
-      }
-      req.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          progress.value = Math.round((e.loaded / e.total) * 95) // 留给 complete 5%
-        }
-      }
-      req.onload = () => {
-        if (req.status >= 200 && req.status < 300) {
-          resolve()
-        } else {
-          reject(new Error(`Upload failed: ${req.status}`))
-        }
-      }
-      req.onerror = () => reject(new Error('Network error'))
-      req.onabort = () => reject(new Error('Aborted'))
-      if (props.file) {
-        req.send(props.file)
-      }
+    putAbort = new AbortController()
+    await xhrRaw({
+      url: initData.upload_url,
+      method: initData.method || 'PUT',
+      headers: {
+        ...(initData.headers || {}),
+        ...(f.type ? { 'Content-Type': f.type } : {}),
+      },
+      body: f,
+      signal: putAbort.signal,
+      onProgress: (loaded, total) => {
+        progress.value = Math.round((loaded / total) * 95)
+      },
     })
+    putAbort = null
 
     // 3. Complete
     statusText.value = t('upload.presign.complete')
@@ -203,34 +209,39 @@ const doUpload = async (retryCount = 0) => {
       throw new Error(completeRes.message || 'Complete failed')
     }
 
-    result.value = completeRes.data
     progress.value = 100
     completed.value = true
     statusText.value = t('upload.success')
-    emit('success', completeRes.data)
+    finish(completeRes.data)
   } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Upload failed'
+    // 取消/中断不重试（原实现会落进重试分支静默重传）
+    if (msg === 'Cancelled' || msg === 'Aborted') {
+      fail(new Error(msg))
+      return
+    }
     if (retryCount < 2) {
-      // 重试
       statusText.value = `Retrying (${retryCount + 1}/3)...`
-      return doUpload(retryCount + 1)
+      void doUpload(retryCount + 1)
+      return
     }
     failed.value = true
-    errorMessage.value = e instanceof Error ? e.message : 'Upload failed'
+    errorMessage.value = msg
     statusText.value = t('upload.presign.failed')
-    emit('failed', e)
+    fail(e)
   }
 }
 
 const retry = () => {
-  doUpload(0)
+  void doUpload(0)
 }
 
 const handleCancel = async () => {
   cancelling.value = true
   try {
-    if (xhr) {
-      xhr.abort()
-      xhr = null
+    if (putAbort) {
+      putAbort.abort()
+      putAbort = null
     }
     if (currentUploadId && currentToken) {
       try {
@@ -243,7 +254,7 @@ const handleCancel = async () => {
       }
     }
     ElMessage.info(t('upload.presign.abort'))
-    close()
+    fail(new Error('Cancelled'))
   } finally {
     cancelling.value = false
   }
@@ -256,14 +267,9 @@ const close = () => {
   failed.value = false
   completed.value = false
   errorMessage.value = ''
-  result.value = null
 }
 
-watch(visible, (v) => {
-  if (v && props.file) {
-    doUpload(0)
-  }
-})
+defineExpose({ open })
 </script>
 
 <style scoped>
