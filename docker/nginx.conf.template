@@ -30,13 +30,15 @@ server {
     # 限制外泄取件码 URL。always 修饰使 4xx/5xx 同样携带。
     # 注: nginx add_header 继承规则——location 内出现任意 add_header 时
     # 不再继承上层,故下方 /assets/ 与 SPA 回退 location 内重复声明。
-    # CSP: script-src 'self' 成立前提=首帧引导已外链(theme-init.js);
-    # style-src 保留 unsafe-inline(Element Plus 运行时注入样式),
-    # worker-src blob: 为 pdf.js 预留。
+    # CSP: script-src 'self' + 'unsafe-eval'——vue-i18n 运行时消息编译依赖
+    # new Function(输入=站点自有语言包,非用户输入;严格无 eval 会使 i18n
+    # 全局崩溃白屏,2026-10-05 实测)。style-src unsafe-inline 予 Element
+    # Plus;worker-src blob: 予 pdf.js。
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+
 
     gzip on;
     gzip_vary on;
@@ -96,7 +98,8 @@ server {
         add_header X-Content-Type-Options "nosniff" always;
         add_header X-Frame-Options "SAMEORIGIN" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+            add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+
         try_files $uri =404;
     }
 
@@ -108,6 +111,7 @@ server {
         add_header X-Content-Type-Options "nosniff" always;
         add_header X-Frame-Options "SAMEORIGIN" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+            add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'" always;
+
     }
 }
