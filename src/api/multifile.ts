@@ -7,6 +7,7 @@
  */
 import { request } from '@/utils/request'
 import { xhrSend } from '@/api/_xhr'
+import { presignApi } from '@/api/presign'
 import type { ApiResponse } from '@/types/common'
 
 export interface MultiShareOptions {
@@ -76,6 +77,10 @@ export async function chunkUploadFile(
       chunk_size: chunkSize,
       total_chunks: totalChunks,
       upload_id: uploadId,
+      // 整文件哈希（2026-10-06 W2 补）：加固后端 required——此前不发送，
+      // multi-chunk 通道对 core v0.11+ 必 400。复用 presign 的整文件哈希
+      // （>256MB 或非安全上下文返回空串=跳过秒传检索，服务端仅作秒传用，空串安全）。
+      file_hash: await presignApi.computeFileHash(file),
     },
     signal,
   })
