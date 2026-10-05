@@ -37,7 +37,7 @@
                 ref="codeInputRef"
                 :placeholder="t('anonymous.codePlaceholder')"
                 size="large"
-                maxlength="8"
+                maxlength="32"
                 class="code-input"
                 @input="onCodeInput"
               >
@@ -117,7 +117,8 @@ const rules: FormRules = {
     { required: true, message: () => t('anonymous.noCode'), trigger: 'blur' },
     {
       // 6 位取件码或 8 位分享码，字母数字，区分大小写（后端按长度分派查找路径）
-      pattern: /^[A-Za-z0-9]{6,8}$/,
+      // 6 位取件码 / 8 位分享码 / 联邦设备直传码(含连字符,最长 32)
+      pattern: /^[A-Za-z0-9-]{4,32}$/,
       message: t('anonymous.codeInvalid'),
       trigger: 'blur',
     },
@@ -126,13 +127,25 @@ const rules: FormRules = {
 
 const onCodeInput = (val: string) => {
   // 只拦非法字符，不做大小写转换——分享码区分大小写（回归 2026-10-03：
-  // 旧实现强制 toUpperCase 导致混合大小写分享码永远取不到件）
-  form.code = val.replace(/[^A-Za-z0-9]/g, '').slice(0, 8)
+  // 旧实现强制 toUpperCase 导致混合大小写分享码永远取不到件）。
+  // 连字符合法：联邦设备直传码形如 XXXX-XXXX-XXXX-XXXX
+  form.code = val.replace(/[^A-Za-z0-9-]/g, '').slice(0, 32)
 }
 
 // 联邦回退（P2P M2）：本站查无此码时问联邦注册中心。
 // 命中 → 弹确认框，用户同意后跳源节点取件页预填口令（hash 路由）；
 // 未命中/未启用/网络失败 → 静默返回 false，回退本地错误提示。
+// isDeviceNodeUrl p2pc 等直传客户端注册时使用占位 url(direct.invalid),
+// 无真实网页可跳。
+const isDeviceNodeUrl = (url: string): boolean => {
+  try {
+    const u = new URL(url)
+    return !/^https?:$/.test(u.protocol) || /(^|\.)direct\.invalid$/i.test(u.hostname)
+  } catch {
+    return true
+  }
+}
+
 const tryFederationJump = async (): Promise<boolean> => {
   const code = form.code
   if (!code) return false
@@ -140,6 +153,25 @@ const tryFederationJump = async (): Promise<boolean> => {
     const res = await federationApi.resolve(code)
     const data = res.data
     if ((res.code === 200 || res.code === 0) && data?.available && data.url) {
+      // 设备直传节点(p2pc 占位 url)不可网页取件:提示到设备端接收
+      if (isDeviceNodeUrl(data.url)) {
+        try {
+          await ElMessageBox.alert(
+            t('federation.deviceDesc', { name: data.name || data.url }),
+            t('federation.deviceTitle'),
+            { confirmButtonText: t('common.confirm'), type: 'info' },
+          )
+        } catch {
+          /* 用户关闭 */
+        }
+        return true
+      }
+      // 跳本站自身=公告过期残留,视为未命中走本地错误
+      try {
+        if (new URL(data.url).origin === location.origin) return false
+      } catch {
+        /* url 非法按未命中处理 */
+      }
       try {
         await ElMessageBox.confirm(
           t('federation.confirm', { name: data.name || data.url }),

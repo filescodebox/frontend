@@ -142,7 +142,9 @@ export default {
   },
   federation: {
     title: '联邦取件',
-    confirm: '在联邦节点「{name}」发现该口令。是否前往取件？文件将从源节点直接下载。',
+    deviceTitle: '设备直传口令',
+    deviceDesc: '该口令来自设备直传节点「{name}」。网页无法直接取件，请在发起设备上使用 p2pc 命令或桌面客户端接收。',
+    confirm: '在联邦节点「{name}」发现该口令。是否前往取件？文件将从源节点直接下载',
     go: '前往取件',
   },
   anonymous: {

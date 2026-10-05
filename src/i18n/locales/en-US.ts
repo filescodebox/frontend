@@ -141,6 +141,8 @@ export default {
   },
   federation: {
     title: 'Federated retrieval',
+    deviceTitle: 'Device direct-transfer code',
+    deviceDesc: 'This code belongs to device node "{name}". It cannot be retrieved from the web — receive it on the originating device via p2pc or the desktop client.',
     confirm: 'Passcode found on federated node "{name}". Go there to retrieve? The file downloads directly from the source node.',
     go: 'Go to retrieve',
   },
