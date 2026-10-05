@@ -6,7 +6,7 @@
           <h2>内容审核</h2>
           <p>处理待审核的分享（moderation 命中且策略为 pending 时进入此队列）</p>
         </div>
-        <el-button @click="fetchQueue" :loading="loading" class="refresh-btn">
+        <el-button @click="reload()" :loading="loading" class="refresh-btn">
           <el-icon><Refresh /></el-icon>
           刷新
         </el-button>
@@ -72,13 +72,13 @@
 
       <div class="pagination-wrapper">
         <el-pagination
-          v-model:current-page="pagination.page"
-          v-model:page-size="pagination.pageSize"
-          :total="pagination.total"
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :total="total"
           :page-sizes="[10, 20, 50]"
           layout="total, sizes, prev, pager, next"
           @size-change="handleSizeChange"
-          @current-change="fetchQueue"
+          @current-change="handlePageChange"
           background
         />
       </div>
@@ -88,45 +88,32 @@
 
 <script setup lang="ts">
 import { formatFileSize, toLocaleDateTime as formatDate } from '@/utils/format'
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
+import { useTableQuery } from '@/composables/useTableQuery'
 
-const loading = ref(false)
 const acting = ref<number | null>(null)
-const queue = ref<any[]>([])
 
-const pagination = reactive({
-  page: 1,
-  pageSize: 20,
-  total: 0
-})
-
-
-
-const fetchQueue = async () => {
-  loading.value = true
-  try {
-    const res = await adminApi.getFilesFiltered({
-      status: 'pending_review',
-      page: pagination.page,
-      page_size: pagination.pageSize
-    })
-    if (res.code === 200 && res.data) {
-      queue.value = res.data.items || []
-      pagination.total = res.data.total || 0
-    } else {
-      queue.value = []
-      pagination.total = 0
+const { list: queue, total, page, pageSize, loading, reload, handleSizeChange, handlePageChange } =
+  useTableQuery<any>(async ({ page, page_size }) => {
+    try {
+      const res = await adminApi.getFilesFiltered({
+        status: 'pending_review',
+        page,
+        page_size,
+      })
+      if (res.code === 200 && res.data) {
+        return { items: res.data.items || [], total: res.data.total || 0 }
+      }
+      return { items: [], total: 0 }
+    } catch (error) {
+      console.error('获取审核队列失败:', error)
+      ElMessage.error('获取审核队列失败')
+      return { items: [], total: 0 }
     }
-  } catch (error) {
-    console.error('获取审核队列失败:', error)
-    ElMessage.error('获取审核队列失败')
-  } finally {
-    loading.value = false
-  }
-}
+  })
 
 // act 处置：通过（normal，恢复可见）或拒绝（blocked，禁用留证）
 const act = async (row: any, status: 'normal' | 'blocked') => {
@@ -135,7 +122,7 @@ const act = async (row: any, status: 'normal' | 'blocked') => {
     const res = await adminApi.setFileStatus(row.id, status)
     if (res.code === 0 || res.code === 200) {
       ElMessage.success(status === 'normal' ? '已通过' : '已拒绝并禁用')
-      await fetchQueue()
+      await reload()
     } else {
       ElMessage.error(res.message || '操作失败')
     }
@@ -146,13 +133,8 @@ const act = async (row: any, status: 'normal' | 'blocked') => {
   }
 }
 
-const handleSizeChange = () => {
-  pagination.page = 1
-  fetchQueue()
-}
-
 onMounted(() => {
-  fetchQueue()
+  reload()
 })
 </script>
 

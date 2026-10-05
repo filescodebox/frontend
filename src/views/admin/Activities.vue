@@ -7,13 +7,13 @@
           <p>后台管理操作全程留痕（配置变更/用户管理/文件管理/维护操作）</p>
         </div>
         <div class="header-actions">
-          <el-select v-model="filterAction" placeholder="操作类型" clearable style="width: 200px" @change="fetchActivities">
+          <el-select v-model="filterAction" placeholder="操作类型" clearable style="width: 200px" @change="reload()">
             <el-option label="配置变更" value="config.update" />
             <el-option label="用户操作" value="user." />
             <el-option label="文件操作" value="file." />
             <el-option label="维护操作" value="maintenance." />
           </el-select>
-          <el-button @click="fetchActivities" :loading="loading">
+          <el-button @click="load()" :loading="loading">
             <el-icon><Refresh /></el-icon>
             刷新
           </el-button>
@@ -53,13 +53,13 @@
 
       <div class="pagination-wrapper">
         <el-pagination
-          v-model:current-page="pagination.page"
-          v-model:page-size="pagination.pageSize"
-          :total="pagination.total"
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :total="total"
           :page-sizes="[20, 50, 100]"
           layout="total, sizes, prev, pager, next"
-          @size-change="fetchActivities"
-          @current-change="fetchActivities"
+          @size-change="handleSizeChange"
+          @current-change="handlePageChange"
           background
         />
       </div>
@@ -69,42 +69,37 @@
 
 <script setup lang="ts">
 import { toLocaleDateTime as formatDate } from '@/utils/format'
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
+import { useTableQuery } from '@/composables/useTableQuery'
 
-const loading = ref(false)
 const logs = ref<any[]>([])
 const filterAction = ref('')
 
-const pagination = reactive({ page: 1, pageSize: 20, total: 0 })
-
-
-
-const fetchActivities = async () => {
-  loading.value = true
-  try {
-    const res = await adminApi.getActivities({
-      page: pagination.page,
-      page_size: pagination.pageSize,
-      action: filterAction.value || undefined
-    })
-    if (res.code === 0 || res.code === 200) {
-      const data: any = res.data
-      logs.value = Array.isArray(data) ? data : data?.list || []
-      pagination.total = Array.isArray(data) ? data.length : data?.total ?? 0
-    } else {
+const { total, page, pageSize, loading, load, reload, handleSizeChange, handlePageChange } =
+  useTableQuery<any>(async ({ page, page_size }) => {
+    try {
+      const res = await adminApi.getActivities({
+        page,
+        page_size,
+        action: filterAction.value || undefined,
+      })
+      if (res.code === 0 || res.code === 200) {
+        const data: any = res.data
+        const items = Array.isArray(data) ? data : data?.list || []
+        return { items, total: Array.isArray(data) ? data.length : data?.total ?? 0 }
+      }
       ElMessage.error(res.message || '获取审计日志失败')
+      return { items: [], total: 0 }
+    } catch (e: any) {
+      ElMessage.error(e.message || '获取审计日志失败')
+      return { items: [], total: 0 }
     }
-  } catch (e: any) {
-    ElMessage.error(e.message || '获取审计日志失败')
-  } finally {
-    loading.value = false
-  }
-}
+  })
 
-onMounted(fetchActivities)
+onMounted(reload)
 </script>
 
 <style scoped>
