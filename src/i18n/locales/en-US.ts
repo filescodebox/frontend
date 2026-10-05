@@ -218,6 +218,7 @@ export default {
     textSharing: 'Sharing...',
     textShared: 'Shared',
     textShareFailed: 'Share failed',
+    pastedCount: 'Pasted 1 file | Pasted {n} files',
     e2e: {
       title: 'End-to-end encryption',
       on: 'Encrypted (zero-knowledge)',

@@ -219,6 +219,7 @@ export default {
     textSharing: '分享中...',
     textShared: '分享成功',
     textShareFailed: '分享失败',
+    pastedCount: '已粘贴 1 个文件 | 已粘贴 {n} 个文件',
     e2e: {
       title: '端到端加密',
       on: '加密（零知识）',
