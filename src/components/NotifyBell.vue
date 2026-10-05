@@ -7,17 +7,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Bell } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { userNotifyApi } from '@/api/userNotify'
+import { usePolling } from '@/composables/usePolling'
 
 const router = useRouter()
 const userStore = useUserStore()
 const unread = ref(0)
-
-let timer: number | undefined
 
 const refresh = async () => {
   if (!userStore.isLoggedIn) {
@@ -40,13 +39,9 @@ const goNotifications = () => {
   router.push('/user/notifications')
 }
 
-onMounted(() => {
-  refresh()
-  timer = window.setInterval(refresh, 60000)
-})
-onUnmounted(() => {
-  if (timer) clearInterval(timer)
-})
+// 首帧立即取一次 + 60s 轮询（页面隐藏自动暂停）
+refresh()
+usePolling(refresh, 60000)
 </script>
 
 <style scoped>

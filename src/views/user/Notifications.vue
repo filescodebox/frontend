@@ -70,12 +70,13 @@
 
 <script setup lang="ts">
 import { formatDateTime } from '@/utils/format'
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { Check, Bell, Setting, Tools, Share, CircleCheck } from '@element-plus/icons-vue'
 import { userNotifyApi, type UserNotifyItem } from '@/api/userNotify'
 import { useTableQuery } from '@/composables/useTableQuery'
+import { usePolling } from '@/composables/usePolling'
 
 const { t } = useI18n()
 
@@ -119,19 +120,13 @@ const markAllRead = async () => {
 
 const formatDate = (s: string): string => formatDateTime(s, '')
 
-// 每 60s 自动刷新未读数（顶栏铃铛会复用）
-let timer: number | undefined
-onMounted(() => {
-  reload()
-  timer = window.setInterval(() => {
-    userNotifyApi.unreadCount().then(r => {
-      unread.value = r.data.unread
-    }).catch(() => { /* ignore */ })
-  }, 60000)
-})
-onUnmounted(() => {
-  if (timer) clearInterval(timer)
-})
+reload()
+// 每 60s 自动刷新未读数（顶栏铃铛会复用；页面隐藏自动暂停）
+usePolling(() => {
+  userNotifyApi.unreadCount().then(r => {
+    unread.value = r.data.unread
+  }).catch(() => { /* ignore */ })
+}, 60000)
 </script>
 
 <style scoped>
