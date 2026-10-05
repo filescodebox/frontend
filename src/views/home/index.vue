@@ -5,7 +5,7 @@
       <!-- 顶部导航 —— TopNav home 变体（站名/语言/主题/铃铛/用户菜单内聚于组件） -->
       <TopNav variant="home" @command="handleUserCommand">
         <template #nav-extra>
-          <el-button text @click="$router.push('/api-docs')">
+          <el-button v-if="configStore.config?.apiDocsEnabled !== false" text @click="$router.push('/api-docs')">
             <el-icon><Document /></el-icon>
             {{ t('home.apiDocs') }}
           </el-button>

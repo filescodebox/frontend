@@ -1,5 +1,19 @@
 <template>
   <div class="docs-page">
+    <!-- 开关降级态：ui.expose_openapi=false 时后端 /openapi.json 恒 404，
+         直达 /api-docs 不再拉 spec 渲染坏 Swagger，改为明确提示 -->
+    <el-result
+      v-if="disabled"
+      icon="info"
+      :title="t('docs.disabledTitle')"
+      :sub-title="t('docs.disabledDesc')"
+    >
+      <template #extra>
+        <el-button type="primary" @click="$router.push('/')">{{ t('docs.backHome') }}</el-button>
+      </template>
+    </el-result>
+
+    <template v-else>
     <div class="docs-header">
       <h2>{{ t('docs.title') }}</h2>
       <p class="docs-subtitle">{{ t('docs.subtitle') }}</p>
@@ -30,12 +44,14 @@
     </div>
 
     <div ref="swaggerRef" class="swagger-container" />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useConfigStore } from '@/stores/config'
 import { ElMessage } from 'element-plus'
 import { Refresh, Link, Loading } from '@element-plus/icons-vue'
 // Swagger UI 集成说明：
@@ -53,6 +69,11 @@ import 'swagger-ui-dist/swagger-ui.css'
 const SwaggerUI = SwaggerUIBundle as unknown as (opts: Record<string, unknown>) => { presetApis?: unknown }
 
 const { t } = useI18n()
+const configStore = useConfigStore()
+
+// apiDocsEnabled 缺省（config 未加载/老后端）视为开启，仅显式 false 才降级——
+// 与 registerEnabled 同一缺省语义，避免配置抖动误伤文档页
+const disabled = computed(() => configStore.config?.apiDocsEnabled === false)
 
 const swaggerRef = ref<HTMLElement | null>(null)
 const loading = ref(false)
@@ -93,6 +114,7 @@ const openInNew = () => {
 }
 
 onMounted(() => {
+  if (disabled.value) return
   loadSpec()
 })
 onUnmounted(() => {

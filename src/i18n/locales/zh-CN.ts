@@ -653,6 +653,9 @@ export default {
     subtitle: 'FilesCodeBox 后端 API（基于 thrift IDL + 自定义路由）',
     openInNew: '打开 OpenAPI JSON',
     loadFailed: '加载 API 文档失败',
+    disabledTitle: 'API 文档未开启',
+    disabledDesc: '站点管理员未开放 API 文档（ui.expose_openapi=false）。如需查阅，请联系管理员开启后刷新本页。',
+    backHome: '返回首页',
   },
   admin_layout: {
     title: '管理后台',

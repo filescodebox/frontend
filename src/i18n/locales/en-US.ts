@@ -652,6 +652,9 @@ export default {
     subtitle: 'FilesCodeBox backend API (thrift IDL + custom routes)',
     openInNew: 'Open OpenAPI JSON',
     loadFailed: 'Failed to load API docs',
+    disabledTitle: 'API docs are disabled',
+    disabledDesc: 'The site administrator has not exposed API docs (ui.expose_openapi=false). Contact the administrator and refresh this page if you need access.',
+    backHome: 'Back to home',
   },
   admin_layout: {
     title: 'Admin',
