@@ -39,7 +39,7 @@
           >
             批量删除
           </el-button>
-          <el-button @click="fetchFiles" :loading="loading" class="refresh-btn">
+          <el-button @click="reload()" :loading="loading" class="refresh-btn">
             <el-icon><Refresh /></el-icon>
             刷新数据
           </el-button>
@@ -220,13 +220,13 @@
 
       <div class="pagination-wrapper">
         <el-pagination
-          v-model:current-page="pagination.page"
-          v-model:page-size="pagination.pageSize"
-          :total="pagination.total"
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :total="total"
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
+          @current-change="handlePageChange"
           background
         />
       </div>
@@ -285,17 +285,35 @@ import {
   VideoPlay, Headset, Reading
 } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
+import { useTableQuery } from '@/composables/useTableQuery'
 
 type FileStatus = 'normal' | 'blocked' | 'pending_review'
 
-const loading = ref(false)
-const filesList = ref<any[]>([])
+const { list: filesList, total, page, pageSize, loading, reload, handleSizeChange, handlePageChange } =
+  useTableQuery<any>(async ({ page, page_size }) => {
+    try {
+      const params: Record<string, unknown> = { page, page_size }
+      if (filters.keyword) params.keyword = filters.keyword
+      if (filters.status) params.status = filters.status
+      if (filters.upload_type) params.upload_type = filters.upload_type
+      if (filters.expired) params.expired = filters.expired
+      if (filters.owner_ip) params.owner_ip = filters.owner_ip
+      if (filters.user_id) {
+        const uid = Number(filters.user_id)
+        if (Number.isFinite(uid) && uid > 0) params.user_id = uid
+      }
 
-const pagination = reactive({
-  page: 1,
-  pageSize: 20,
-  total: 0
-})
+      const res = await adminApi.getFilesFiltered(params)
+      if (res.code === 200 && res.data) {
+        return { items: res.data.items || [], total: res.data.total || 0 }
+      }
+      return { items: [], total: 0 }
+    } catch (error) {
+      console.error('获取文件列表失败:', error)
+      ElMessage.error('获取文件列表失败')
+      return { items: [], total: 0 }
+    }
+  })
 
 // 治理筛选条件（对应 GET /admin/files/filter）
 const filters = reactive({
@@ -306,6 +324,9 @@ const filters = reactive({
   owner_ip: '',
   user_id: ''
 })
+
+// 操作后刷新适配器（处置/删除/改期后调用，语义=刷新当前页）
+const fetchFiles = () => reload()
 
 
 
@@ -370,42 +391,8 @@ const getFileIconColor = (row: any) => {
   return colorMap[ext || ''] || '#606266'
 }
 
-const fetchFiles = async () => {
-  loading.value = true
-  try {
-    const params: Record<string, unknown> = {
-      page: pagination.page,
-      page_size: pagination.pageSize
-    }
-    if (filters.keyword) params.keyword = filters.keyword
-    if (filters.status) params.status = filters.status
-    if (filters.upload_type) params.upload_type = filters.upload_type
-    if (filters.expired) params.expired = filters.expired
-    if (filters.owner_ip) params.owner_ip = filters.owner_ip
-    if (filters.user_id) {
-      const uid = Number(filters.user_id)
-      if (Number.isFinite(uid) && uid > 0) params.user_id = uid
-    }
-
-    const res = await adminApi.getFilesFiltered(params)
-    if (res.code === 200 && res.data) {
-      filesList.value = res.data.items || []
-      pagination.total = res.data.total || 0
-    } else {
-      filesList.value = []
-      pagination.total = 0
-    }
-  } catch (error) {
-    console.error('获取文件列表失败:', error)
-    ElMessage.error('获取文件列表失败')
-  } finally {
-    loading.value = false
-  }
-}
-
 const applyFilters = () => {
-  pagination.page = 1
-  fetchFiles()
+  reload()
 }
 
 const resetFilters = () => {
@@ -415,8 +402,7 @@ const resetFilters = () => {
   filters.expired = ''
   filters.owner_ip = ''
   filters.user_id = ''
-  pagination.page = 1
-  fetchFiles()
+  reload()
 }
 
 // ==================== 管控状态机 ====================
@@ -607,17 +593,8 @@ const downloadFile = async (row: any) => {
   }
 }
 
-const handleSizeChange = () => {
-  pagination.page = 1
-  fetchFiles()
-}
-
-const handleCurrentChange = () => {
-  fetchFiles()
-}
-
 onMounted(() => {
-  fetchFiles()
+  reload()
 })
 </script>
 

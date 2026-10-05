@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <h3>传输日志</h3>
-          <el-button @click="fetchLogs" :icon="Refresh" size="small">
+          <el-button @click="reload()" :icon="Refresh" size="small">
             刷新
           </el-button>
         </div>
@@ -87,13 +87,13 @@
       <!-- 分页 -->
       <div class="pagination-container">
         <el-pagination
-          v-model:current-page="pagination.page"
-          v-model:page-size="pagination.pageSize"
-          :total="pagination.total"
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :total="total"
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
+          @current-change="handlePageChange"
         />
       </div>
     </el-card>
@@ -102,19 +102,11 @@
 
 <script setup lang="ts">
 import { formatFileSize, toLocaleDateTime as formatDate } from '@/utils/format'
-import { ref, reactive, onMounted } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
-
-const loading = ref(false)
-const logsList = ref<any[]>([])
-
-const pagination = reactive({
-  page: 1,
-  pageSize: 20,
-  total: 0
-})
+import { useTableQuery } from '@/composables/useTableQuery'
 
 const stats = reactive({
   totalOperations: 0,
@@ -122,8 +114,6 @@ const stats = reactive({
   downloads: 0,
   activeUsers: 0
 })
-
-
 
 const getOperationLabel = (operation: string): string => {
   const labels: Record<string, string> = {
@@ -145,38 +135,32 @@ const getOperationType = (operation: string): 'success' | 'primary' | 'danger' |
   return types[operation] || 'info'
 }
 
-const fetchLogs = async () => {
-  loading.value = true
-  try {
-    const res = await adminApi.getTransferLogs({
-      page: pagination.page,
-      page_size: pagination.pageSize
-    })
-
-    if (res.code === 200) {
-      if (res.data && Array.isArray(res.data.items)) {
-        logsList.value = res.data.items as typeof logsList.value
-        pagination.total = res.data.total || res.data.items.length
-      } else if (res.data && Array.isArray((res.data as Record<string, unknown>).logs)) {
-        // 兼容历史响应结构
-        const legacy = res.data as Record<string, unknown>
-        logsList.value = legacy.logs as typeof logsList.value
-        const pg = legacy.pagination as { total?: number } | undefined
-        pagination.total = pg?.total || (legacy.logs as unknown[]).length
-      } else if (Array.isArray(res.data)) {
-        logsList.value = res.data
-        pagination.total = res.data.length
-      } else {
-        logsList.value = []
+const { list: logsList, total, page, pageSize, loading, reload, handleSizeChange, handlePageChange } =
+  useTableQuery<any>(async ({ page, page_size }) => {
+    try {
+      const res = await adminApi.getTransferLogs({ page, page_size })
+      if (res.code === 200) {
+        if (res.data && Array.isArray(res.data.items)) {
+          return { items: res.data.items, total: res.data.total || res.data.items.length }
+        }
+        if (res.data && Array.isArray((res.data as Record<string, unknown>).logs)) {
+          // 兼容历史响应结构
+          const legacy = res.data as Record<string, unknown>
+          const logs = legacy.logs as any[]
+          const pg = legacy.pagination as { total?: number } | undefined
+          return { items: logs, total: pg?.total || logs.length }
+        }
+        if (Array.isArray(res.data)) {
+          return { items: res.data, total: res.data.length }
+        }
       }
+      return { items: [], total: 0 }
+    } catch (error) {
+      console.error('获取日志失败:', error)
+      ElMessage.error('获取日志失败')
+      return { items: [], total: 0 }
     }
-  } catch (error) {
-    console.error('获取日志失败:', error)
-    ElMessage.error('获取日志失败')
-  } finally {
-    loading.value = false
-  }
-}
+  })
 
 const fetchStats = async () => {
   try {
@@ -192,17 +176,8 @@ const fetchStats = async () => {
   }
 }
 
-const handleSizeChange = () => {
-  pagination.page = 1
-  fetchLogs()
-}
-
-const handleCurrentChange = () => {
-  fetchLogs()
-}
-
 onMounted(() => {
-  fetchLogs()
+  reload()
   fetchStats()
 })
 </script>

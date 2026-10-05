@@ -11,7 +11,7 @@
             <el-icon><Plus /></el-icon>
             新建用户
           </el-button>
-          <el-button @click="fetchUsers" :loading="loading" class="refresh-btn">
+          <el-button @click="reload()" :loading="loading" class="refresh-btn">
             <el-icon><Refresh /></el-icon>
             刷新数据
           </el-button>
@@ -99,13 +99,13 @@
 
       <div class="pagination-wrapper">
         <el-pagination
-          v-model:current-page="pagination.page"
-          v-model:page-size="pagination.pageSize"
-          :total="pagination.total"
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :total="total"
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
+          @current-change="handlePageChange"
           background
         />
       </div>
@@ -171,16 +171,9 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
+import { useTableQuery } from '@/composables/useTableQuery'
 
-const loading = ref(false)
 const saving = ref(false)
-const usersList = ref<any[]>([])
-
-const pagination = reactive({
-  page: 1,
-  pageSize: 20,
-  total: 0
-})
 
 // 新建用户对话框
 const createVisible = ref(false)
@@ -306,39 +299,36 @@ const getStorageColor = (user: any): string => {
   return '#f56c6c'
 }
 
-const fetchUsers = async () => {
-  loading.value = true
-  try {
-    const res = await adminApi.getUsers({
-      page: pagination.page,
-      page_size: pagination.pageSize
-    })
-    
-    if (res.code === 200) {
-      // 后端 AdminUserList 返回 { items, total, page, page_size }
-      if (res.data && Array.isArray(res.data.items)) {
-        usersList.value = res.data.items
-        pagination.total = res.data.total ?? res.data.items.length
-      } else if (res.data && Array.isArray((res.data as Record<string, unknown>).users)) {
-        // 兼容历史响应结构
-        const legacy = res.data as Record<string, unknown>
-        usersList.value = legacy.users as typeof usersList.value
-        const pg = legacy.pagination as { total?: number } | undefined
-        pagination.total = pg?.total ?? (legacy.users as unknown[]).length
-      } else if (Array.isArray(res.data)) {
-        usersList.value = res.data
-        pagination.total = res.data.length
-      } else {
-        usersList.value = []
+const { list: usersList, total, page, pageSize, loading, reload, handleSizeChange, handlePageChange } =
+  useTableQuery<any>(async ({ page, page_size }) => {
+    try {
+      const res = await adminApi.getUsers({ page, page_size })
+      if (res.code === 200) {
+        // 后端 AdminUserList 返回 { items, total, page, page_size }
+        if (res.data && Array.isArray(res.data.items)) {
+          return { items: res.data.items, total: res.data.total ?? res.data.items.length }
+        }
+        if (res.data && Array.isArray((res.data as Record<string, unknown>).users)) {
+          // 兼容历史响应结构
+          const legacy = res.data as Record<string, unknown>
+          const users = legacy.users as any[]
+          const pg = legacy.pagination as { total?: number } | undefined
+          return { items: users, total: pg?.total ?? users.length }
+        }
+        if (Array.isArray(res.data)) {
+          return { items: res.data, total: res.data.length }
+        }
       }
+      return { items: [], total: 0 }
+    } catch (error) {
+      console.error('获取用户列表失败:', error)
+      ElMessage.error('获取用户列表失败')
+      return { items: [], total: 0 }
     }
-  } catch (error) {
-    console.error('获取用户列表失败:', error)
-    ElMessage.error('获取用户列表失败')
-  } finally {
-    loading.value = false
-  }
-}
+  })
+
+// 操作后刷新适配器（新建/编辑/删除后调用）
+const fetchUsers = () => reload()
 
 const toggleUserStatus = async (user: any) => {
   try {
@@ -364,17 +354,8 @@ const toggleUserStatus = async (user: any) => {
   }
 }
 
-const handleSizeChange = () => {
-  pagination.page = 1
-  fetchUsers()
-}
-
-const handleCurrentChange = () => {
-  fetchUsers()
-}
-
 onMounted(() => {
-  fetchUsers()
+  reload()
 })
 </script>
 

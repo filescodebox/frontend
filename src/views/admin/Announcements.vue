@@ -45,10 +45,10 @@
       <div class="pager">
         <el-pagination
           v-model:current-page="page"
-          :page-size="pageSize"
+          :page-size="20"
           :total="total"
           layout="total, prev, pager, next"
-          @current-change="load"
+          @current-change="handlePageChange"
         />
       </div>
     </el-card>
@@ -95,6 +95,7 @@
 import { onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { adminApi } from '@/api/admin'
+import { useTableQuery } from '@/composables/useTableQuery'
 
 interface NotifyRow {
   id: number
@@ -107,11 +108,6 @@ interface NotifyRow {
   end_at?: string | null
 }
 
-const items = ref<NotifyRow[]>([])
-const total = ref(0)
-const page = ref(1)
-const pageSize = 20
-const loading = ref(false)
 const saving = ref(false)
 const dlg = ref(false)
 const editId = ref<number | null>(null)
@@ -120,22 +116,27 @@ const form = ref({ title: '', content: '', type: 'system', level: 'info', start_
 const typeLabel = (t: string) => (t === 'maintenance' ? '维护' : t === 'feature' ? '功能' : '系统')
 const levelTagType = (l: string) => (l === 'error' ? 'danger' : l === 'warning' ? 'warning' : l === 'success' ? 'success' : 'info')
 
-const load = async () => {
-  loading.value = true
-  try {
-    const res = await adminApi.listNotifies({ page: page.value, page_size: pageSize })
-    if (res.code === 0 || res.code === 200) {
-      const d = res.data as Record<string, unknown>
-      const list = (d.list || d.items || d.notifies) as NotifyRow[] | undefined
-      items.value = Array.isArray(list) ? list : Array.isArray(d) ? (d as unknown as NotifyRow[]) : []
-      total.value = Number(d.total ?? items.value.length)
+const { list: items, total, page, loading, reload, handlePageChange } = useTableQuery<NotifyRow>(
+  async ({ page, page_size }) => {
+    try {
+      const res = await adminApi.listNotifies({ page, page_size })
+      if (res.code === 0 || res.code === 200) {
+        const d = res.data as Record<string, unknown>
+        const list = (d.list || d.items || d.notifies) as NotifyRow[] | undefined
+        const items = Array.isArray(list) ? list : Array.isArray(d) ? (d as unknown as NotifyRow[]) : []
+        return { items, total: Number(d.total ?? items.length) }
+      }
+      return { items: [], total: 0 }
+    } catch (e) {
+      ElMessage.error(e instanceof Error ? e.message : '加载公告失败')
+      return { items: [], total: 0 }
     }
-  } catch (e) {
-    ElMessage.error(e instanceof Error ? e.message : '加载公告失败')
-  } finally {
-    loading.value = false
-  }
-}
+  },
+  { defaultPageSize: 20 }
+)
+
+// 操作后刷新适配器（原 load 无参语义=当前页）
+const load = () => reload(page.value)
 
 const openCreate = () => {
   editId.value = null
