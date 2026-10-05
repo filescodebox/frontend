@@ -241,11 +241,12 @@ const fetchShare = async (pwd?: string) => {
       error.value = res.message || t('share.not_found')
     }
   } catch (err: any) {
-    // /share/select 的"需要密码"返回 HTTP 401（body 带 has_password 标记），
-    // 经响应拦截器包装后 reject 到这里——转入密码输入分支而非错误页
-    // （2026-10-05 浏览器 E2E 发现的历史 bug：此前密码框永远不出现）
-    const bodyData = err?.response?.data?.data || err?.data?.data
-    if (bodyData?.has_password || err?.code === 403) {
+    // /share/select 的密码族错误（需要密码/密码错误）返回 HTTP 401，经响应
+    // 拦截器包装后 reject 到这里——一律回到密码输入分支并提示，而非错误页
+    // （2026-10-05 浏览器 E2E 发现的历史 bug：此前密码框永远不出现，输错密码
+    // 还会困死在错误页无法重试）
+    const status = err?.response?.status
+    if (err?.code === 403 || status === 401) {
       needPassword.value = true
       if (err?.message && err.message !== '需要密码') {
         ElMessage.error(err.message)
