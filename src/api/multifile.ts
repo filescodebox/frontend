@@ -7,7 +7,6 @@
  */
 import { request } from '@/utils/request'
 import { xhrSend } from '@/api/_xhr'
-import { presignApi } from '@/api/presign'
 import type { ApiResponse } from '@/types/common'
 
 export interface MultiShareOptions {
@@ -58,7 +57,7 @@ export async function multiDirect(
   return res.data
 }
 
-/** 分片上传单个文件，返回 upload_id（绑定用；不调 complete——multi-bind 服务端负责合并+标记） */
+/** 分片上传单个文件，返回服务端会话 upload_id（绑定用；不调 complete——multi-bind 服务端负责合并+标记） */
 export async function chunkUploadFile(
   file: File,
   uploadId: string,
@@ -68,7 +67,11 @@ export async function chunkUploadFile(
 ): Promise<string> {
   const totalChunks = Math.max(1, Math.ceil(file.size / chunkSize))
 
-  await request<ApiResponse<unknown>>({
+  // 整文件哈希（2026-10-06 W2 补）：core v0.11+ 加固将 file_hash 置 required（此前不发送必 400），
+  // 且服务端以 file_hash 作为分片会话主键、据此做跨会话秒传检索。multi-chunk 批量场景下秒传命中
+  // （is_quick_upload）无法经 multi-bind 合并（entry 无 share_code 形态），故发送空串→服务端
+  // 生成 UUID 会话，保持“批量始终真实上传”的既有行为；单文件大文件的秒传由 presign 通道负责。
+  const initRes = await request<ApiResponse<{ upload_id?: string }>>({
     url: '/chunk/upload/init/',
     method: 'POST',
     data: {
@@ -77,13 +80,13 @@ export async function chunkUploadFile(
       chunk_size: chunkSize,
       total_chunks: totalChunks,
       upload_id: uploadId,
-      // 整文件哈希（2026-10-06 W2 补）：加固后端 required——此前不发送，
-      // multi-chunk 通道对 core v0.11+ 必 400。复用 presign 的整文件哈希
-      // （>256MB 或非安全上下文返回空串=跳过秒传检索，服务端仅作秒传用，空串安全）。
-      file_hash: await presignApi.computeFileHash(file),
+      file_hash: '',
     },
     signal,
   })
+
+  // 会话主键以服务端返回为准（file_hash 为空时服务端自生成 UUID，与客户端自报值不同）
+  const sessionId = initRes.data?.upload_id || uploadId
 
   for (let index = 0; index < totalChunks; index++) {
     if (signal?.aborted) throw new Error('Cancelled')
@@ -95,10 +98,10 @@ export async function chunkUploadFile(
     // 客户端重传该分片即可；非安全上下文(无 crypto.subtle)自动降级为不携带。
     const hash = await sha256Hex(blob)
     if (hash) form.append('hash', hash)
-    await uploadChunkWithRetry(uploadId, index, form, signal)
+    await uploadChunkWithRetry(sessionId, index, form, signal)
     onProgress?.(Math.min(start + blob.size, file.size), file.size)
   }
-  return uploadId
+  return sessionId
 }
 
 /** 逐片 SHA-256；非安全上下文(subtle 不可用)返回 null */

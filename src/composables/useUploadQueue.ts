@@ -277,7 +277,8 @@ export function useUploadQueue(opts: {
         task.error = ''
         task.statusText = t('upload.uploading')
         const uploadId = newId()
-        await chunkUploadFile(
+        // 返回值=服务端会话主键（v0.11+ 以服务端返回为准，绑定按它合并）
+        const sessionId = await chunkUploadFile(
           task.payload,
           uploadId,
           opts.chunkSize ?? DEFAULT_CHUNK_SIZE,
@@ -290,7 +291,7 @@ export function useUploadQueue(opts: {
         task.status = 'binding'
         task.progress = 100
         task.statusText = t('upload.prepare')
-        entries.push({ upload_id: uploadId })
+        entries.push({ upload_id: sessionId })
       }
       const result = await multiBind(entries, multiOptions())
       for (const task of pending) {
