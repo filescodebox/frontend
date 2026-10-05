@@ -108,9 +108,13 @@ const handleLogin = async () => {
     try {
       const res = await adminApi.login(loginForm)
       if (res.code === 200) {
-        // 会话 Cookie 由服务端下发（HttpOnly），前端不再持久化令牌
+        // 会话 Cookie 由服务端下发（HttpOnly），前端不再持久化令牌。
+        // 会话标记（非敏感）：userStore.fetchUserInfo 的守卫依赖它——admin 登录
+        // 不走 userStore.login，漏写该标记会使 fetchUserInfo 开头早退、userInfo
+        // 恒空，角色判断恒失败 → 管理后台永远无法进入（0.12.x 回归，已修复）。
+        localStorage.setItem('fcb_session', '1')
 
-        // 登录后用 token 拉取用户信息获取 role（不再浏览器 atob 解析 JWT）
+        // 登录后拉取用户信息获取 role（不再浏览器 atob 解析 JWT）
         await userStore.fetchUserInfo()
         if (userStore.userInfo?.role !== 'admin') {
           ElMessage.error('非管理员账号')
