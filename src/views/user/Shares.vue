@@ -1,9 +1,6 @@
 <template>
   <div class="shares-page">
-    <div class="page-header">
-      <h2>{{ t('user.shares.title') }}</h2>
-      <p class="page-desc">{{ t('user.shares.subtitle') }}</p>
-    </div>
+    <PageHeader :title="t('user.shares.title')" :desc="t('user.shares.subtitle')" />
 
     <!-- Tab 切换：全部 / 有效 / 过期 / 文本 / 文件 / 回收站 -->
     <el-tabs v-model="activeStatus" @tab-change="handleTabChange" class="status-tabs">
@@ -228,6 +225,7 @@ import {
 import { userSharesApi, type UserShareItem } from '@/api/userShares'
 import { copyToClipboard } from '@/utils/clipboard'
 import { useTableQuery } from '@/composables/useTableQuery'
+import PageHeader from '@/components/data/PageHeader.vue'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 
 const { handleError } = useErrorHandler()

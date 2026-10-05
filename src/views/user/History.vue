@@ -1,9 +1,6 @@
 <template>
   <div class="history-page">
-    <div class="page-header">
-      <h2>{{ t('user.history.title') }}</h2>
-      <p class="page-desc">{{ t('user.history.subtitle') }}</p>
-    </div>
+    <PageHeader :title="t('user.history.title')" :desc="t('user.history.subtitle')" />
 
     <!-- 工具栏 -->
     <div class="toolbar">
@@ -95,6 +92,7 @@ import { useI18n } from 'vue-i18n'
 import { Search, Refresh } from '@element-plus/icons-vue'
 import { userSharesApi, type UserShareItem } from '@/api/userShares'
 import { useTableQuery } from '@/composables/useTableQuery'
+import PageHeader from '@/components/data/PageHeader.vue'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 
 const { handleError } = useErrorHandler()

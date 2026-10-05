@@ -1,15 +1,13 @@
 <template>
   <div class="notifications-page">
-    <div class="page-header">
-      <h2>{{ t('user.notifications.title') }}</h2>
-      <p class="page-desc">{{ t('user.notifications.subtitle') }}</p>
-      <div class="header-actions">
+    <PageHeader :title="t('user.notifications.title')" :desc="t('user.notifications.subtitle')">
+      <template #actions>
         <el-button :disabled="unread === 0" type="primary" :loading="marking" @click="markAllRead">
           <el-icon><Check /></el-icon>
           {{ t('user.notifications.markAllRead') }}
         </el-button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <el-table
       v-loading="loading"
@@ -76,6 +74,7 @@ import { useI18n } from 'vue-i18n'
 import { Check, Bell, Setting, Tools, Share, CircleCheck } from '@element-plus/icons-vue'
 import { userNotifyApi, type UserNotifyItem } from '@/api/userNotify'
 import { useTableQuery } from '@/composables/useTableQuery'
+import PageHeader from '@/components/data/PageHeader.vue'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 
 const { handleError } = useErrorHandler()

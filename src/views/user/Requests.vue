@@ -1,9 +1,6 @@
 <template>
   <div class="requests-page">
-    <div class="page-header">
-      <h2>{{ t('request.pageTitle') }}</h2>
-      <p>{{ t('request.pageDesc') }}</p>
-    </div>
+    <PageHeader :title="t('request.pageTitle')" :desc="t('request.pageDesc')" />
 
     <!-- 创建表单 -->
     <el-card class="create-card" shadow="never">
@@ -94,6 +91,7 @@ import { useI18n } from 'vue-i18n'
 import { CopyDocument } from '@element-plus/icons-vue'
 import { requestApi, type FileRequestItem } from '@/api/request'
 import { copyToClipboard } from '@/utils/clipboard'
+import PageHeader from '@/components/data/PageHeader.vue'
 
 const { t } = useI18n()
 

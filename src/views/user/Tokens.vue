@@ -1,9 +1,7 @@
 <template>
   <div class="tokens-page">
-    <div class="page-header">
-      <h2>{{ t('user.tokens.title') }}</h2>
-      <p class="page-desc">{{ t('user.tokens.subtitle') }}</p>
-      <div class="header-actions">
+    <PageHeader :title="t('user.tokens.title')" :desc="t('user.tokens.subtitle')">
+      <template #actions>
         <el-button
           :disabled="activeCount === 0"
           type="danger"
@@ -17,8 +15,8 @@
           <el-icon><Plus /></el-icon>
           {{ t('user.tokens.create') }}
         </el-button>
-      </div>
-    </div>
+      </template>
+    </PageHeader>
 
     <el-table
       v-loading="loading"
@@ -155,6 +153,7 @@ import { useI18n } from 'vue-i18n'
 import { Plus, CopyDocument, Delete } from '@element-plus/icons-vue'
 import { userApi, type ApiKeyItem } from '@/api/user'
 import { copyToClipboard } from '@/utils/clipboard'
+import PageHeader from '@/components/data/PageHeader.vue'
 
 const { t } = useI18n()
 
