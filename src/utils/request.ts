@@ -63,11 +63,22 @@ instance.interceptors.response.use(
       url.includes('/user/login') ||
       url.includes('/admin/login') ||
       url.includes('/user/refresh')
+    // 业务语义 401（2026-10-05 浏览器 E2E 发现的历史 bug）：取件/下载端点的
+    // 401 表示"需要密码/密码错误/缺下载令牌"，与会话无关——绝不能触发刷新
+    // 或跳登录（否则匿名取件人会被踢去登录页、密码输入框永远不出现）
+    const isBusinessAuth401 = [
+      '/share/select',
+      '/anonymous/retrieve',
+      '/anonymous/download',
+      '/share/download',
+      '/preview',
+    ].some((p) => url.includes(p))
     if (
       error.response?.status === 401 &&
       originalRequest &&
       !originalRequest._retry &&
-      !isAuthEndpoint
+      !isAuthEndpoint &&
+      !isBusinessAuth401
     ) {
       originalRequest._retry = true
       if (!refreshPromise) {
