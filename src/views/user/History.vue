@@ -89,6 +89,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatDateTime as formatDate } from '@/utils/format'
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -129,11 +130,6 @@ const loadList = async (resetPage?: number) => {
   }
 }
 
-const formatDate = (s: string | null): string => {
-  if (!s) return '—'
-  if (s.includes('T')) return s.replace('T', ' ').slice(0, 19)
-  return s
-}
 
 onMounted(() => loadList(1))
 </script>

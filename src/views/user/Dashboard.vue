@@ -206,7 +206,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatFileSize } from '@/utils/format'
+import { formatFileSize, toLocaleDateTime } from '@/utils/format'
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -263,10 +263,8 @@ const greeting = computed(() => {
 })
 
 
-const formatDate = (dateStr?: string): string => {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
-}
+const formatDate = (dateStr?: string): string =>
+  toLocaleDateTime(dateStr, { locale: locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', fallback: '' })
 
 const fetchUserInfo = async () => {
   try {

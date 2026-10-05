@@ -68,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+import { toLocaleDateTime as formatDate } from '@/utils/format'
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
@@ -79,14 +80,7 @@ const filterAction = ref('')
 
 const pagination = reactive({ page: 1, pageSize: 20, total: 0 })
 
-const formatDate = (dateStr?: string) => {
-  if (!dateStr) return '-'
-  try {
-    return new Date(dateStr).toLocaleString('zh-CN')
-  } catch {
-    return '-'
-  }
-}
+
 
 const fetchActivities = async () => {
   loading.value = true

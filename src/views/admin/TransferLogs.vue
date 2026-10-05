@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatFileSize } from '@/utils/format'
+import { formatFileSize, toLocaleDateTime as formatDate } from '@/utils/format'
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
@@ -124,14 +124,6 @@ const stats = reactive({
 })
 
 
-const formatDate = (dateStr: string): string => {
-  if (!dateStr) return '-'
-  try {
-    return new Date(dateStr).toLocaleString('zh-CN')
-  } catch {
-    return '-'
-  }
-}
 
 const getOperationLabel = (operation: string): string => {
   const labels: Record<string, string> = {

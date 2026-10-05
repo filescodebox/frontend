@@ -277,7 +277,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatFileSize } from '@/utils/format'
+import { formatFileSize, toLocaleDateTime as formatDate } from '@/utils/format'
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -308,15 +308,6 @@ const filters = reactive({
 })
 
 
-const formatDate = (dateStr: string): string => {
-  if (!dateStr) return '-'
-  try {
-    // 后端为 "2006-01-02 15:04:05" 格式，Safari 不认空格分隔——归一为 T
-    return new Date(dateStr.replace(' ', 'T')).toLocaleString('zh-CN')
-  } catch {
-    return '-'
-  }
-}
 
 const isExpired = (dateStr: string): boolean => {
   if (!dateStr) return false

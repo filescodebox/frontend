@@ -219,7 +219,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatFileSize } from '@/utils/format'
+import { formatFileSize, toLocaleDateTime } from '@/utils/format'
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
@@ -299,14 +299,8 @@ const greeting = computed(() => {
 })
 
 
-const formatDate = (dateStr: string): string => {
-  if (!dateStr) return '-'
-  try {
-    return new Date(dateStr).toLocaleString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
-  } catch {
-    return '-'
-  }
-}
+const formatDate = (dateStr?: string): string =>
+  toLocaleDateTime(dateStr, { locale: locale.value === 'zh-CN' ? 'zh-CN' : 'en-US' })
 
 // 数字动画
 const animateNumber = (key: 'userCount' | 'fileCount' | 'todayUploads', target: number) => {

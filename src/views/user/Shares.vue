@@ -218,7 +218,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatFileSize as formatSize } from '@/utils/format'
+import { formatFileSize as formatSize, formatDateTime as formatDate } from '@/utils/format'
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -413,14 +413,6 @@ const doExtend = async () => {
 }
 
 
-const formatDate = (s: string | null): string => {
-  if (!s) return '—'
-  // "2026-07-28 12:34:56" or RFC3339
-  if (s.includes('T')) {
-    return s.replace('T', ' ').slice(0, 19)
-  }
-  return s
-}
 
 onMounted(() => {
   loadList(1)

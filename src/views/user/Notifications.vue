@@ -69,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import { formatDateTime } from '@/utils/format'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -126,10 +127,7 @@ const markAllRead = async () => {
   }
 }
 
-const formatDate = (s: string): string => {
-  if (s.includes('T')) return s.replace('T', ' ').slice(0, 19)
-  return s
-}
+const formatDate = (s: string): string => formatDateTime(s, '')
 
 // 每 60s 自动刷新未读数（顶栏铃铛会复用）
 let timer: number | undefined

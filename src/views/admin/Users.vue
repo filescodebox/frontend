@@ -166,7 +166,7 @@
 </template>
 
 <script setup lang="ts">
-import { formatFileSize } from '@/utils/format'
+import { formatFileSize, toLocaleDateTime as formatDate } from '@/utils/format'
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
@@ -288,14 +288,6 @@ const removeUser = async (user: any) => {
 }
 
 
-const formatDate = (dateStr: string): string => {
-  if (!dateStr) return '-'
-  try {
-    return new Date(String(dateStr).replace(' ', 'T')).toLocaleString('zh-CN')
-  } catch {
-    return '-'
-  }
-}
 
 const getStoragePercentage = (user: any): number => {
   const used = user.quota_used || user.total_storage || 0
