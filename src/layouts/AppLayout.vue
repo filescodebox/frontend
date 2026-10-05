@@ -52,29 +52,13 @@
           class="sidebar-menu"
           router
         >
-          <el-menu-item index="/user/dashboard">
-            <el-icon><Monitor /></el-icon>
-            <span>{{ t('user.nav_dashboard') }}</span>
-          </el-menu-item>
-          <el-menu-item index="/user/shares">
-            <el-icon><Share /></el-icon>
-            <span>{{ t('user.nav_shares') }}</span>
-          </el-menu-item>
-          <el-menu-item index="/user/history">
-            <el-icon><Document /></el-icon>
-            <span>{{ t('user.nav_history') }}</span>
-          </el-menu-item>
-          <el-menu-item index="/user/notifications">
-            <el-icon><Bell /></el-icon>
-            <span>{{ t('user.nav_notifications') }}</span>
-          </el-menu-item>
-          <el-menu-item index="/user/tokens">
-            <el-icon><Key /></el-icon>
-            <span>{{ t('user.nav_tokens') }}</span>
-          </el-menu-item>
-          <el-menu-item index="/user/requests">
-            <el-icon><Postcard /></el-icon>
-            <span>{{ t('user.nav_requests') }}</span>
+          <el-menu-item
+            v-for="item in userNavItems"
+            :key="item.path"
+            :index="item.path"
+          >
+            <el-icon><component :is="item.icon" /></el-icon>
+            <span>{{ t(item.labelKey) }}</span>
           </el-menu-item>
         </el-menu>
       </aside>
@@ -93,36 +77,20 @@
       :show-close="false"
       class="mobile-drawer"
     >
-      <el-menu
-        :default-active="$route.path"
-        router
-        @select="drawerVisible = false"
-      >
-        <el-menu-item index="/user/dashboard">
-          <el-icon><Monitor /></el-icon>
-          <span>{{ t('user.nav_dashboard') }}</span>
-        </el-menu-item>
-        <el-menu-item index="/user/shares">
-          <el-icon><Share /></el-icon>
-          <span>{{ t('user.nav_shares') }}</span>
-        </el-menu-item>
-        <el-menu-item index="/user/history">
-          <el-icon><Document /></el-icon>
-          <span>{{ t('user.nav_history') }}</span>
-        </el-menu-item>
-        <el-menu-item index="/user/notifications">
-          <el-icon><Bell /></el-icon>
-          <span>{{ t('user.nav_notifications') }}</span>
-        </el-menu-item>
-        <el-menu-item index="/user/tokens">
-          <el-icon><Key /></el-icon>
-          <span>{{ t('user.nav_tokens') }}</span>
-        </el-menu-item>
-        <el-menu-item index="/user/requests">
-          <el-icon><Postcard /></el-icon>
-          <span>{{ t('user.nav_requests') }}</span>
-        </el-menu-item>
-      </el-menu>
+        <el-menu
+          :default-active="$route.path"
+          router
+          @select="drawerVisible = false"
+        >
+          <el-menu-item
+            v-for="item in userNavItems"
+            :key="item.path"
+            :index="item.path"
+          >
+            <el-icon><component :is="item.icon" /></el-icon>
+            <span>{{ t(item.labelKey) }}</span>
+          </el-menu-item>
+        </el-menu>
     </el-drawer>
   </div>
 </template>
@@ -133,9 +101,9 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  ArrowDown, User, SwitchButton, Monitor, Share,
-  Document, Bell, House, Fold, Key, Postcard
+  ArrowDown, User, SwitchButton, House, Fold
 } from '@element-plus/icons-vue'
+import { userNavItems } from '@/config/menu'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
