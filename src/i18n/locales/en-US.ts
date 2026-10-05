@@ -486,6 +486,7 @@ export default {
     config: 'Configuration',
     storage: 'Storage',
     logs: 'Transfer logs',
+    moderationTitle: 'Content moderation',
     maintenance: 'Maintenance',
     activities: 'Audit log',
     accessSite: 'Open site',

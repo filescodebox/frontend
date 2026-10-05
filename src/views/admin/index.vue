@@ -50,7 +50,7 @@
 
           <el-menu-item index="/admin/moderation">
             <el-icon><View /></el-icon>
-            <span>内容审核</span>
+            <span>{{ t('admin.moderationTitle') }}</span>
           </el-menu-item>
 
           <el-menu-item index="/admin/activities">

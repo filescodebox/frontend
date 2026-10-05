@@ -487,6 +487,7 @@ export default {
     config: '系统配置',
     storage: '存储管理',
     logs: '传输日志',
+    moderationTitle: '内容审核',
     maintenance: '维护工具',
     activities: '审计日志',
     accessSite: '访问前台',
