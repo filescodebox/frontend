@@ -36,7 +36,7 @@ src/
 
 ## 架构分层（2026-10-06 起强制）
 
-六层单向依赖，只允许向下 import，禁止反向（spec：`docs/specs/2026-10-06-frontend-architecture-design.md`，仓库根）：
+六层单向依赖，只允许向下 import，禁止反向（2026-10-06 起强制）：
 
 ```
 views(装配,软上限~400行) → components(共享组件) → composables(领域编排)
@@ -71,7 +71,7 @@ npm run build       # vue-tsc -b && vite build
 
 - `/share /user /admin /chunk /api /anonymous /download /notifies /presign /setup /request /preview /qrcode /openapi.json /ping` → `http://localhost:12345`
 
-API 规范真相源是后端运行时生成的 `/openapi.json`(Swagger UI 见前端 `/#/api-docs` 页);本仓不维护 openapi 快照与生成类型,手写类型见 `src/types/`。
+API 规范真相源是后端运行时生成的 `/openapi.json`(Swagger UI 见前端 `/#/api-docs` 页);本仓不维护 openapi 快照,wire 契约类型经 `@filescodebox/contracts` Release tgz 依赖引入(contracts IDL 生成),手写补充类型见 `src/types/`。
 
 ## 分离镜像
 
