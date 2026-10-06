@@ -3,199 +3,195 @@
     <el-card v-loading="loading">
       <template #header>
         <div class="card-header">
-          <h3>系统配置</h3>
+          <h3>{{ t('admin.configPage.title') }}</h3>
           <el-button type="primary" @click="saveConfig" :loading="saving">
-            保存配置
+            {{ t('admin.configPage.save') }}
           </el-button>
         </div>
       </template>
 
       <el-tabs v-model="activeTab">
         <!-- 基础配置 -->
-        <el-tab-pane label="基础配置" name="basic">
+        <el-tab-pane :label="t('admin.configPage.tabs.basic')" name="basic">
           <el-form :model="configForm.base" label-width="140px" style="max-width: 600px">
-            <el-form-item label="站点名称">
+            <el-form-item :label="t('admin.configPage.basic.siteName')">
               <el-input v-model="configForm.base.name" />
             </el-form-item>
 
-            <el-form-item label="站点描述">
+            <el-form-item :label="t('admin.configPage.basic.siteDescription')">
               <el-input v-model="configForm.base.description" type="textarea" :rows="3" />
             </el-form-item>
 
-            <el-form-item label="端口">
+            <el-form-item :label="t('admin.configPage.basic.port')">
               <el-input-number v-model="configForm.base.port" :min="1" :max="65535" />
-            </el-form-item>
-
-            <el-form-item label="生产模式">
-              <el-switch v-model="configForm.base.production" />
             </el-form-item>
           </el-form>
         </el-tab-pane>
 
         <!-- 传输配置（SystemConfig.Transfer 段；旧上传门禁字段属部署配置，不在线编辑） -->
-        <el-tab-pane label="传输配置" name="transfer">
+        <el-tab-pane :label="t('admin.configPage.tabs.transfer')" name="transfer">
           <el-form :model="configForm.transfer" label-width="140px" style="max-width: 600px">
-            <el-form-item label="传输次数上限">
+            <el-form-item :label="t('admin.configPage.transfer.maxCount')">
               <el-input-number v-model="configForm.transfer.max_count" :min="0" controls-position="right" />
-              <span style="margin-left: 10px; color: var(--color-text-secondary)">单分享可取件次数上限（0 = 不限）</span>
+              <span style="margin-left: 10px; color: var(--color-text-secondary)">{{ t('admin.configPage.transfer.maxCountHint') }}</span>
             </el-form-item>
-            <el-form-item label="默认过期天数">
+            <el-form-item :label="t('admin.configPage.transfer.expireDefault')">
               <el-input-number v-model="configForm.transfer.expire_default" :min="1" controls-position="right" />
-              <span style="margin-left: 10px; color: var(--color-text-secondary)">天</span>
+              <span style="margin-left: 10px; color: var(--color-text-secondary)">{{ t('admin.configPage.transfer.days') }}</span>
             </el-form-item>
-            <el-form-item label="上传门禁">
+            <el-form-item :label="t('admin.configPage.transfer.uploadGates')">
               <span class="form-hint" style="color: var(--color-text-secondary)">
-                匿名上传开关/上传大小/需登录/分片开关由部署配置管理（config.yaml transfer 段 / FCB_* 环境变量），不在线编辑
+                {{ t('admin.configPage.transfer.uploadGatesHint') }}
               </span>
             </el-form-item>
           </el-form>
         </el-tab-pane>
 
         <!-- 用户配置 -->
-        <el-tab-pane label="用户配置" name="user">
+        <el-tab-pane :label="t('admin.configPage.tabs.user')" name="user">
           <div style="margin-bottom: 12px">
-            <el-button type="primary" :loading="userSaving" @click="saveUserSettings">保存用户配置</el-button>
-            <span style="margin-left: 10px; color: var(--color-text-secondary); font-size: 12px">保存后即时生效（注册开关/会话时长；配额与上传限制为系统默认，用户级覆盖优先）</span>
+            <el-button type="primary" :loading="userSaving" @click="saveUserSettings">{{ t('admin.configPage.user.save') }}</el-button>
+            <span style="margin-left: 10px; color: var(--color-text-secondary); font-size: 12px">{{ t('admin.configPage.user.saveHint') }}</span>
           </div>
           <el-form :model="configForm.user" label-width="140px" style="max-width: 600px">
-            <el-form-item label="允许用户注册">
+            <el-form-item :label="t('admin.configPage.user.allowRegistration')">
               <el-switch v-model="configForm.user.allowuserregistration" :active-value="1" :inactive-value="0" />
             </el-form-item>
 
-            <el-form-item label="用户上传限制">
+            <el-form-item :label="t('admin.configPage.user.uploadLimit')">
               <el-input-number
                 v-model="configForm.user.useruploadsize"
                 :min="1048576"
                 :step="1048576"
                 controls-position="right"
               />
-              <span style="margin-left: 10px; color: var(--color-text-secondary)">字节 (默认 50MB)</span>
+              <span style="margin-left: 10px; color: var(--color-text-secondary)">{{ t('admin.configPage.user.bytesDefault') }}</span>
             </el-form-item>
 
-            <el-form-item label="用户存储配额">
+            <el-form-item :label="t('admin.configPage.user.storageQuota')">
               <el-input-number
                 v-model="configForm.user.userstoragequota"
                 :min="1048576"
                 :step="1048576"
                 controls-position="right"
               />
-              <span style="margin-left: 10px; color: var(--color-text-secondary)">字节 (默认 1GB)</span>
+              <span style="margin-left: 10px; color: var(--color-text-secondary)">{{ t('admin.configPage.user.quotaDefault') }}</span>
             </el-form-item>
 
-            <el-form-item label="会话过期时间">
+            <el-form-item :label="t('admin.configPage.user.sessionExpiry')">
               <el-input-number
                 v-model="configForm.user.sessionexpiryhours"
                 :min="1"
                 :max="720"
                 controls-position="right"
               />
-              <span style="margin-left: 10px; color: var(--color-text-secondary)">小时</span>
+              <span style="margin-left: 10px; color: var(--color-text-secondary)">{{ t('admin.configPage.user.hours') }}</span>
             </el-form-item>
           </el-form>
         </el-tab-pane>
         <!-- 安全与限流（读写 /admin/ratelimit/*，独立保存） -->
-        <el-tab-pane label="安全与限流" name="ratelimit">
+        <el-tab-pane :label="t('admin.configPage.tabs.ratelimit')" name="ratelimit">
           <el-form :model="rlForm" label-width="160px" style="max-width: 640px">
-            <el-form-item label="启用限流">
+            <el-form-item :label="t('admin.configPage.ratelimit.enabled')">
               <el-switch v-model="rlForm.enabled" />
             </el-form-item>
-            <el-form-item label="全局 QPS">
+            <el-form-item :label="t('admin.configPage.ratelimit.globalQps')">
               <el-input-number v-model="rlForm.global_qps" :min="1" :max="100000" controls-position="right" />
             </el-form-item>
-            <el-form-item label="上传 QPS">
+            <el-form-item :label="t('admin.configPage.ratelimit.uploadQps')">
               <el-input-number v-model="rlForm.upload_qps" :min="1" :max="100000" controls-position="right" />
             </el-form-item>
-            <el-form-item label="下载 QPS">
+            <el-form-item :label="t('admin.configPage.ratelimit.downloadQps')">
               <el-input-number v-model="rlForm.download_qps" :min="1" :max="100000" controls-position="right" />
             </el-form-item>
-            <el-form-item label="登录 QPS">
+            <el-form-item :label="t('admin.configPage.ratelimit.loginQps')">
               <el-input-number v-model="rlForm.login_qps" :min="1" :max="10000" controls-position="right" />
             </el-form-item>
-            <el-form-item label="突发容量 Burst">
+            <el-form-item :label="t('admin.configPage.ratelimit.burst')">
               <el-input-number v-model="rlForm.burst" :min="1" :max="100000" controls-position="right" />
             </el-form-item>
-            <el-form-item label="触发封禁时长（秒）">
+            <el-form-item :label="t('admin.configPage.ratelimit.blockSeconds')">
               <el-input-number v-model="rlForm.block_seconds" :min="0" :max="86400" controls-position="right" />
             </el-form-item>
-            <el-form-item label="Redis 共享计数">
+            <el-form-item :label="t('admin.configPage.ratelimit.redisShared')">
               <!-- 契约无 use_redis 字段（GET 不返回/PUT 不采纳），由部署配置
                    rate_limit.use_redis / FCB_RATE_LIMIT_USE_REDIS 决定 -->
               <span class="form-hint" style="color: var(--color-text-secondary)">
-                由部署配置决定（rate_limit.use_redis / FCB_RATE_LIMIT_USE_REDIS），此处不可改
+                {{ t('admin.configPage.ratelimit.redisHint') }}
               </span>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="rlSaving" @click="saveRateLimit">保存限流配置</el-button>
-              <el-button :loading="rlStatusLoading" @click="fetchRateLimitStatus">查看运行状态</el-button>
+              <el-button type="primary" :loading="rlSaving" @click="saveRateLimit">{{ t('admin.configPage.ratelimit.save') }}</el-button>
+              <el-button :loading="rlStatusLoading" @click="fetchRateLimitStatus">{{ t('admin.configPage.ratelimit.viewStatus') }}</el-button>
             </el-form-item>
-            <el-form-item v-if="rlStatus" label="运行状态">
+            <el-form-item v-if="rlStatus" :label="t('admin.configPage.ratelimit.status')">
               <pre class="rl-status">{{ rlStatusText }}</pre>
             </el-form-item>
           </el-form>
         </el-tab-pane>
 
-        <el-tab-pane label="外观主题" name="appearance">
+        <el-tab-pane :label="t('admin.configPage.tabs.appearance')" name="appearance">
           <el-form label-width="150px">
-            <el-form-item label="背景图 URL">
-              <el-input v-model="exForm.ui.background" placeholder="https://...（http(s) 图片地址）" clearable />
+            <el-form-item :label="t('admin.configPage.appearance.bgUrl')">
+              <el-input v-model="exForm.ui.background" :placeholder="t('admin.configPage.appearance.bgUrlPlaceholder')" clearable />
             </el-form-item>
-            <el-form-item label="主题色">
+            <el-form-item :label="t('admin.configPage.appearance.accentColor')">
               <el-input v-model="exForm.ui.accent_color" placeholder="#409eff" style="width: 220px" />
-              <span class="field-hint">#RRGGBB，保存后全站主色即时生效</span>
+              <span class="field-hint">{{ t('admin.configPage.appearance.accentHint') }}</span>
             </el-form-item>
-            <el-form-item label="页脚展示管理入口">
+            <el-form-item :label="t('admin.configPage.appearance.showAdminEntry')">
               <el-switch v-model="exForm.ui.show_admin_addr" />
             </el-form-item>
           </el-form>
-          <el-button type="primary" :loading="exSaving.ui" @click="saveSection('ui', exForm.ui, '外观已保存并全站生效')">保存外观</el-button>
+          <el-button type="primary" :loading="exSaving.ui" @click="saveSection('ui', exForm.ui, t('admin.configPage.appearance.saved'))">{{ t('admin.configPage.appearance.save') }}</el-button>
         </el-tab-pane>
 
-        <el-tab-pane label="下载设置" name="download">
+        <el-tab-pane :label="t('admin.configPage.tabs.download')" name="download">
           <el-form label-width="150px">
-            <el-form-item label="S3 直下（302）">
+            <el-form-item :label="t('admin.configPage.download.s3Direct')">
               <el-switch v-model="exForm.download.s3_direct_download" />
-              <span class="field-hint">S3 后端时下载 302 到预签名 URL，流量不过服务器</span>
+              <span class="field-hint">{{ t('admin.configPage.download.s3DirectHint') }}</span>
             </el-form-item>
-            <el-form-item label="下载超时（秒）">
+            <el-form-item :label="t('admin.configPage.download.timeout')">
               <el-input-number v-model="exForm.download.download_timeout" :min="30" :max="3600" />
             </el-form-item>
-            <el-form-item label="取件需登录">
+            <el-form-item :label="t('admin.configPage.download.requireLogin')">
               <el-switch v-model="exForm.download.require_login" />
             </el-form-item>
           </el-form>
-          <el-button type="primary" :loading="exSaving.download" @click="saveSection('download', exForm.download, '下载设置已保存')">保存下载设置</el-button>
+          <el-button type="primary" :loading="exSaving.download" @click="saveSection('download', exForm.download, t('admin.configPage.download.saved'))">{{ t('admin.configPage.download.save') }}</el-button>
         </el-tab-pane>
 
-        <el-tab-pane label="通知与邮件" name="notify">
+        <el-tab-pane :label="t('admin.configPage.tabs.notify')" name="notify">
           <el-form label-width="150px">
-            <el-form-item label="Webhook URL">
-              <el-input v-model="exForm.notify.webhook_url" placeholder="notify.created 事件 POST 地址，留空禁用" clearable />
+            <el-form-item :label="t('admin.configPage.notify.webhook')">
+              <el-input v-model="exForm.notify.webhook_url" :placeholder="t('admin.configPage.notify.webhookPlaceholder')" clearable />
             </el-form-item>
-            <el-divider content-position="left">SMTP 邮件</el-divider>
-            <el-form-item label="SMTP 主机">
+            <el-divider content-position="left">{{ t('admin.configPage.notify.smtpSection') }}</el-divider>
+            <el-form-item :label="t('admin.configPage.notify.smtpHost')">
               <el-input v-model="exForm.notify.smtp.host" placeholder="smtp.example.com:465" />
             </el-form-item>
-            <el-form-item label="用户名">
+            <el-form-item :label="t('admin.configPage.notify.username')">
               <el-input v-model="exForm.notify.smtp.username" />
             </el-form-item>
-            <el-form-item label="密码">
+            <el-form-item :label="t('admin.configPage.notify.password')">
               <el-input v-model="exForm.notify.smtp.password" type="password" show-password />
             </el-form-item>
-            <el-form-item label="发件人">
-              <el-input v-model="exForm.notify.smtp.from" placeholder="FilesCodeBox <no-reply@example.com>" />
+            <el-form-item :label="t('admin.configPage.notify.sender')">
+              <el-input v-model="exForm.notify.smtp.from" :placeholder="t('admin.configPage.notify.senderPlaceholder')" />
             </el-form-item>
-            <el-form-item label="测试发信">
-              <el-input v-model="smtpTestTo" placeholder="收件邮箱" style="width: 260px" />
-              <el-button class="ml8" :loading="smtpTesting" @click="doSMTPTest">发送测试邮件</el-button>
-              <span class="field-hint">先保存再测试；测的是当前生效配置</span>
+            <el-form-item :label="t('admin.configPage.notify.testTo')">
+              <el-input v-model="smtpTestTo" :placeholder="t('admin.configPage.notify.testToPlaceholder')" style="width: 260px" />
+              <el-button class="ml8" :loading="smtpTesting" @click="doSMTPTest">{{ t('admin.configPage.notify.testSend') }}</el-button>
+              <span class="field-hint">{{ t('admin.configPage.notify.testHint') }}</span>
             </el-form-item>
           </el-form>
-          <el-button type="primary" :loading="exSaving.notify" @click="saveNotify">保存通知设置</el-button>
+          <el-button type="primary" :loading="exSaving.notify" @click="saveNotify">{{ t('admin.configPage.notify.save') }}</el-button>
         </el-tab-pane>
 
-        <el-tab-pane label="登录集成 OIDC" name="oidc">
+        <el-tab-pane :label="t('admin.configPage.tabs.oidc')" name="oidc">
           <el-form label-width="150px">
-            <el-form-item label="启用 OIDC">
+            <el-form-item :label="t('admin.configPage.oidc.enabled')">
               <el-switch v-model="exForm.oidc.enabled" />
             </el-form-item>
             <el-form-item label="Issuer">
@@ -207,49 +203,49 @@
             <el-form-item label="Client Secret">
               <el-input v-model="exForm.oidc.client_secret" type="password" show-password />
             </el-form-item>
-            <el-form-item label="回调地址">
+            <el-form-item :label="t('admin.configPage.oidc.callback')">
               <el-input :model-value="`${origin}/#/oidc/callback`" readonly />
-              <span class="field-hint">填到 IdP 客户端的 redirect URI</span>
+              <span class="field-hint">{{ t('admin.configPage.oidc.callbackHint') }}</span>
             </el-form-item>
-            <el-form-item label="测试连接">
-              <el-button :loading="oidcTesting" @click="doOIDCTest">验证 discovery</el-button>
+            <el-form-item :label="t('admin.configPage.oidc.test')">
+              <el-button :loading="oidcTesting" @click="doOIDCTest">{{ t('admin.configPage.oidc.testButton') }}</el-button>
             </el-form-item>
           </el-form>
-          <el-button type="primary" :loading="exSaving.oidc" @click="saveSection('oidc', exForm.oidc, 'OIDC 配置已保存并热生效')">保存 OIDC</el-button>
+          <el-button type="primary" :loading="exSaving.oidc" @click="saveSection('oidc', exForm.oidc, t('admin.configPage.oidc.saved'))">{{ t('admin.configPage.oidc.save') }}</el-button>
         </el-tab-pane>
 
-        <el-tab-pane label="本地导入" name="localimport">
+        <el-tab-pane :label="t('admin.configPage.tabs.localimport')" name="localimport">
           <el-form label-width="150px">
-            <el-form-item label="启用本地导入">
+            <el-form-item :label="t('admin.configPage.localimport.enabled')">
               <el-switch v-model="exForm.local_import.enabled" />
-              <span class="field-hint">服务器本地/NAS 目录内文件免上传生成提取码</span>
+              <span class="field-hint">{{ t('admin.configPage.localimport.enabledHint') }}</span>
             </el-form-item>
-            <el-form-item label="白名单目录">
+            <el-form-item :label="t('admin.configPage.localimport.roots')">
               <el-input
                 v-model="localImportRootsText"
                 type="textarea"
                 :rows="3"
-                placeholder="绝对路径，逗号分隔；需容器内可达（如 /app/data/import）"
+                :placeholder="t('admin.configPage.localimport.rootsPlaceholder')"
               />
             </el-form-item>
           </el-form>
-          <el-button type="primary" :loading="exSaving.local_import" @click="saveLocalImport">保存本地导入</el-button>
+          <el-button type="primary" :loading="exSaving.local_import" @click="saveLocalImport">{{ t('admin.configPage.localimport.save') }}</el-button>
         </el-tab-pane>
 
         <el-tab-pane label="API Token" name="apitoken">
           <el-form label-width="150px">
-            <el-form-item label="认证总开关">
+            <el-form-item :label="t('admin.configPage.apitoken.enabled')">
               <el-switch v-model="exForm.api_token.enabled" />
-              <span class="field-hint">关闭后携带 fcb_sk_ Key 的请求一律 401（紧急停用）</span>
+              <span class="field-hint">{{ t('admin.configPage.apitoken.enabledHint') }}</span>
             </el-form-item>
-            <el-form-item label="单 Key QPS">
+            <el-form-item :label="t('admin.configPage.apitoken.perKeyQps')">
               <el-input-number v-model="exForm.api_token.per_key_qps" :min="1" :max="1000" />
             </el-form-item>
-            <el-form-item label="单 Key Burst">
+            <el-form-item :label="t('admin.configPage.apitoken.perKeyBurst')">
               <el-input-number v-model="exForm.api_token.per_key_burst" :min="1" :max="5000" />
             </el-form-item>
           </el-form>
-          <el-button type="primary" :loading="exSaving.api_token" @click="saveSection('api_token', exForm.api_token, 'API Token 设置已保存并热生效')">保存</el-button>
+          <el-button type="primary" :loading="exSaving.api_token" @click="saveSection('api_token', exForm.api_token, t('admin.configPage.apitoken.saved'))">{{ t('admin.configPage.apitoken.save') }}</el-button>
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -259,10 +255,12 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { adminApi } from '@/api/admin'
 import { useConfigStore } from '@/stores/config'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 
+const { t } = useI18n()
 const { handleError } = useErrorHandler()
 
 const loading = ref(false)
@@ -274,9 +272,7 @@ const configForm = reactive({
   base: {
     name: '',
     description: '',
-    port: 12346,
-    host: '0.0.0.0',
-    production: false
+    port: 12346
   },
   transfer: {
     max_count: 100,
@@ -308,8 +304,8 @@ const fetchConfig = async () => {
       await fetchUserSettings()
     }
   } catch (error) {
-    console.error('获取配置失败:', error)
-    ElMessage.error('获取配置失败')
+    console.error('fetch config failed:', error)
+    ElMessage.error(t('admin.configPage.fetchFailed'))
   } finally {
     loading.value = false
   }
@@ -327,7 +323,7 @@ const fetchUserSettings = async () => {
       if (typeof d.sessionexpiryhours === 'number' && d.sessionexpiryhours > 0) configForm.user.sessionexpiryhours = d.sessionexpiryhours
     }
   } catch (error) {
-    console.error('获取用户配置失败:', error)
+    console.error('fetch user settings failed:', error)
   }
 }
 
@@ -342,14 +338,13 @@ const saveUserSettings = async () => {
       sessionexpiryhours: configForm.user.sessionexpiryhours
     })
     if (res.code === 0 || res.code === 200) {
-      ElMessage.success('用户配置已保存并即时生效')
+      ElMessage.success(t('admin.configPage.user.saved'))
       await configStore.refreshConfig()
     } else {
-      handleError(new Error(res.message || '保存失败'))
+      handleError(new Error(res.message || t('admin.configPage.saveFailed')))
     }
   } catch (error) {
-    console.error('保存用户配置失败:', error)
-    ElMessage.error('保存失败')
+    handleError(error)
   } finally {
     userSaving.value = false
   }
@@ -364,16 +359,15 @@ const saveConfig = async () => {
       transfer: configForm.transfer
     })
     if (res.code === 200) {
-      ElMessage.success('配置保存成功')
+      ElMessage.success(t('admin.configPage.saved'))
       // 刷新全局配置
       await configStore.refreshConfig()
       await fetchConfig()
     } else {
-      handleError(new Error(res.message || '保存失败'))
+      handleError(new Error(res.message || t('admin.configPage.saveFailed')))
     }
   } catch (error) {
-    console.error('保存配置失败:', error)
-    ElMessage.error('保存配置失败')
+    handleError(error)
   } finally {
     saving.value = false
   }
@@ -389,11 +383,16 @@ const exForm = reactive({
   local_import: { enabled: false, roots: [] as string[] },
   api_token: { enabled: true, per_key_qps: 20, per_key_burst: 40 },
 })
+
 const exSaving = reactive<Record<string, boolean>>({})
+
 const origin = window.location.origin
+// 白名单目录 textarea ↔ roots 数组(逗号分隔,自动去空)
 const localImportRootsText = computed({
   get: () => exForm.local_import.roots.join(', '),
-  set: (v: string) => { exForm.local_import.roots = v.split(/[,,]/).map(x => x.trim()).filter(Boolean) },
+  set: (v: string) => {
+    exForm.local_import.roots = v.split(',').map((x) => x.trim()).filter(Boolean)
+  },
 })
 
 const fetchExSections = (data: Record<string, unknown>) => {
@@ -419,7 +418,7 @@ const saveSection = async (section: string, payload: Record<string, unknown>, ms
       const res2 = await adminApi.getConfig()
       if (res2.code === 200 && res2.data) fetchExSections(res2.data as Record<string, unknown>)
     } else {
-      handleError(new Error(res.message || '保存失败'))
+      handleError(new Error(res.message || t('admin.configPage.saveFailed')))
     }
   } catch (e) {
     handleError(e)
@@ -433,28 +432,28 @@ const saveNotify = async () => {
     webhook_url: exForm.notify.webhook_url,
     smtp: { ...exForm.notify.smtp },
   }
-  await saveSection('notify', payload, '通知设置已保存并热生效')
+  await saveSection('notify', payload, t('admin.configPage.notify.saved'))
 }
 
 const saveLocalImport = async () => {
   await saveSection('local_import', {
     enabled: exForm.local_import.enabled,
     roots: exForm.local_import.roots,
-  }, '本地导入设置已保存并热生效')
+  }, t('admin.configPage.localimport.saved'))
 }
 
 const smtpTestTo = ref('')
 const smtpTesting = ref(false)
 const doSMTPTest = async () => {
   if (!smtpTestTo.value) {
-    ElMessage.warning('请填收件邮箱')
+    ElMessage.warning(t('admin.configPage.notify.fillTo'))
     return
   }
   smtpTesting.value = true
   try {
     const res = await adminApi.testSMTP(smtpTestTo.value)
-    if (res.code === 0 || res.code === 200) ElMessage.success('测试邮件已发送')
-    else handleError(new Error(res.message || '发送失败'))
+    if (res.code === 0 || res.code === 200) ElMessage.success(t('admin.configPage.notify.testSent'))
+    else handleError(new Error(res.message || t('admin.configPage.notify.sendFailed')))
   } catch (e) {
     handleError(e)
   } finally {
@@ -467,8 +466,8 @@ const doOIDCTest = async () => {
   oidcTesting.value = true
   try {
     const res = await adminApi.testOIDC()
-    if (res.code === 0 || res.code === 200) ElMessage.success('discovery 验证通过')
-    else handleError(new Error(res.message || '验证失败'))
+    if (res.code === 0 || res.code === 200) ElMessage.success(t('admin.configPage.oidc.testOk'))
+    else handleError(new Error(res.message || t('admin.configPage.oidc.testFailed')))
   } catch (e) {
     handleError(e)
   } finally {
@@ -506,7 +505,7 @@ const fetchRateLimit = async () => {
       }
     }
   } catch (error) {
-    console.error('获取限流配置失败:', error)
+    console.error('fetch ratelimit config failed:', error)
   }
 }
 
@@ -518,9 +517,9 @@ const saveRateLimit = async () => {
       config: { ...rlSnapshot, ...rlForm }
     })
     if (res.code === 0 || res.code === 200) {
-      ElMessage.success('限流配置已保存并热更新')
+      ElMessage.success(t('admin.configPage.ratelimit.saved'))
     } else {
-      handleError(new Error(res.message || '保存失败'))
+      handleError(new Error(res.message || t('admin.configPage.saveFailed')))
     }
   } catch (e: any) {
     handleError(e)
@@ -538,7 +537,7 @@ const fetchRateLimitStatus = async () => {
     if (res.code === 0 || res.code === 200) {
       rlStatus.value = res.data || null
     } else {
-      handleError(new Error(res.message || '获取运行状态失败'))
+      handleError(new Error(res.message || t('admin.configPage.ratelimit.fetchStatusFailed')))
     }
   } catch (e: any) {
     handleError(e)
