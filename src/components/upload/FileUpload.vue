@@ -104,9 +104,13 @@ const queue = useUploadQueue({
   settings,
   t,
   bodyCap: () => Math.max((configStore.config?.uploadSize || 0) - 1024 * 1024, 0) || 8 * 1024 * 1024,
-  // 匿名直传开关 + 直传阈值（管理后台"下载设置"下发；缺省=开放/100MB）
-  presignAllowed: () =>
-    userStore.isLoggedIn || (configStore.config?.presignEnabled ?? true),
+  // 直传策略（管理后台"下载设置"下发）：disabled=全部关闭/authenticated=仅登录/everyone
+  presignAllowed: () => {
+    if (userStore.isLoggedIn) return true
+    const policy = configStore.config?.presignPolicy
+    if (policy) return policy === 'everyone'
+    return configStore.config?.presignEnabled ?? true // 旧后端无策略字段时兼容
+  },
   presignThreshold: () =>
     (configStore.config?.presignThresholdMb || 100) * 1024 * 1024,
   isLoggedIn: () => userStore.isLoggedIn,

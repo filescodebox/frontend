@@ -158,9 +158,13 @@
             <el-form-item :label="t('admin.configPage.download.requireLogin')">
               <el-switch v-model="exForm.download.require_login" />
             </el-form-item>
-            <el-form-item :label="t('admin.configPage.download.presignAnonymous')">
-              <el-switch v-model="exForm.download.presign_anonymous_enabled" />
-              <span class="field-hint">{{ t('admin.configPage.download.presignAnonymousHint') }}</span>
+            <el-form-item :label="t('admin.configPage.download.presignPolicy')">
+              <el-select v-model="exForm.download.presign_policy" style="width: 280px">
+                <el-option label="所有人可直传" value="everyone" />
+                <el-option label="仅登录用户可直传" value="authenticated" />
+                <el-option label="关闭直传（全部走服务器）" value="disabled" />
+              </el-select>
+              <span class="field-hint">{{ t('admin.configPage.download.presignPolicyHint') }}</span>
             </el-form-item>
             <el-form-item :label="t('admin.configPage.download.presignThreshold')">
               <el-input-number v-model="exForm.download.presign_threshold_mb" :min="1" :max="5120" />
@@ -393,7 +397,7 @@ const exForm = reactive({
     s3_direct_download: false,
     download_timeout: 300,
     require_login: false,
-    presign_anonymous_enabled: true,
+    presign_policy: 'everyone',
     presign_threshold_mb: 100,
     presign_expire_seconds: 600,
   },
@@ -420,7 +424,11 @@ const fetchExSections = (data: Record<string, unknown>) => {
   if (sec.download) {
     Object.assign(exForm.download, sec.download)
     // 旧库 download 段无直传新键 → 后端下发 null：归一为默认值（nil 语义=开启/100MB/600s）
-    if (exForm.download.presign_anonymous_enabled == null) exForm.download.presign_anonymous_enabled = true
+    if (!exForm.download.presign_policy) {
+      // 旧库无 presign_policy 键：按旧匿名开关推导（false=authenticated，否则 everyone）
+      const legacy = (exForm.download as Record<string, unknown>).presign_anonymous_enabled
+      exForm.download.presign_policy = legacy === false ? 'authenticated' : 'everyone'
+    }
     if (!exForm.download.presign_threshold_mb) exForm.download.presign_threshold_mb = 100
     if (!exForm.download.presign_expire_seconds) exForm.download.presign_expire_seconds = 600
   }
