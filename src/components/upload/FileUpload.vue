@@ -10,8 +10,18 @@
       </div>
     </transition>
 
+    <!-- 访客准入：管理后台关闭匿名上传时，未登录用户显示提示而非上传区 -->
+    <el-alert
+      v-if="visitorUploadBlocked"
+      type="warning"
+      :title="t('upload.visitorDisabled')"
+      :closable="false"
+      show-icon
+      class="visitor-blocked"
+    />
     <!-- 选择区 -->
     <el-upload
+      v-else
       :auto-upload="false"
       :on-change="handleFileChange"
       :show-file-list="false"
@@ -70,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { ElMessage, type UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { UploadFilled, InfoFilled, Upload } from '@element-plus/icons-vue'
@@ -93,6 +103,9 @@ import FileItemRow from './FileItemRow.vue'
 const { t } = useI18n()
 const configStore = useConfigStore()
 const userStore = useUserStore()
+const visitorUploadBlocked = computed(
+  () => !userStore.isLoggedIn && configStore.config?.openUpload === false
+)
 
 const emit = defineEmits<{ success: [result: ShareResult] }>()
 

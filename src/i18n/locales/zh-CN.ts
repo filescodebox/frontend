@@ -494,6 +494,7 @@ export default {
       fetchFailed: '获取配置失败',
       tabs: {
         basic: '基础配置',
+        upload: '上传设置',
         transfer: '传输配置',
         user: '用户配置',
         ratelimit: '安全与限流',
@@ -553,6 +554,18 @@ export default {
         showAdminEntry: '页脚展示管理入口',
         save: '保存外观',
         saved: '外观已保存并全站生效'
+      },
+      upload: {
+    visitorDisabled: '访客上传已关闭，请登录后再上传',
+        openUpload: '允许访客（未登录）上传',
+        openUploadHint: '关闭后仅登录用户可上传，访客上传入口同步隐藏',
+        requireLogin: '上传需登录',
+        requireLoginHint: '开启后所有上传（含直传）都必须登录，访客完全不可上传',
+        anonymousDailyCount: '访客日配额（次/IP）',
+        anonymousDailyCountHint: '单个 IP 每天可上传的次数，0 = 不限',
+        anonymousDailyBytes: '访客日配额 (MB/IP)',
+        anonymousDailyBytesHint: '单个 IP 每天可上传的流量上限（MB），0 = 不限',
+        saved: '上传设置已保存',
       },
       download: {
         s3Direct: 'S3 直下（302）',

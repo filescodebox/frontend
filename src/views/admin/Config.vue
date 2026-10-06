@@ -29,6 +29,27 @@
         </el-tab-pane>
 
         <!-- 传输配置（SystemConfig.Transfer 段；旧上传门禁字段属部署配置，不在线编辑） -->
+        <el-tab-pane :label="t('admin.configPage.tabs.upload')" name="upload">
+          <el-form label-width="150px">
+            <el-form-item :label="t('admin.configPage.upload.openUpload')">
+              <el-switch v-model="exForm.upload_ex.open_upload" />
+              <span class="field-hint">{{ t('admin.configPage.upload.openUploadHint') }}</span>
+            </el-form-item>
+            <el-form-item :label="t('admin.configPage.upload.requireLogin')">
+              <el-switch v-model="exForm.upload_ex.require_login" />
+              <span class="field-hint">{{ t('admin.configPage.upload.requireLoginHint') }}</span>
+            </el-form-item>
+            <el-form-item :label="t('admin.configPage.upload.anonymousDailyCount')">
+              <el-input-number v-model="exForm.upload_ex.anonymous_daily_count" :min="0" :max="100000" />
+              <span class="field-hint">{{ t('admin.configPage.upload.anonymousDailyCountHint') }}</span>
+            </el-form-item>
+            <el-form-item :label="t('admin.configPage.upload.anonymousDailyBytes')">
+              <el-input-number v-model="exForm.upload_ex.anonymous_daily_bytes" :min="0" :max="107374182400" />
+              <span class="field-hint">{{ t('admin.configPage.upload.anonymousDailyBytesHint') }}</span>
+            </el-form-item>
+          </el-form>
+          <el-button type="primary" :loading="exSaving.upload" @click="saveSection('upload_ex', exForm.upload_ex, t('admin.configPage.upload.saved'))">{{ t('admin.configPage.upload.save') }}</el-button>
+        </el-tab-pane>
         <el-tab-pane :label="t('admin.configPage.tabs.transfer')" name="transfer">
           <el-form :model="configForm.transfer" label-width="140px" style="max-width: 600px">
             <el-form-item :label="t('admin.configPage.transfer.maxCount')">
@@ -393,6 +414,12 @@ const saveConfig = async () => {
 // 扁平契约：每段独立保存（adminApi.updateConfig({ 段名: 值 })），后端 nil-保留未提交段
 const exForm = reactive({
   ui: { background: '', accent_color: '', show_admin_addr: false },
+  upload_ex: {
+    open_upload: true,
+    require_login: false,
+    anonymous_daily_count: 0,
+    anonymous_daily_bytes: 0,
+  },
   download: {
     s3_direct_download: false,
     download_timeout: 300,
@@ -421,6 +448,13 @@ const localImportRootsText = computed({
 const fetchExSections = (data: Record<string, unknown>) => {
   const sec = data as Record<string, any>
   if (sec.ui) Object.assign(exForm.ui, sec.ui)
+  if (sec.upload_ex) {
+    Object.assign(exForm.upload_ex, sec.upload_ex)
+    if (exForm.upload_ex.open_upload == null) exForm.upload_ex.open_upload = true
+    if (exForm.upload_ex.require_login == null) exForm.upload_ex.require_login = false
+    if (!exForm.upload_ex.anonymous_daily_count) exForm.upload_ex.anonymous_daily_count = 0
+    if (!exForm.upload_ex.anonymous_daily_bytes) exForm.upload_ex.anonymous_daily_bytes = 0
+  }
   if (sec.download) {
     Object.assign(exForm.download, sec.download)
     // 旧库 download 段无直传新键 → 后端下发 null：归一为默认值（nil 语义=开启/100MB/600s）

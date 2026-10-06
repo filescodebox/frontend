@@ -6,7 +6,9 @@ export interface PublicConfig {
   description: string
   uploadSize: number
   enableChunk: number
-  openUpload: number
+  openUpload: boolean
+  /** 匿名上传需登录（upload.require_login）；缺省=false */
+  requireLogin?: boolean
   /** 注册开关（与 /user/register 判定同源）；缺省视为未拿到，不据此隐藏入口 */
   registerEnabled?: boolean
   /** OIDC 单点登录开关（P2 SSO；security.oidc.enabled） */
