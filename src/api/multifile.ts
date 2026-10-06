@@ -38,10 +38,9 @@ export async function multiDirect(
   for (const f of files) formData.append('files', f)
   formData.append('expire_value', String(opts.expire_value))
   formData.append('expire_style', opts.expire_style)
-  if (opts.require_auth) {
-    formData.append('require_auth', 'true')
-    if (opts.password) formData.append('password', opts.password)
-  }
+  // require_auth 为契约必填: false 也必须显式发送
+  formData.append('require_auth', String(opts.require_auth))
+  if (opts.require_auth && opts.password) formData.append('password', opts.password)
   if (opts.encrypted) formData.append('encrypted', 'true')
   if (opts.custom_code) formData.append('custom_code', opts.custom_code)
 
