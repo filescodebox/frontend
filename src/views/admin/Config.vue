@@ -158,6 +158,18 @@
             <el-form-item :label="t('admin.configPage.download.requireLogin')">
               <el-switch v-model="exForm.download.require_login" />
             </el-form-item>
+            <el-form-item :label="t('admin.configPage.download.presignAnonymous')">
+              <el-switch v-model="exForm.download.presign_anonymous_enabled" />
+              <span class="field-hint">{{ t('admin.configPage.download.presignAnonymousHint') }}</span>
+            </el-form-item>
+            <el-form-item :label="t('admin.configPage.download.presignThreshold')">
+              <el-input-number v-model="exForm.download.presign_threshold_mb" :min="1" :max="5120" />
+              <span class="field-hint">{{ t('admin.configPage.download.presignThresholdHint') }}</span>
+            </el-form-item>
+            <el-form-item :label="t('admin.configPage.download.presignTTL')">
+              <el-input-number v-model="exForm.download.presign_expire_seconds" :min="60" :max="3600" :step="60" />
+              <span class="field-hint">{{ t('admin.configPage.download.presignTTLHint') }}</span>
+            </el-form-item>
           </el-form>
           <el-button type="primary" :loading="exSaving.download" @click="saveSection('download', exForm.download, t('admin.configPage.download.saved'))">{{ t('admin.configPage.download.save') }}</el-button>
         </el-tab-pane>
@@ -377,7 +389,14 @@ const saveConfig = async () => {
 // 扁平契约：每段独立保存（adminApi.updateConfig({ 段名: 值 })），后端 nil-保留未提交段
 const exForm = reactive({
   ui: { background: '', accent_color: '', show_admin_addr: false },
-  download: { s3_direct_download: false, download_timeout: 300, require_login: false },
+  download: {
+    s3_direct_download: false,
+    download_timeout: 300,
+    require_login: false,
+    presign_anonymous_enabled: true,
+    presign_threshold_mb: 100,
+    presign_expire_seconds: 600,
+  },
   notify: { webhook_url: '', smtp: { host: '', port: 465, username: '', password: '', from: '' } },
   oidc: { enabled: false, issuer: '', client_id: '', client_secret: '', scopes: 'openid profile email', frontend_callback: '' },
   local_import: { enabled: false, roots: [] as string[] },
@@ -398,7 +417,13 @@ const localImportRootsText = computed({
 const fetchExSections = (data: Record<string, unknown>) => {
   const sec = data as Record<string, any>
   if (sec.ui) Object.assign(exForm.ui, sec.ui)
-  if (sec.download) Object.assign(exForm.download, sec.download)
+  if (sec.download) {
+    Object.assign(exForm.download, sec.download)
+    // 旧库 download 段无直传新键 → 后端下发 null：归一为默认值（nil 语义=开启/100MB/600s）
+    if (exForm.download.presign_anonymous_enabled == null) exForm.download.presign_anonymous_enabled = true
+    if (!exForm.download.presign_threshold_mb) exForm.download.presign_threshold_mb = 100
+    if (!exForm.download.presign_expire_seconds) exForm.download.presign_expire_seconds = 600
+  }
   if (sec.notify) {
     Object.assign(exForm.notify, sec.notify)
     if (sec.notify.smtp) Object.assign(exForm.notify.smtp, sec.notify.smtp)

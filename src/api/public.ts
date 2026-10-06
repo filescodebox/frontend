@@ -17,6 +17,10 @@ export interface PublicConfig {
   apiDocsEnabled?: boolean
   /** 背景图 URL（后端已白名单校验 http(s)） */
   background?: string
+  /** 匿名 presign 直传开关（缺省=开启）；关闭时匿名大文件回退分片中转 */
+  presignEnabled?: boolean
+  /** 直传阈值 MB（超过走 presign 直传；缺省=100） */
+  presignThresholdMb?: number
   /** 主题色（#hex，后端已校验） */
   accentColor?: string
   expireStyle: string[]

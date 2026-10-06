@@ -37,7 +37,9 @@ export function useUploadQueue(opts: {
   settings: ShareSettings
   t: (key: string) => string
   bodyCap?: () => number
-  presignThreshold?: number
+  presignThreshold?: number | (() => number)
+  /** 匿名直传是否开放（后端 presign.anonymous_enabled 下发；false 时 >阈值 文件回退分片中转） */
+  presignAllowed?: () => boolean
   chunkSize?: number
   presign?: (file: File, settings: ShareSettings) => Promise<PresignCompleteData>
   /** 登录态注入（custom_code 仅登录时发送；默认视为登录） */
@@ -160,12 +162,15 @@ export function useUploadQueue(opts: {
     // 通道决策（用原始文件大小——钉现状）
     const totalBytes = pending.reduce((s, f) => s + f.file.size, 0)
     const maxFileBytes = Math.max(...pending.map((f) => f.file.size))
-    const plan = pickUploadPlan({
+    // 匿名直传开关：后端下发 false 时， presign 通道不参与决策（>阈值 落 multi-chunk）
+    const presignAllowed = opts.presignAllowed?.() ?? true
+    let plan = pickUploadPlan({
       count: pending.length,
       totalBytes,
       maxFileBytes,
       bodyCap: opts.bodyCap?.() ?? DEFAULT_BODY_CAP,
-      presignThreshold: opts.presignThreshold ?? DEFAULT_PRESIGN_THRESHOLD,
+      presignThreshold: typeof opts.presignThreshold === "function" ? opts.presignThreshold() : (opts.presignThreshold ?? DEFAULT_PRESIGN_THRESHOLD),
+      presignAllowed,
     })
 
     try {
@@ -213,17 +218,35 @@ export function useUploadQueue(opts: {
         task.progress = 0
         task.error = ''
         task.statusText = t('upload.largeFileHint')
-        const r = await opts.presign?.(task.file, settings)
-        if (!r) throw new Error('presign unavailable')
-        task.status = 'success'
-        task.progress = 100
-        task.statusText = t('common.success')
-        return {
-          code: r.code || '',
-          share_url: r.url || '',
-          full_share_url: r.url || '',
-          e2e_key: settings.e2e ? e2eKey : undefined,
+        let r: PresignCompleteData | undefined
+        try {
+          r = await opts.presign?.(task.file, settings)
+          if (!r) throw new Error('presign unavailable')
+        } catch (e) {
+          // 匿名直传被管理开关关闭(10015)：静默回退分片中转（大文件仍可传）
+          if ((e as { code?: number }).code === 10015
+            || (e as { response?: { data?: { code?: number } } })?.response?.data?.code === 10015) {
+            ElMessage.info(t('upload.presignFallback'))
+            plan = 'multi-chunk'
+          } else {
+            throw e
+          }
         }
+        if (plan === 'presign') {
+          if (!r) throw new Error('presign unavailable')
+          task.status = 'success'
+          task.progress = 100
+          task.statusText = t('common.success')
+          return {
+            code: r.code || '',
+            share_url: r.url || '',
+            full_share_url: r.url || '',
+            e2e_key: settings.e2e ? e2eKey : undefined,
+          }
+        }
+        // 回退：落入下方 multi 流程（r 未定义安全——TS 收窄由 plan 判定保证）
+        task.status = 'pending'
+        task.statusText = t('upload.prepare')
       }
 
       if (plan === 'multi-direct') {

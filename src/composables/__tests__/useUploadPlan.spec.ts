@@ -30,3 +30,32 @@ describe('pickUploadPlan', () => {
     expect(() => pickUploadPlan({ ...base, count: 0, totalBytes: 0, maxFileBytes: 0 })).toThrow('no files')
   })
 })
+
+describe('presignAllowed=false（匿名直传被管理开关关闭）', () => {
+  const MB = 1024 * 1024
+  it('单文件 > 阈值 → multi-chunk（回退中转，不走 presign）', () => {
+    expect(
+      pickUploadPlan({ count: 1, totalBytes: 200 * MB, maxFileBytes: 200 * MB, bodyCap: 49 * MB, presignThreshold: 100 * MB, presignAllowed: false })
+    ).toBe('multi-chunk')
+  })
+  it('单文件 ≤ bodyCap → direct（不受开关影响）', () => {
+    expect(
+      pickUploadPlan({ count: 1, totalBytes: 10 * MB, maxFileBytes: 10 * MB, bodyCap: 49 * MB, presignThreshold: 100 * MB, presignAllowed: false })
+    ).toBe('direct')
+  })
+  it('单文件 bodyCap<大小≤阈值 → multi-chunk', () => {
+    expect(
+      pickUploadPlan({ count: 1, totalBytes: 60 * MB, maxFileBytes: 60 * MB, bodyCap: 49 * MB, presignThreshold: 100 * MB, presignAllowed: false })
+    ).toBe('multi-chunk')
+  })
+  it('多文件 → 与开关无关（本就不走 presign）', () => {
+    expect(
+      pickUploadPlan({ count: 3, totalBytes: 300 * MB, maxFileBytes: 120 * MB, bodyCap: 49 * MB, presignThreshold: 100 * MB, presignAllowed: false })
+    ).toBe('multi-chunk')
+  })
+  it('缺省 presignAllowed（undefined）→ 保持旧行为（>阈值 presign）', () => {
+    expect(
+      pickUploadPlan({ count: 1, totalBytes: 200 * MB, maxFileBytes: 200 * MB, bodyCap: 49 * MB, presignThreshold: 100 * MB })
+    ).toBe('presign')
+  })
+})

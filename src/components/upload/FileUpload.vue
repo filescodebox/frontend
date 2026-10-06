@@ -104,6 +104,11 @@ const queue = useUploadQueue({
   settings,
   t,
   bodyCap: () => Math.max((configStore.config?.uploadSize || 0) - 1024 * 1024, 0) || 8 * 1024 * 1024,
+  // 匿名直传开关 + 直传阈值（管理后台"下载设置"下发；缺省=开放/100MB）
+  presignAllowed: () =>
+    userStore.isLoggedIn || (configStore.config?.presignEnabled ?? true),
+  presignThreshold: () =>
+    (configStore.config?.presignThresholdMb || 100) * 1024 * 1024,
   isLoggedIn: () => userStore.isLoggedIn,
   presign: (file, s) =>
     presignDialog.value!.open(file, {

@@ -14,12 +14,19 @@ export interface UploadPlanInput {
   bodyCap: number
   /** 预签名直传阈值（默认 100MB） */
   presignThreshold: number
+  /** 匿名直传是否开放（后端下发；false 时 presign 通道不参与决策）。
+   * 缺省视为 true——兼容未下发该字段的旧后端 */
+  presignAllowed?: boolean
 }
 
 export function pickUploadPlan(input: UploadPlanInput): UploadChannel {
-  const { count, totalBytes, maxFileBytes, bodyCap, presignThreshold } = input
+  const { count, totalBytes, maxFileBytes, bodyCap, presignThreshold, presignAllowed } = input
   if (count <= 0) throw new Error('no files to upload')
   if (count === 1) {
+    if (presignAllowed === false) {
+      // 匿名直传被管理开关关闭：≤bodyCap 直接单发，>bodyCap 分片中转
+      return maxFileBytes > bodyCap ? 'multi-chunk' : 'direct'
+    }
     return maxFileBytes > presignThreshold ? 'presign' : 'direct'
   }
   if (totalBytes <= bodyCap && maxFileBytes <= bodyCap) return 'multi-direct'
