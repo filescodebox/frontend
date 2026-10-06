@@ -1,30 +1,11 @@
 import { request } from '@/utils/request'
 import type { ApiResponse } from '@/types/common'
+import type { presign as presignContract } from '@filescodebox/contracts'
 
-export interface PresignInitData {
-  upload_id: string
-  upload_url: string
-  method: string // PUT
-  headers: Record<string, string>
-  expire_seconds: number
-  object_key: string
-  scheme: string
-  token: string
-  // 秒传命中时返回（upload_id 为空串，无需直传）
-  is_quick?: boolean
-  existed?: boolean
-  share_code?: string
-  share_url?: string
-  download_token?: string
-}
+/** wire 契约类型(contracts IDL 生成,勿手写):秒传命中时 data 仅秒传字段有效 */
+export type PresignInitData = presignContract.InitData
 
-export interface PresignCompleteData {
-  code: string // share code
-  url: string
-  file_name: string
-  file_size: number
-  download_url: string
-}
+export type PresignCompleteData = presignContract.CompleteData
 
 export const presignApi = {
   // 业务成功码：新版 resp.Success 返回 0，旧式 handler 返回 200
@@ -43,17 +24,7 @@ export const presignApi = {
   },
 
   // 申请预签名上传 URL
-  init: (data: {
-    file_name: string
-    file_size: number
-    content_type: string
-    scheme?: string
-    expire_value?: number
-    expire_style?: string
-    require_auth?: boolean
-    password?: string
-    file_hash?: string
-  }) => {
+  init: (data: presignContract.InitReq) => {
     return request<ApiResponse<PresignInitData>>({
       url: '/api/v1/presign/upload',
       method: 'POST',
@@ -62,12 +33,7 @@ export const presignApi = {
   },
 
   // 上传完成后通知后端写 share 表
-  complete: (data: {
-    upload_id: string
-    token: string
-    object_key?: string
-    file_hash?: string
-  }) => {
+  complete: (data: presignContract.CompleteReq) => {
     return request<ApiResponse<PresignCompleteData>>({
       url: '/api/v1/presign/complete',
       method: 'POST',
@@ -76,7 +42,7 @@ export const presignApi = {
   },
 
   // 取消
-  abort: (data: { upload_id: string; token: string }) => {
+  abort: (data: presignContract.AbortReq) => {
     return request<ApiResponse<unknown>>({
       url: '/api/v1/presign/abort',
       method: 'POST',
