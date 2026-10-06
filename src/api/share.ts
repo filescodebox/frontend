@@ -1,6 +1,6 @@
 import { request } from '@/utils/request'
 import { xhrSend } from '@/api/_xhr'
-import type { ApiResponse, PaginatedResponse } from '@/types/common'
+import type { ApiResponse } from '@/types/common'
 import type { share as shareContract } from '@filescodebox/contracts'
 
 export const shareApi = {
@@ -55,22 +55,6 @@ export const shareApi = {
     })
   },
 
-  // 获取用户的分享列表
-  getUserShares: (params: { page: number; page_size: number }) => {
-    return request<PaginatedResponse<any>>({
-      url: '/share/user',
-      method: 'GET',
-      params
-    })
-  },
-
-  // 删除分享
-  deleteShare: (code: string) => {
-    return request<ApiResponse<void>>({
-      url: `/share/${code}`,
-      method: 'DELETE'
-    })
-  },
 }
 
 /**

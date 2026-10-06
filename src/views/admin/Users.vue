@@ -81,7 +81,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作" width="240" align="center" fixed="right">
+        <el-table-column label="操作" width="240" align="center">
           <template #default="{ row }">
             <el-button
               @click="toggleUserStatus(row)"
@@ -292,7 +292,8 @@ const getStoragePercentage = (user: any): number => {
   const quota = user.quota_limit > 0 ? user.quota_limit : (user.max_storage_quota > 0 ? user.max_storage_quota : 1073741824)
   if (used <= 0 || quota <= 0) return 0
   const percentage = (used / quota) * 100
-  return Math.min(percentage, 100)
+  // 保留两位小数：原始浮点会以全精度灌进 el-progress 文案（0.00594826...%）
+  return Math.round(Math.min(percentage, 100) * 100) / 100
 }
 
 const getStorageColor = (user: any): string => {

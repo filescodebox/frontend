@@ -217,7 +217,8 @@ import {
   Clock, View, CopyDocument, Delete, Edit, Check, Postcard, FolderOpened
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
-import { userApi, shareApi } from '@/api'
+import { userApi } from '@/api'
+import { userSharesApi } from '@/api/userShares'
 import { copyToClipboard } from '@/utils/clipboard'
 import type { UserInfo, UserStats } from '@/types/user'
 
@@ -297,7 +298,7 @@ const fetchUserStats = async () => {
 const fetchRecentShares = async () => {
   try {
     sharesLoading.value = true
-    const res = await shareApi.getUserShares({ page: 1, page_size: 10 })
+    const res = await userSharesApi.list({ page: 1, page_size: 10 })
     if (res.code === 200) {
       recentShares.value = res.data.items || []
     }
@@ -346,7 +347,7 @@ const deleteShare = async (code: string) => {
         cancelButtonText: t('common.cancel'),
       }
     )
-    const res = await shareApi.deleteShare(code)
+    const res = await userSharesApi.batchDelete([code])
     if (res.code === 200) {
       ElMessage.success(t('user.deleteSuccess'))
       await fetchRecentShares()
