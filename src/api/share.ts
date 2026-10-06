@@ -1,18 +1,11 @@
 import { request } from '@/utils/request'
 import { xhrSend } from '@/api/_xhr'
 import type { ApiResponse, PaginatedResponse } from '@/types/common'
+import type { share as shareContract } from '@filescodebox/contracts'
 
 export const shareApi = {
-  // 分享文本
-  shareText: (data: {
-    text: string
-    expire_value: number
-    expire_style: string
-    require_auth?: boolean
-    password?: string
-    encrypted?: boolean
-    custom_code?: string
-  }) => {
+  // 分享文本(请求契约 = contracts IDL 生成;此前手写类型漏 custom_code/encrypted)
+  shareText: (data: shareContract.ShareTextReq) => {
     const formData = new FormData()
     formData.append('text', data.text)
     formData.append('expire_value', String(data.expire_value))
@@ -35,14 +28,8 @@ export const shareApi = {
     })
   },
 
-  // 分享文件
-  shareFile: (data: {
-    file: File
-    expire_value: number
-    expire_style: string
-    require_auth?: boolean
-    password?: string
-  }) => {
+  // 分享文件(请求契约同上;password v0.6.1 起入契约)
+  shareFile: (data: shareContract.ShareFileReq & { file: File }) => {
     const formData = new FormData()
     formData.append('file', data.file)
     formData.append('expire_value', String(data.expire_value))
@@ -68,22 +55,9 @@ export const shareApi = {
     })
   },
 
-  // 获取分享内容
+  // 获取分享内容(响应契约 v0.6.0 起 = ShareDetail 全字段,含 download_url/token/files)
   getShare: (code: string, password?: string) => {
-    return request<ApiResponse<{
-      code: string
-      text?: string
-      file_name?: string
-      file_size?: string
-      url?: string
-      has_password: boolean
-      expire_time: string
-      encrypted?: boolean
-      download_url?: string
-      token?: string
-      files?: Array<{ id: number; name: string; size: number }>
-      is_multi?: boolean
-    }>>({
+    return request<ApiResponse<shareContract.ShareDetail>>({
       url: '/share/select/',
       method: 'GET',
       params: { code, password },
