@@ -47,8 +47,13 @@
               <el-input-number v-model="exForm.upload_ex.anonymous_daily_bytes" :min="0" :max="107374182400" />
               <span class="field-hint">{{ t('admin.configPage.upload.anonymousDailyBytesHint') }}</span>
             </el-form-item>
+            <el-divider content-position="left">{{ t('admin.configPage.upload.directSection') }}</el-divider>
           </el-form>
-          <el-button type="primary" :loading="exSaving.upload" @click="saveSection('upload_ex', exForm.upload_ex, t('admin.configPage.upload.saved'))">{{ t('admin.configPage.upload.save') }}</el-button>
+          <el-button
+            type="primary"
+            :loading="exSaving.upload || exSaving.download"
+            @click="saveUploadSettings"
+          >{{ t('admin.configPage.upload.save') }}</el-button>
         </el-tab-pane>
         <el-tab-pane :label="t('admin.configPage.tabs.transfer')" name="transfer">
           <el-form :model="configForm.transfer" label-width="140px" style="max-width: 600px">
@@ -492,6 +497,12 @@ const saveSection = async (section: string, payload: Record<string, unknown>, ms
   } finally {
     exSaving[section] = false
   }
+}
+
+// 上传设置整段保存（upload_ex 准入 + download 直传策略两段串行提交）
+const saveUploadSettings = async () => {
+  await saveSection('upload_ex', exForm.upload_ex, t('admin.configPage.upload.saved'))
+  await saveSection('download', exForm.download, t('admin.configPage.download.saved'))
 }
 
 const saveNotify = async () => {

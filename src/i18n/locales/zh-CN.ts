@@ -565,6 +565,8 @@ export default {
         anonymousDailyCountHint: '单个 IP 每天可上传的次数，0 = 不限',
         anonymousDailyBytes: '访客日配额 (MB/IP)',
         anonymousDailyBytesHint: '单个 IP 每天可上传的流量上限（MB），0 = 不限',
+        directSection: '直传（对象存储）',
+        save: '保存上传设置',
         saved: '上传设置已保存',
       },
       download: {
