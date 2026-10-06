@@ -61,6 +61,7 @@
           <el-option label="正常" value="normal" />
           <el-option label="已禁用" value="blocked" />
           <el-option label="待审核" value="pending_review" />
+          <el-option label="回收站（已删除）" value="deleted" />
         </el-select>
         <el-select v-model="filters.upload_type" placeholder="上传类型" clearable style="width: 130px">
           <el-option label="匿名" value="anonymous" />
@@ -178,6 +179,11 @@
 
         <el-table-column label="操作" width="260" align="center" fixed="right">
           <template #default="{ row }">
+            <template v-if="row.deleted">
+              <el-button type="success" size="small" round @click="restoreDeleted(row)">恢复</el-button>
+              <el-button type="danger" size="small" round @click="purgeDeleted(row)">彻底删除</el-button>
+            </template>
+            <template v-else>
             <el-button
               v-if="row.status !== 'blocked'"
               type="warning"
@@ -214,6 +220,7 @@
               <el-icon><Delete /></el-icon>
               删除
             </el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -298,6 +305,9 @@ const { list: filesList, total, page, pageSize, loading, reload, handleSizeChang
       const params: Record<string, unknown> = { page, page_size }
       if (filters.keyword) params.keyword = filters.keyword
       if (filters.status) params.status = filters.status
+      if (filters.status === 'deleted') params.deleted = 'only'
+      else if (filters.deleted === 'all') params.deleted = 'all'
+      else params.deleted = '' 
       if (filters.upload_type) params.upload_type = filters.upload_type
       if (filters.expired) params.expired = filters.expired
       if (filters.owner_ip) params.owner_ip = filters.owner_ip
@@ -323,6 +333,7 @@ const filters = reactive({
   status: '',
   upload_type: '',
   expired: '',
+  deleted: '',
   owner_ip: '',
   user_id: ''
 })
@@ -408,6 +419,36 @@ const resetFilters = () => {
 }
 
 // ==================== 管控状态机 ====================
+const restoreDeleted = async (row: any) => {
+  try {
+    await ElMessageBox.confirm(`确认恢复「${row.code}」到文件列表？`, '恢复', { type: 'info' })
+    const res = await adminApi.restoreFiles([row.id])
+    if (res.code === 200) {
+      ElMessage.success('已恢复')
+      reload()
+    }
+  } catch (e) {
+    if (e !== 'cancel') handleError(e as Error)
+  }
+}
+
+const purgeDeleted = async (row: any) => {
+  try {
+    await ElMessageBox.confirm(
+      `彻底删除「${row.code}」？DB 记录与存储对象将被永久删除，不可恢复！`,
+      '彻底删除',
+      { type: 'error', confirmButtonText: '彻底删除' }
+    )
+    const res = await adminApi.purgeFiles([row.id])
+    if (res.code === 200) {
+      ElMessage.success('已彻底删除')
+      reload()
+    }
+  } catch (e) {
+    if (e !== 'cancel') handleError(e as Error)
+  }
+}
+
 const setStatus = async (row: any, status: FileStatus) => {
   const action = status === 'blocked' ? '禁用' : '恢复'
   try {

@@ -316,6 +316,24 @@ export const adminApi = {
     })
   },
 
+  // 回收站：恢复（软删 → 存活）
+  restoreFiles: (ids: number[]) => {
+    return request<ApiResponse<{ restored: number }>>({
+      url: '/admin/files/restore',
+      method: 'POST',
+      data: { ids }
+    })
+  },
+
+  // 回收站：彻底删除（DB 硬删 + 存储对象删除，不可恢复）
+  purgeFiles: (ids: number[]) => {
+    return request<ApiResponse<{ purged: number }>>({
+      url: '/admin/files/purge',
+      method: 'POST',
+      data: { ids }
+    })
+  },
+
   // 管理操作审计日志（后端已实现：GET /admin/activities）
   getActivities: (params: {
     page?: number
