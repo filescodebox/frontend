@@ -100,7 +100,7 @@
                 </div>
                 <div class="stat-content">
                   <p class="stat-label">{{ t('user.totalStorage') }}</p>
-                  <p class="stat-value">{{ formatFileSize(userStats?.total_storage || 0) }}</p>
+                  <p class="stat-value">{{ formatFileSize(userStats?.total_size || 0) }}</p>
                 </div>
               </div>
             </el-col>
@@ -113,8 +113,8 @@
                 <span>{{ t('user.storageQuota') }}</span>
               </div>
               <span class="quota-values">
-                {{ formatFileSize(userStats?.total_storage || 0) }} /
-                {{ userStats?.max_storage_quota ? formatFileSize(userStats.max_storage_quota) : t('user.unlimited') }}
+                {{ formatFileSize(userStats?.total_size || 0) }} /
+                {{ userStats?.quota_limit ? formatFileSize(userStats.quota_limit) : t('user.unlimited') }}
               </span>
             </div>
             <el-progress
@@ -123,7 +123,7 @@
               :status="quotaPercentage >= 90 ? 'exception' : ''"
               class="quota-progress"
             />
-            <p v-if="userStats?.max_storage_quota" class="quota-text">
+            <p v-if="userStats?.quota_limit" class="quota-text">
               {{ t('user.quotaUsed', { pct: quotaPercentage.toFixed(1) }) }}
             </p>
             <p v-else class="quota-text">{{ t('user.quotaUnlimited') }}</p>
@@ -246,8 +246,8 @@ const editForm = ref({
 })
 
 const quotaPercentage = computed(() => {
-  if (!userStats.value?.max_storage_quota) return 0
-  return (userStats.value.total_storage / userStats.value.max_storage_quota) * 100
+  if (!userStats.value?.quota_limit) return 0
+  return (userStats.value.total_size / userStats.value.quota_limit) * 100
 })
 
 const greeting = computed(() => {
