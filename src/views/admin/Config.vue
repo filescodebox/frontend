@@ -32,29 +32,21 @@
           </el-form>
         </el-tab-pane>
 
-        <!-- 上传配置 -->
-        <el-tab-pane label="上传配置" name="upload">
-          <el-form :model="configForm.transfer.upload" label-width="140px" style="max-width: 600px">
-            <el-form-item label="开放上传">
-              <el-switch v-model="configForm.transfer.upload.openupload" :active-value="1" :inactive-value="0" />
+        <!-- 传输配置（SystemConfig.Transfer 段；旧上传门禁字段属部署配置，不在线编辑） -->
+        <el-tab-pane label="传输配置" name="transfer">
+          <el-form :model="configForm.transfer" label-width="140px" style="max-width: 600px">
+            <el-form-item label="传输次数上限">
+              <el-input-number v-model="configForm.transfer.max_count" :min="0" controls-position="right" />
+              <span style="margin-left: 10px; color: var(--color-text-secondary)">单分享可取件次数上限（0 = 不限）</span>
             </el-form-item>
-
-            <el-form-item label="上传大小限制">
-              <el-input-number
-                v-model="configForm.transfer.upload.uploadsize"
-                :min="1048576"
-                :step="1048576"
-                controls-position="right"
-              />
-              <span style="margin-left: 10px; color: var(--color-text-secondary)">字节 (默认 10MB = 10485760)</span>
+            <el-form-item label="默认过期天数">
+              <el-input-number v-model="configForm.transfer.expire_default" :min="1" controls-position="right" />
+              <span style="margin-left: 10px; color: var(--color-text-secondary)">天</span>
             </el-form-item>
-
-            <el-form-item label="需要登录">
-              <el-switch v-model="configForm.transfer.upload.requirelogin" :active-value="1" :inactive-value="0" />
-            </el-form-item>
-
-            <el-form-item label="启用分片上传">
-              <el-switch v-model="configForm.transfer.upload.enablechunk" :active-value="1" :inactive-value="0" />
+            <el-form-item label="上传门禁">
+              <span class="form-hint" style="color: var(--color-text-secondary)">
+                匿名上传开关/上传大小/需登录/分片开关由部署配置管理（config.yaml transfer 段 / FCB_* 环境变量），不在线编辑
+              </span>
             </el-form-item>
           </el-form>
         </el-tab-pane>
@@ -287,13 +279,8 @@ const configForm = reactive({
     production: false
   },
   transfer: {
-    upload: {
-      openupload: 1,
-      uploadsize: 10485760,
-      requirelogin: 1,
-      enablechunk: 1,
-      chunksize: 2097152
-    }
+    max_count: 100,
+    expire_default: 7
   },
   user: {
     allowuserregistration: 0,
@@ -371,7 +358,11 @@ const saveUserSettings = async () => {
 const saveConfig = async () => {
   saving.value = true
   try {
-    const res = await adminApi.updateConfig(configForm)
+    // 只携带本页管辖的段（user 走 /admin/config/user 专属端点，避免双路径互踩）
+    const res = await adminApi.updateConfig({
+      base: configForm.base,
+      transfer: configForm.transfer
+    })
     if (res.code === 200) {
       ElMessage.success('配置保存成功')
       // 刷新全局配置

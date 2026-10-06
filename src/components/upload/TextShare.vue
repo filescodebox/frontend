@@ -47,7 +47,7 @@ const { t } = useI18n()
 const userStore = useUserStore()
 
 const emit = defineEmits<{
-  success: [result: { code: string; share_url: string; full_share_url: string; qr_code_data: string; e2e_key?: string }]
+  success: [result: { code: string; share_url: string; full_share_url: string; e2e_key?: string }]
 }>()
 
 const textContent = ref('')
@@ -87,12 +87,10 @@ const handleShare = async () => {
     if (res.code === 200) {
       ElMessage.success(t('upload.textShared'))
 
-      const fullUrl = res.data.full_share_url || res.data.share_url || res.data.url || ''
       emit('success', {
         code: res.data.code,
-        share_url: res.data.share_url || res.data.url || '',
-        full_share_url: fullUrl,
-        qr_code_data: res.data.qr_code_data || fullUrl,
+        share_url: res.data.url,
+        full_share_url: res.data.url,
         e2e_key: e2eKey || undefined,
       })
 

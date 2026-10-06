@@ -199,12 +199,10 @@ export function useUploadQueue(opts: {
         task.progress = 100
         task.statusText = t('common.success')
         ElMessage.success(`${task.file.name}: ${t('upload.success')}`)
-        const fullUrl = res.full_share_url || res.share_url || res.url || ''
         return {
           code: res.code,
-          share_url: res.share_url || res.url || '',
-          full_share_url: fullUrl,
-          qr_code_data: res.qr_code_data || fullUrl,
+          share_url: res.url,
+          full_share_url: res.url,
           e2e_key: settings.e2e ? e2eKey : undefined,
         }
       }
@@ -224,7 +222,6 @@ export function useUploadQueue(opts: {
           code: r.code || '',
           share_url: r.url || '',
           full_share_url: r.url || '',
-          qr_code_data: r.url || '',
           e2e_key: settings.e2e ? e2eKey : undefined,
         }
       }
@@ -266,7 +263,6 @@ export function useUploadQueue(opts: {
           code: result.code,
           share_url: result.share_url || result.url,
           full_share_url: result.url,
-          qr_code_data: result.url,
           e2e_key: settings.e2e ? e2eKey : undefined,
         }
       }
@@ -308,7 +304,6 @@ export function useUploadQueue(opts: {
         code: result.code,
         share_url: result.share_url || result.url,
         full_share_url: result.url,
-        qr_code_data: result.url,
         e2e_key: settings.e2e ? e2eKey : undefined,
       }
     } catch (e: unknown) {

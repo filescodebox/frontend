@@ -15,13 +15,9 @@ export const shareApi = {
     if (data.encrypted) formData.append('encrypted', 'true')
     if (data.custom_code) formData.append('custom_code', data.custom_code)
 
-    return request<ApiResponse<{
-      code: string
-      url: string
-      share_url?: string
-      full_share_url?: string
-      qr_code_data?: string
-    }>>({
+    // 响应契约 = ShareData{code,url}(share_url/full_share_url/qr_code_data 为
+    // 幻影字段,后端不下发,v0.13.6 清理)
+    return request<ApiResponse<shareContract.ShareData>>({
       url: '/share/text/',
       method: 'POST',
       data: formData,
@@ -39,13 +35,8 @@ export const shareApi = {
       if (data.password) formData.append('password', data.password)
     }
 
-    return request<ApiResponse<{
-      code: string
-      url: string
-      share_url?: string
-      full_share_url?: string
-      qr_code_data?: string
-    }>>({
+    // 响应契约 = ShareData{code,url}(幻影字段清理同上)
+    return request<ApiResponse<shareContract.ShareData>>({
       url: '/share/file/',
       method: 'POST',
       data: formData,
@@ -90,9 +81,6 @@ export const shareApi = {
 export interface UploadFileResult {
   code: string
   url: string
-  share_url?: string
-  full_share_url?: string
-  qr_code_data?: string
 }
 
 export async function uploadFile(

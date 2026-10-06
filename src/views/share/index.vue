@@ -71,7 +71,6 @@ interface ShareResult {
   code: string
   share_url: string
   full_share_url: string
-  qr_code_data: string
 }
 
 const handleSuccess = (result: ShareResult) => {

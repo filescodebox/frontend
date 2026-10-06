@@ -60,7 +60,7 @@ beforeEach(() => {
 describe('useUploadQueue', () => {
   it('单文件直传：uploadFile 收到 payload/settings，结果映射正确', async () => {
     mocked.uploadFile.mockResolvedValue({
-      code: 'A1', url: 'http://x/share/A1', full_share_url: 'http://x/share/A1',
+      code: 'A1', url: 'http://x/share/A1',
     })
     const q = useUploadQueue({ settings: baseSettings(), t })
     q.addFiles([mkFile('a.txt', 5 * MB)])

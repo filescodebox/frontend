@@ -140,7 +140,7 @@ const open = async (result: ShareResult) => {
 
   // 生成二维码
   try {
-    const qrData = result.qr_code_data || url
+    const qrData = url
     qrCodeDataUrl.value = await QRCode.toDataURL(qrData, {
       width: 220,
       margin: 2,
