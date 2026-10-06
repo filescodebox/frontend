@@ -43,13 +43,17 @@
                     管理员
                   </el-tag>
                 </div>
-                <div class="user-email">{{ row.email }}</div>
+                <div class="user-email">{{ row.email || '未绑定邮箱' }}</div>
               </div>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column prop="nickname" label="昵称" width="120" />
+        <el-table-column label="昵称" width="120">
+          <template #default="{ row }">
+            {{ row.nickname || '—' }}
+          </template>
+        </el-table-column>
 
         <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
@@ -435,10 +439,13 @@ onMounted(() => {
   color: white;
   font-weight: 600;
   font-size: 16px;
+  /* 窄视口下列宽钉在 min-width 时，flex 默认收缩会把头像挤成椭圆 */
+  flex-shrink: 0;
 }
 
 .user-details {
   flex: 1;
+  min-width: 0;
 }
 
 .user-name {
@@ -453,6 +460,9 @@ onMounted(() => {
 .user-email {
   font-size: 13px;
   color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .storage-text {
