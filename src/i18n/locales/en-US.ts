@@ -568,7 +568,7 @@ export default {
         username: 'Username',
         password: 'Password',
         sender: 'Sender',
-        senderPlaceholder: 'FilesCodeBox <no-reply@example.com>',
+        senderPlaceholder: "FilesCodeBox <no-reply{'@'}example.com>",
         testTo: 'Test email',
         testToPlaceholder: 'Recipient address',
         testSend: 'Send test email',

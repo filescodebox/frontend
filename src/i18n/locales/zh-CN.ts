@@ -569,7 +569,7 @@ export default {
         username: '用户名',
         password: '密码',
         sender: '发件人',
-        senderPlaceholder: 'FilesCodeBox <no-reply@example.com>',
+        senderPlaceholder: "FilesCodeBox <no-reply{'@'}example.com>",
         testTo: '测试发信',
         testToPlaceholder: '收件邮箱',
         testSend: '发送测试邮件',
