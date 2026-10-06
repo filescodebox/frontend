@@ -11,21 +11,33 @@ const SESSION_FLAG = 'fcb_session'
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref<UserInfo | null>(null)
+  // 会话标记的响应式镜像：isLoggedIn 必须依赖 ref 而非直接读 localStorage——
+  // localStorage 非响应式，computed 首次求值即缓存（App.vue 挂载时读一次=false），
+  // 此后写标记不会触发重算。admin 登录只写标记不设 userInfo，曾因此被缓存击穿：
+  // fetchUserInfo 永远早退 → 角色判断恒败 → 管理后台 UI 无法登录（v0.13.3 修复）。
+  const sessionActive = ref(localStorage.getItem(SESSION_FLAG) === '1')
   // 登出进行中标志：阻断在途请求 401 → refreshToken 造成"已退出登录但刷新
   // 页面会话复活"的竞态（2026-10-03 自测复现一次）
   let loggingOut = false
 
   const isLoggedIn = computed(
-    () => !!userInfo.value || localStorage.getItem(SESSION_FLAG) === '1'
+    () => !!userInfo.value || sessionActive.value
   )
   const isAdmin = computed(() => userInfo.value?.role === 'admin')
+
+  // 会话标记统一入口：ref（响应式，守卫立即生效）+ localStorage（刷新存活）双写。
+  // admin 登录页不经 login()，必须走这里。
+  const markSessionActive = () => {
+    sessionActive.value = true
+    localStorage.setItem(SESSION_FLAG, '1')
+    loggingOut = false
+  }
 
   const login = async (username: string, password: string) => {
     const res = await userApi.login({ username, password })
     if (res.code === 200) {
       userInfo.value = res.data.user
-      localStorage.setItem(SESSION_FLAG, '1')
-      loggingOut = false
+      markSessionActive()
       return true
     }
     throw new Error(res.message)
@@ -43,6 +55,7 @@ export const useUserStore = defineStore('user', () => {
         // 后端不可达时本地登出仍生效
       })
     userInfo.value = null
+    sessionActive.value = false
     localStorage.removeItem(SESSION_FLAG)
     localStorage.removeItem('userRole')
   }
@@ -80,6 +93,7 @@ export const useUserStore = defineStore('user', () => {
     userInfo,
     isLoggedIn,
     isAdmin,
+    markSessionActive,
     login,
     logout,
     fetchUserInfo,

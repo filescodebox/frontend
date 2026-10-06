@@ -112,10 +112,11 @@ const handleLogin = async () => {
       const res = await adminApi.login(loginForm)
       if (res.code === 200) {
         // 会话 Cookie 由服务端下发（HttpOnly），前端不再持久化令牌。
-        // 会话标记（非敏感）：userStore.fetchUserInfo 的守卫依赖它——admin 登录
-        // 不走 userStore.login，漏写该标记会使 fetchUserInfo 开头早退、userInfo
-        // 恒空，角色判断恒失败 → 管理后台永远无法进入（0.12.x 回归，已修复）。
-        localStorage.setItem('fcb_session', '1')
+        // 会话标记统一入口（ref 响应式 + localStorage 双写）：admin 登录不走
+        // userStore.login，直接写 localStorage 会被 isLoggedIn computed 的缓存
+        // 击穿（首帧求值 false 后无响应式依赖变更不重算）→ fetchUserInfo 早退
+        // → 角色判断恒败 → 管理后台无法登录（v0.13.3 修复）。
+        userStore.markSessionActive()
 
         // 登录后拉取用户信息获取 role（不再浏览器 atob 解析 JWT）
         await userStore.fetchUserInfo()
