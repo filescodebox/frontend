@@ -331,23 +331,10 @@ export const adminApi = {
     })
   },
 
-  // 获取系统配置
+  // 获取系统配置(v0.13.5 起 data = SystemConfig 全量 JSON,按段读取;契约层
+  // 不锁形——自由格式对象,语义见 contracts idl/admin.thrift 注释)
   getConfig: () => {
-    return request<ApiResponse<{
-      base: {
-        name: string
-        description: string
-        port: number
-      }
-      storage: {
-        type: string
-        max_size: number
-      }
-      transfer: {
-        max_count: number
-        expire_default: number
-      }
-    }>>({
+    return request<ApiResponse<Record<string, any>>>({
       url: '/admin/config',
       method: 'GET',
     })
@@ -361,7 +348,9 @@ export const adminApi = {
     return request<ApiResponse<void>>({
       url: '/admin/config',
       method: 'PUT',
-      data: { config },
+      // 扁平契约(v0.13.5 起):body = SystemConfig 局部 JSON,nil 段保留。
+      // 勿包 {config:...} 壳——曾因此 ex 段写入被静默丢弃(假开关)
+      data: config,
     })
   },
 
