@@ -18,52 +18,57 @@
       </div>
     </div>
 
-    <div v-if="showPassword" class="setting-group">
-      <label class="setting-label">
-        <el-icon><Lock /></el-icon>
-        {{ t('upload.requirePassword') }}
-      </label>
-      <el-switch
-        v-model="settings.require_auth"
-        :active-text="t('upload.needPassword')"
-        :inactive-text="t('upload.publicAccess')"
-      />
-      <el-input
-        v-if="settings.require_auth"
-        v-model="settings.password"
-        type="password"
-        :placeholder="t('upload.passwordPlaceholder')"
-        show-password
-        maxlength="64"
-        style="margin-top: 8px"
-      />
-    </div>
+    <!-- 更多设置（默认折叠，对标上游"主面只留有效期"的极简一卡） -->
+    <el-collapse v-if="showPassword || showCustom || showE2e" class="more-settings">
+      <el-collapse-item :title="t('upload.moreSettings')" name="more">
+        <div v-if="showPassword" class="setting-group">
+          <label class="setting-label">
+            <el-icon><Lock /></el-icon>
+            {{ t('upload.requirePassword') }}
+          </label>
+          <el-switch
+            v-model="settings.require_auth"
+            :active-text="t('upload.needPassword')"
+            :inactive-text="t('upload.publicAccess')"
+          />
+          <el-input
+            v-if="settings.require_auth"
+            v-model="settings.password"
+            type="password"
+            :placeholder="t('upload.passwordPlaceholder')"
+            show-password
+            maxlength="64"
+            style="margin-top: 8px"
+          />
+        </div>
 
-    <div v-if="showCustom" class="setting-group">
-      <label class="setting-label">
-        <el-icon><EditPen /></el-icon>
-        {{ t('upload.customCode') }}
-      </label>
-      <el-input
-        v-model="settings.custom_code"
-        :placeholder="t('upload.customCodePlaceholder')"
-        maxlength="32"
-        style="max-width: 280px"
-      />
-    </div>
+        <div v-if="showCustom" class="setting-group">
+          <label class="setting-label">
+            <el-icon><EditPen /></el-icon>
+            {{ t('upload.customCode') }}
+          </label>
+          <el-input
+            v-model="settings.custom_code"
+            :placeholder="t('upload.customCodePlaceholder')"
+            maxlength="32"
+            style="max-width: 280px"
+          />
+        </div>
 
-    <div v-if="showE2e" class="setting-group">
-      <label class="setting-label">
-        <el-icon><Key /></el-icon>
-        {{ t('upload.e2e.title') }}
-      </label>
-      <el-switch
-        v-model="settings.e2e"
-        :active-text="t('upload.e2e.on')"
-        :inactive-text="t('upload.e2e.off')"
-      />
-      <div class="e2e-hint">{{ t('upload.e2e.hint') }}</div>
-    </div>
+        <div v-if="showE2e" class="setting-group">
+          <label class="setting-label">
+            <el-icon><Key /></el-icon>
+            {{ t('upload.e2e.title') }}
+          </label>
+          <el-switch
+            v-model="settings.e2e"
+            :active-text="t('upload.e2e.on')"
+            :inactive-text="t('upload.e2e.off')"
+          />
+          <div class="e2e-hint">{{ t('upload.e2e.hint') }}</div>
+        </div>
+      </el-collapse-item>
+    </el-collapse>
   </div>
 </template>
 
@@ -150,6 +155,23 @@ const unitLabel = (u: ShareExpireStyle) => t(UNIT_KEYS[u])
 
 .expire-select {
   width: 120px;
+}
+
+.more-settings {
+  margin-top: 4px;
+  border-top: 1px solid var(--color-border-light);
+  border-bottom: none;
+}
+
+.more-settings :deep(.el-collapse-item__header) {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  border-bottom: none;
+}
+
+.more-settings :deep(.el-collapse-item__wrap) {
+  border-bottom: none;
+  background: transparent;
 }
 
 .e2e-hint {

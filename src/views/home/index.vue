@@ -21,62 +21,15 @@
 
       <!-- 主内容区：单列聚焦(对标上游"居中一个柜子卡片"的取件优先布局) -->
       <main class="content-area">
-        <!-- Hero —— 居中大标题 -->
-        <div class="intro-section">
-          <h2>{{ t('home.slogan') }}</h2>
-          <p>{{ t('home.description') }}</p>
-        </div>
-
-        <!-- 场景选择 Tab：自己用 / 给他人 -->
-        <div class="scenario-tabs">
-          <el-radio-group v-model="scenario" class="scenario-radio">
-            <el-radio-button value="others">
-              <el-icon><Promotion /></el-icon>
-              {{ t('home.scenario.others') }}
-            </el-radio-button>
-            <el-radio-button value="self">
-              <el-icon><Folder /></el-icon>
-              {{ t('home.scenario.self') }}
-            </el-radio-button>
-          </el-radio-group>
-        </div>
-
-        <!-- 给他人场景：轻量四步流程（无底无框,数字点承载顺序） -->
-        <div v-if="scenario === 'others'" class="workflow-section">
-          <div class="workflow-steps">
-            <div class="workflow-step">
-              <div class="step-head">
-                <span class="step-num">1</span>
-                <span class="step-title">{{ t('home.workflow.step1Title') }}</span>
-              </div>
-              <div class="step-desc">{{ t('home.workflow.step1Desc') }}</div>
-            </div>
-            <div class="workflow-step">
-              <div class="step-head">
-                <span class="step-num">2</span>
-                <span class="step-title">{{ t('home.workflow.step2Title') }}</span>
-              </div>
-              <div class="step-desc">{{ t('home.workflow.step2Desc') }}</div>
-            </div>
-            <div class="workflow-step">
-              <div class="step-head">
-                <span class="step-num">3</span>
-                <span class="step-title">{{ t('home.workflow.step3Title') }}</span>
-              </div>
-              <div class="step-desc">{{ t('home.workflow.step3Desc') }}</div>
-            </div>
-            <div class="workflow-step">
-              <div class="step-head">
-                <span class="step-num">4</span>
-                <span class="step-title">{{ t('home.workflow.step4Title') }}</span>
-              </div>
-              <div class="step-desc">{{ t('home.workflow.step4Desc') }}</div>
-            </div>
-          </div>
-        </div>
-
         <!-- 功能卡片：取件为第一 Tab（对标上游取件优先模式） -->
         <div class="function-card">
+          <div class="card-head">
+            <div class="card-head-icon">
+              <el-icon size="26"><Postcard v-if="activeTab === 'get'" /><Upload v-else-if="activeTab === 'file'" /><Document v-else /></el-icon>
+            </div>
+            <h2 class="card-head-title">{{ t('home.cardTitle.' + activeTab) }}</h2>
+            <p class="card-head-sub">{{ t('home.cardSub.' + activeTab) }}</p>
+          </div>
           <el-tabs v-model="activeTab" class="function-tabs">
             <el-tab-pane name="get">
               <template #label>
@@ -147,8 +100,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
   Upload, Document,
-  Download, Link, Postcard,
-  Promotion, Folder, Setting
+  Download, Link, Postcard, Setting
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
@@ -172,7 +124,6 @@ const { t, locale } = useI18n()
 // 对标上游"取件优先"（2026-10-07）：首页默认落在取件 Tab
 const activeTab = ref('get')
 // 场景：自己用 / 给他人（默认给他人）
-const scenario = ref<'self' | 'others'>('others')
 
 const shareResultDialog = ref<InstanceType<typeof ShareResultDialog> | null>(null)
 
@@ -238,58 +189,6 @@ onMounted(async () => {
 }
 
 /* Hero —— 居中 */
-.intro-section {
-  margin-bottom: var(--spacing-xl);
-  padding-top: var(--spacing-md);
-  text-align: center;
-}
-
-.intro-section h2 {
-  margin: 0 0 var(--spacing-sm);
-  font-size: 40px;
-  font-weight: 800;
-  color: var(--color-text-primary);
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-}
-
-.intro-section p {
-  margin: 0 auto;
-  font-size: var(--text-lg);
-  color: var(--color-text-secondary);
-  max-width: 560px;
-  line-height: 1.5;
-}
-
-/* 场景选择 Tab */
-.scenario-tabs {
-  display: flex;
-  justify-content: center;
-  margin-bottom: var(--spacing-lg);
-}
-
-.scenario-radio :deep(.el-radio-button__inner) {
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* 轻量四步流程：无底无框,数字点 + 标题 + 短描述 */
-.workflow-section {
-  margin-bottom: var(--spacing-xl);
-}
-
-.workflow-steps {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-lg);
-}
-
-.workflow-step {
-  min-width: 0;
-}
-
 .step-head {
   display: flex;
   align-items: center;
@@ -325,6 +224,40 @@ onMounted(async () => {
   font-size: var(--text-xs);
   color: var(--color-text-tertiary);
   line-height: 1.5;
+}
+
+/* 功能卡卡头（对标上游：软垫图标+标题+一行副题） */
+.card-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: var(--spacing-xl) var(--spacing-lg) 0;
+  text-align: center;
+}
+
+.card-head-icon {
+  display: inline-flex;
+  width: 56px;
+  height: 56px;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-muted);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-lg);
+}
+
+.card-head-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.card-head-sub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
 }
 
 /* 功能卡片 —— 视觉焦点 */
@@ -436,52 +369,8 @@ onMounted(async () => {
     padding: var(--spacing-md) var(--spacing-md) var(--spacing-xl);
   }
 
-  /* Hero 缩小并保持居中 */
-  .intro-section {
-    padding-top: 0;
-    margin-bottom: var(--spacing-lg);
-  }
 
-  .intro-section h2 {
-    font-size: var(--text-2xl);
-  }
 
-  .intro-section p {
-    font-size: var(--text-base);
-  }
-
-  /* 流程改单行紧凑步进器:数字点在上、标题在下居中,描述隐去
-     (四步标题各 4 字,390px 单行放得下;之前的竖排/两列列表会把主卡片顶出首屏) */
-  .workflow-section {
-    margin-bottom: var(--spacing-lg);
-  }
-
-  .workflow-steps {
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-xs);
-  }
-
-  .step-head {
-    flex-direction: column;
-    gap: 5px;
-    text-align: center;
-  }
-
-  .step-num {
-    width: 20px;
-    height: 20px;
-    font-size: 11px;
-    margin: 0 auto;
-  }
-
-  .step-title {
-    font-size: var(--text-xs);
-    white-space: nowrap;
-  }
-
-  .step-desc {
-    display: none;
-  }
 
   .function-card {
     padding: var(--spacing-xs) var(--spacing-md);

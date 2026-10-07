@@ -110,6 +110,16 @@ export default {
     loggedOut: '已退出登录',
     notice: '请勿上传或分享违法内容。根据《中华人民共和国网络安全法》等相关规定，传播违法内容将承担法律责任。',
     versionLabel: '前端版本',
+    cardTitle: {
+      get: '提取文件',
+      file: '文件发送',
+      text: '文本分享',
+    },
+    cardSub: {
+      get: '请输入您的 6 位取件码',
+      file: '点击或拖放文件到此处上传',
+      text: '在此输入要分享的文本',
+    },
     tabs: {
       file: '文件分享',
       text: '文本分享',
@@ -225,6 +235,7 @@ export default {
     expires_7d: '7 天',
     expires_30d: '30 天',
     requirePassword: '取件密码',
+    moreSettings: '更多设置（密码 / 自定义码 / 加密）',
     require_password: '需要密码',
     needPassword: '需要密码',
     passwordPlaceholder: '请输入访问密码',
