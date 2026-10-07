@@ -113,6 +113,7 @@
             :data="trendData"
             :upload-label="t('admin.uploads')"
             :download-label="t('admin.downloads')"
+            :empty-text="t('admin.noData')"
           />
         </el-card>
       </el-col>
