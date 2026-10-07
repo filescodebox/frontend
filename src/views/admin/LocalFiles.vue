@@ -5,15 +5,17 @@
         <div class="card-header">
           <span>本地文件（NAS 白名单目录）</span>
           <div class="header-actions">
-            <el-select v-model="rootIdx" class="root-select" placeholder="根目录" @change="onRootChange">
-              <el-option v-for="(r, i) in roots" :key="i" :label="r" :value="i" />
-            </el-select>
-            <el-button :icon="'Refresh'" circle @click="load" />
+            <template v-if="!featureDisabled">
+              <el-select v-model="rootIdx" class="root-select" placeholder="根目录" @change="onRootChange">
+                <el-option v-for="(r, i) in roots" :key="i" :label="r" :value="i" />
+              </el-select>
+              <el-button :icon="'Refresh'" circle @click="load" />
+            </template>
           </div>
         </div>
       </template>
 
-      <div class="breadcrumb-bar">
+      <div v-if="!featureDisabled" class="breadcrumb-bar">
         <el-breadcrumb separator="/">
           <el-breadcrumb-item>
             <el-link type="primary" @click="goto('')">根目录</el-link>
@@ -27,7 +29,14 @@
         </span>
       </div>
 
-      <el-table v-loading="loading" :data="entries" style="width: 100%">
+      <!-- 功能未启用的引导态:不再发注定失败请求弹全局错误,直接说明配置路径 -->
+      <el-empty v-if="featureDisabled" description="本地文件功能未启用">
+        <div class="disabled-guide">
+          <p>该功能需在服务端配置 <code>upload.local_import.enabled</code> 与白名单 <code>roots</code> 后可用。</p>
+          <el-button type="primary" @click="$router.push('/admin/config')">前往系统配置</el-button>
+        </div>
+      </el-empty>
+      <el-table v-else v-loading="loading" :data="entries" style="width: 100%">
         <el-table-column label="名称" min-width="280">
           <template #default="{ row }">
             <el-icon class="file-icon"><Document v-if="!row.is_dir" /><Folder v-else /></el-icon>
@@ -108,6 +117,10 @@ const rootIdx = ref(0)
 const dir = ref('')
 const entries = ref<LocalFileEntry[]>([])
 const loading = ref(false)
+// 功能未启用(服务端 upload.local_import.enabled=false):展示配置引导而非报错
+const featureDisabled = ref(false)
+
+const isDisabledMessage = (msg?: string) => !!msg && msg.includes('本地文件功能未启用')
 
 const dirSegments = computed(() => {
   const parts = dir.value.split('/').filter(Boolean)
@@ -123,13 +136,21 @@ const load = async () => {
   try {
     const resp = await localFilesApi.list(rootIdx.value, dir.value)
     if (resp.code === 0 || resp.code === 200) {
+      featureDisabled.value = false
       roots.value = resp.data.roots || []
       entries.value = resp.data.entries || []
+    } else if (isDisabledMessage(resp.message)) {
+      featureDisabled.value = true
     } else {
       ElMessage.error(resp.message || '加载本地文件失败')
     }
   } catch (e) {
-    handleError(e)
+    const msg = (e as { message?: string })?.message
+    if (isDisabledMessage(msg) || isDisabledMessage((e as { response?: { data?: { message?: string } } })?.response?.data?.message)) {
+      featureDisabled.value = true
+    } else {
+      handleError(e)
+    }
   } finally {
     loading.value = false
   }
@@ -274,5 +295,17 @@ onMounted(load)
 .pwd-input {
   width: 180px;
   margin-left: 12px;
+}
+.disabled-guide {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.disabled-guide code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--color-muted);
+  font-family: monospace;
+  color: var(--color-text-primary);
 }
 </style>

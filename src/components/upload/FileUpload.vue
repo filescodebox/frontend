@@ -196,6 +196,17 @@ onBeforeUnmount(() => dispose())
   margin-bottom: 24px;
 }
 
+/* 手机端拖拽区收紧:降低留白,避免空拖拽区占满首屏 */
+@media (max-width: 768px) {
+  .upload-dragger :deep(.el-upload-dragger) {
+    padding: 20px 16px;
+  }
+
+  .upload-dragger :deep(.upload-icon .el-icon) {
+    font-size: 40px !important;
+  }
+}
+
 .upload-dragger :deep(.el-upload-dragger) {
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-xl);

@@ -64,6 +64,20 @@ export const adminApi = {
   // 别名：获取仪表板统计
   getDashboardStats: () => adminApi.getStats(),
 
+  // 服务端构建版本（/version 在 v0.12.x 攻击面收缩后收归管理员门禁,仅供仪表盘版本页脚）
+  getVersion: () => {
+    return request<{
+      code: number
+      version: string
+      commit: string
+      build_time: string
+      start_time: string
+    }>({
+      url: '/version',
+      method: 'GET',
+    })
+  },
+
   // 健康洞察过滤取值（与后端 FileCodeQuery.Health 同口径）
   healthFilters: ['active', 'expired', 'expiring_soon', 'never_picked', 'forever'] as const,
 

@@ -4,7 +4,7 @@
       <el-input
         v-model="textContent"
         type="textarea"
-        :rows="8"
+        :rows="6"
         :placeholder="t('upload.textPlaceholder')"
         resize="none"
         class="text-area"
