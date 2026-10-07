@@ -54,7 +54,6 @@
         v-if="uploadPath"
         :d="uploadAreaPath"
         fill="url(#uploadGradient)"
-        opacity="0.3"
       />
       <path
         v-if="uploadPath"
@@ -75,7 +74,6 @@
         stroke-width="2"
         stroke-linecap="round"
         stroke-linejoin="round"
-        stroke-dasharray="4,2"
       />
 
       <!-- 数据点 -->
@@ -87,15 +85,14 @@
           :cy="p.uploadY"
           r="3"
           class="dot-upload"
-          fill="#5e6ad2"
         />
       </g>
 
       <!-- 定义渐变 -->
       <defs>
         <linearGradient id="uploadGradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" class="area-stop" stop-color="#5e6ad2" stop-opacity="0.6" />
-          <stop offset="100%" class="area-stop" stop-color="#5e6ad2" stop-opacity="0" />
+          <stop offset="0%" class="area-stop" stop-opacity="0.18" />
+          <stop offset="100%" class="area-stop" stop-opacity="0" />
         </linearGradient>
       </defs>
     </svg>
@@ -146,7 +143,8 @@ const maxValue = computed(() => {
     if (p.uploads > max) max = p.uploads
     if (p.downloads !== undefined && p.downloads > max) max = p.downloads
   }
-  return Math.max(max, 10) * 1.1
+  // 归整到 4 的倍数,网格刻度标签才是整齐的整数步进(而非 13/10/7/3/0)
+  return Math.ceil((Math.max(max, 10) * 1.1) / 4) * 4
 })
 
 const points = computed(() => {
@@ -234,28 +232,56 @@ const gridLines = computed(() => {
   border-radius: 50%;
 }
 
-.legend-dot.upload {
-  background: var(--primary-color);
-}
-
-.legend-dot.download {
-  background: var(--color-danger);
-}
-
-/* SVG 折线/数据点/渐变跟随主题主色（CSS 属性优先级高于表现属性） */
+/* 图表系列色 = 固定对比色对,不跟运行时 accent——accent 有 6 种预设
+   (indigo/blue/emerald/amber/rose/ink),上传线若跟 accent,emerald 主题下
+   会与绿色系下载线融成一片;固定色对保证任意主题下两条线都分辨得清。
+   上传=品牌靛蓝(带面积渐变),下载=青绿;暗色下各提亮一档。
+   CSS 属性优先级高于 SVG 表现属性,故无需在模板上写死颜色 */
 .line-upload {
-  stroke: var(--primary-color);
+  stroke: #5e6ad2;
 }
 
 .line-download {
-  stroke: var(--color-danger);
+  stroke: #0d9488;
 }
 
 .dot-upload {
-  fill: var(--primary-color);
+  fill: #5e6ad2;
 }
 
 .area-stop {
-  stop-color: var(--primary-color);
+  stop-color: #5e6ad2;
+}
+
+.legend-dot.upload {
+  background: #5e6ad2;
+}
+
+.legend-dot.download {
+  background: #0d9488;
+}
+
+html.dark .line-upload {
+  stroke: #8e97e0;
+}
+
+html.dark .dot-upload {
+  fill: #8e97e0;
+}
+
+html.dark .area-stop {
+  stop-color: #8e97e0;
+}
+
+html.dark .line-download {
+  stroke: #2dd4bf;
+}
+
+html.dark .legend-dot.upload {
+  background: #8e97e0;
+}
+
+html.dark .legend-dot.download {
+  background: #2dd4bf;
 }
 </style>

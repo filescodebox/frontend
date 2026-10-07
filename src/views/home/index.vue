@@ -19,10 +19,9 @@
         </template>
       </TopNav>
 
-
-      <!-- 主内容区 -->
+      <!-- 主内容区：单列聚焦(对标上游"居中一个柜子卡片"的取件优先布局) -->
       <main class="content-area">
-        <!-- Hero —— 左对齐大标题,Linear 风 -->
+        <!-- Hero —— 居中大标题 -->
         <div class="intro-section">
           <h2>{{ t('home.slogan') }}</h2>
           <p>{{ t('home.description') }}</p>
@@ -42,80 +41,77 @@
           </el-radio-group>
         </div>
 
-        <!-- 给他人场景：极简横向时间线 -->
+        <!-- 给他人场景：轻量四步流程（无底无框,数字点承载顺序） -->
         <div v-if="scenario === 'others'" class="workflow-section">
-          <h3 class="workflow-title">{{ t('home.workflow.title') }}</h3>
           <div class="workflow-steps">
             <div class="workflow-step">
-              <div class="step-marker">
+              <div class="step-head">
                 <span class="step-num">1</span>
-                <el-icon size="20"><UploadFilled /></el-icon>
+                <span class="step-title">{{ t('home.workflow.step1Title') }}</span>
               </div>
-              <div class="step-title">{{ t('home.workflow.step1Title') }}</div>
               <div class="step-desc">{{ t('home.workflow.step1Desc') }}</div>
             </div>
             <div class="workflow-step">
-              <div class="step-marker">
+              <div class="step-head">
                 <span class="step-num">2</span>
-                <el-icon size="20"><Postcard /></el-icon>
+                <span class="step-title">{{ t('home.workflow.step2Title') }}</span>
               </div>
-              <div class="step-title">{{ t('home.workflow.step2Title') }}</div>
               <div class="step-desc">{{ t('home.workflow.step2Desc') }}</div>
             </div>
             <div class="workflow-step">
-              <div class="step-marker">
+              <div class="step-head">
                 <span class="step-num">3</span>
-                <el-icon size="20"><Share /></el-icon>
+                <span class="step-title">{{ t('home.workflow.step3Title') }}</span>
               </div>
-              <div class="step-title">{{ t('home.workflow.step3Title') }}</div>
               <div class="step-desc">{{ t('home.workflow.step3Desc') }}</div>
             </div>
             <div class="workflow-step">
-              <div class="step-marker">
+              <div class="step-head">
                 <span class="step-num">4</span>
-                <el-icon size="20"><Download /></el-icon>
+                <span class="step-title">{{ t('home.workflow.step4Title') }}</span>
               </div>
-              <div class="step-title">{{ t('home.workflow.step4Title') }}</div>
               <div class="step-desc">{{ t('home.workflow.step4Desc') }}</div>
             </div>
           </div>
         </div>
 
-        <!-- 功能标签页（对标上游取件优先模式：取件为第一 Tab，2026-10-07） -->
-        <el-tabs v-model="activeTab" class="function-tabs">
-          <el-tab-pane name="get">
-            <template #label>
-              <span class="tab-label">
-                <el-icon><Download /></el-icon>
-                {{ t('home.tabs.get') }}
-              </span>
-            </template>
-            <GetShare />
-          </el-tab-pane>
+        <!-- 功能卡片：取件为第一 Tab（对标上游取件优先模式） -->
+        <div class="function-card">
+          <el-tabs v-model="activeTab" class="function-tabs">
+            <el-tab-pane name="get">
+              <template #label>
+                <span class="tab-label">
+                  <el-icon><Download /></el-icon>
+                  {{ t('home.tabs.get') }}
+                </span>
+              </template>
+              <GetShare />
+            </el-tab-pane>
 
-          <el-tab-pane name="file">
-            <template #label>
-              <span class="tab-label">
-                <el-icon><Upload /></el-icon>
-                {{ t('home.tabs.file') }}
-              </span>
-            </template>
-            <FileUpload @success="handleShareSuccess" />
-          </el-tab-pane>
+            <el-tab-pane name="file">
+              <template #label>
+                <span class="tab-label">
+                  <el-icon><Upload /></el-icon>
+                  {{ t('home.tabs.file') }}
+                </span>
+              </template>
+              <FileUpload @success="handleShareSuccess" />
+            </el-tab-pane>
 
-          <el-tab-pane name="text">
-            <template #label>
-              <span class="tab-label">
-                <el-icon><Document /></el-icon>
-                {{ t('home.tabs.text') }}
-              </span>
-            </template>
-            <TextShare @success="handleShareSuccess" />
-          </el-tab-pane>
-        </el-tabs>
+            <el-tab-pane name="text">
+              <template #label>
+                <span class="tab-label">
+                  <el-icon><Document /></el-icon>
+                  {{ t('home.tabs.text') }}
+                </span>
+              </template>
+              <TextShare @success="handleShareSuccess" />
+            </el-tab-pane>
+          </el-tabs>
+        </div>
       </main>
 
-      <!-- 页脚 -->
+      <!-- 页脚：免责声明 / 链接 / 版本元信息 -->
       <footer class="footer-section">
         <p class="footer-notice">{{ t('home.notice') }}</p>
         <div class="footer-links">
@@ -128,6 +124,13 @@
             <el-icon><Setting /></el-icon>
             {{ t('admin.title') }}
           </a>
+        </div>
+        <div class="footer-meta">
+          <span>{{ t('home.versionLabel') }} v{{ appVersion }}</span>
+          <span class="meta-dot">·</span>
+          <span>© 2026 PigeonBox</span>
+          <span class="meta-dot">·</span>
+          <span>Apache-2.0</span>
         </div>
       </footer>
     </div>
@@ -144,7 +147,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
   Upload, Document,
-  Download, Link, Postcard, UploadFilled, Share,
+  Download, Link, Postcard,
   Promotion, Folder, Setting
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
@@ -156,6 +159,9 @@ import TextShare from '@/components/upload/TextShare.vue'
 import GetShare from '@/components/upload/GetShare.vue'
 import TopNav from '@/components/layout/TopNav.vue'
 import ShareResultDialog from '@/components/share/ShareResultDialog.vue'
+
+// vite define 注入的构建版本（package.json,对齐发布列车）
+const appVersion = __APP_VERSION__
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -223,39 +229,43 @@ onMounted(async () => {
   flex-direction: column;
 }
 
-/* 顶部导航样式内聚于 TopNav 组件（variant="home"） */
-
-/* 主内容区 */
+/* 主内容区 —— 单列聚焦卡片布局（PC 720px 居中,与上游柜子卡片同构） */
 .content-area {
   flex: 1;
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
 }
 
-/* Hero —— 左对齐 */
+/* Hero —— 居中 */
 .intro-section {
-  margin-bottom: var(--spacing-2xl);
-  padding-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  text-align: center;
 }
 
 .intro-section h2 {
-  margin: 0 0 var(--spacing-md);
+  margin: 0 0 var(--spacing-sm);
   font-size: 40px;
   font-weight: 800;
   color: var(--color-text-primary);
   letter-spacing: -0.03em;
-  line-height: 1.1;
+  line-height: 1.15;
 }
 
 .intro-section p {
-  margin: 0;
+  margin: 0 auto;
   font-size: var(--text-lg);
-  color: var(--color-text-regular);
-  max-width: 600px;
+  color: var(--color-text-secondary);
+  max-width: 560px;
   line-height: 1.5;
 }
 
 /* 场景选择 Tab */
 .scenario-tabs {
-  margin-bottom: var(--spacing-xl);
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--spacing-lg);
 }
 
 .scenario-radio :deep(.el-radio-button__inner) {
@@ -265,77 +275,65 @@ onMounted(async () => {
   gap: 6px;
 }
 
-/* 极简横向时间线 */
+/* 轻量四步流程：无底无框,数字点 + 标题 + 短描述 */
 .workflow-section {
-  margin-bottom: var(--spacing-2xl);
-}
-
-.workflow-title {
-  margin: 0 0 var(--spacing-lg);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  margin-bottom: var(--spacing-xl);
 }
 
 .workflow-steps {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0;
-  background: var(--color-muted);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
+  gap: var(--spacing-lg);
 }
 
 .workflow-step {
-  padding: var(--spacing-xl) var(--spacing-lg);
-  border-right: 1px solid var(--color-border-light);
-  position: relative;
-
-  &:last-child {
-    border-right: none;
-  }
+  min-width: 0;
 }
 
-.step-marker {
+.step-head {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
-  color: var(--primary-color);
+  margin-bottom: 6px;
 }
 
 .step-num {
-  width: 24px;
-  height: 24px;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: var(--text-xs);
   font-weight: 600;
-  color: #fff;
-  background: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--primary-bg);
 }
 
 .step-title {
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-text-primary);
-  margin-bottom: 4px;
+  /* 两端窄屏下步骤标题不撑破列 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .step-desc {
   font-size: var(--text-xs);
-  color: var(--color-text-secondary);
+  color: var(--color-text-tertiary);
   line-height: 1.5;
 }
 
-/* 功能标签页 */
-.function-tabs {
-  margin-top: var(--spacing-xl);
+/* 功能卡片 —— 视觉焦点 */
+.function-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm);
 }
 
 .tab-label {
@@ -347,7 +345,7 @@ onMounted(async () => {
 }
 
 :deep(.el-tabs__header) {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 :deep(.el-tabs__nav-wrap::after) {
@@ -356,9 +354,9 @@ onMounted(async () => {
 }
 
 :deep(.el-tabs__item) {
-  padding: 0 var(--spacing-xl);
-  height: 44px;
-  line-height: 44px;
+  padding: 0 var(--spacing-lg);
+  height: 46px;
+  line-height: 46px;
   color: var(--color-text-secondary);
   font-weight: 500;
 }
@@ -378,16 +376,16 @@ onMounted(async () => {
 
 /* 分享结果弹窗样式内聚于 ShareResultDialog 组件 */
 
-/* 页脚 */
+/* 页脚：居中三行（免责/链接/版本元信息） */
 .footer-section {
   margin-top: var(--spacing-2xl);
   padding-top: var(--spacing-xl);
   border-top: 1px solid var(--color-border);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  flex-wrap: wrap;
   gap: var(--spacing-md);
+  text-align: center;
 }
 
 .footer-notice {
@@ -395,6 +393,13 @@ onMounted(async () => {
   line-height: 1.6;
   font-size: var(--text-xs);
   color: var(--color-text-tertiary);
+  max-width: 640px;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
 }
 
 .footer-links a {
@@ -404,33 +409,94 @@ onMounted(async () => {
   color: var(--color-text-secondary);
   font-size: var(--text-xs);
   transition: color 0.15s ease;
-
-  &:hover {
-    color: var(--color-text-primary);
-  }
 }
 
-/* 响应式 */
+.footer-links a:hover {
+  color: var(--color-text-primary);
+}
+
+.footer-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.meta-dot {
+  color: var(--color-border);
+}
+
+/* ===== 响应式：手机端 (≤768px) ===== */
 @media (max-width: 768px) {
   .main-wrapper {
-    padding: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-xl);
+  }
+
+  /* Hero 缩小并保持居中 */
+  .intro-section {
+    padding-top: 0;
+    margin-bottom: var(--spacing-lg);
   }
 
   .intro-section h2 {
     font-size: var(--text-2xl);
   }
 
-  .workflow-steps {
-    grid-template-columns: 1fr 1fr;
+  .intro-section p {
+    font-size: var(--text-base);
   }
 
-  .workflow-step {
-    border-right: none;
-    border-bottom: 1px solid var(--color-border);
+  /* 流程改单行紧凑步进器:数字点在上、标题在下居中,描述隐去
+     (四步标题各 4 字,390px 单行放得下;之前的竖排/两列列表会把主卡片顶出首屏) */
+  .workflow-section {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .workflow-steps {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-xs);
+  }
+
+  .step-head {
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+  }
+
+  .step-num {
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    margin: 0 auto;
+  }
+
+  .step-title {
+    font-size: var(--text-xs);
+    white-space: nowrap;
+  }
+
+  .step-desc {
+    display: none;
+  }
+
+  .function-card {
+    padding: var(--spacing-xs) var(--spacing-md);
+    /* 圆角大卡片贴边留 2px 呼吸,避免"框中框"的局促 */
+    border-radius: var(--radius-lg);
   }
 
   :deep(.el-tabs__item) {
-    padding: 0 var(--spacing-md);
+    padding: 0 var(--spacing-sm);
+  }
+
+  /* 手机上卡片就是主战场,页脚收紧 */
+  .footer-section {
+    margin-top: var(--spacing-xl);
+    gap: var(--spacing-sm);
   }
 }
 </style>

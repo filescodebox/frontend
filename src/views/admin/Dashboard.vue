@@ -21,14 +21,14 @@
         </div>
       </div>
       <div class="welcome-right">
-        <el-icon size="80" color="rgba(255,255,255,0.3)"><Avatar /></el-icon>
+        <el-icon size="80"><Avatar /></el-icon>
       </div>
     </div>
 
     <!-- 统计卡片 -->
     <el-row :gutter="24" class="stats-row">
       <el-col :span="6">
-        <div class="stat-card gradient-blue">
+        <div class="stat-card tone-primary">
           <div class="stat-icon">
             <el-icon size="32"><User /></el-icon>
           </div>
@@ -36,12 +36,11 @@
             <div class="stat-value">{{ animatedStats.userCount }}</div>
             <div class="stat-label">{{ t('admin.totalUsers') }}</div>
           </div>
-          <div class="stat-decoration"></div>
         </div>
       </el-col>
 
       <el-col :span="6">
-        <div class="stat-card gradient-purple">
+        <div class="stat-card tone-violet">
           <div class="stat-icon">
             <el-icon size="32"><Folder /></el-icon>
           </div>
@@ -49,12 +48,11 @@
             <div class="stat-value">{{ animatedStats.fileCount }}</div>
             <div class="stat-label">{{ t('admin.totalFiles') }}</div>
           </div>
-          <div class="stat-decoration"></div>
         </div>
       </el-col>
 
       <el-col :span="6">
-        <div class="stat-card gradient-green">
+        <div class="stat-card tone-teal">
           <div class="stat-icon">
             <el-icon size="32"><Coin /></el-icon>
           </div>
@@ -62,12 +60,11 @@
             <div class="stat-value">{{ formatFileSize(stats.totalStorage) }}</div>
             <div class="stat-label">{{ t('admin.storageUsed') }}</div>
           </div>
-          <div class="stat-decoration"></div>
         </div>
       </el-col>
 
       <el-col :span="6">
-        <div class="stat-card gradient-orange">
+        <div class="stat-card tone-amber">
           <div class="stat-icon">
             <el-icon size="32"><TrendCharts /></el-icon>
           </div>
@@ -75,7 +72,6 @@
             <div class="stat-value">{{ animatedStats.todayUploads }}</div>
             <div class="stat-label">{{ t('admin.todayUploads') }}</div>
           </div>
-          <div class="stat-decoration"></div>
         </div>
       </el-col>
     </el-row>
@@ -135,15 +131,19 @@
               :key="item.type"
               class="file-type-item"
             >
-              <div class="file-type-bar" :style="{ width: item.percent + '%', background: typeColors[idx % typeColors.length] }">
-              </div>
-              <div class="file-type-info">
+              <div class="file-type-head">
                 <span class="file-type-name">{{ item.type }}</span>
                 <span class="file-type-count">{{ item.count }} ({{ item.percent.toFixed(0) }}%)</span>
               </div>
+              <div class="file-type-track">
+                <div
+                  class="file-type-bar"
+                  :style="{ width: item.percent + '%', background: typeColors[idx % typeColors.length] }"
+                ></div>
+              </div>
             </div>
             <div v-if="fileTypeDist.length === 0" class="empty">
-              <el-icon size="40" color="#e4e7ed"><PieChart /></el-icon>
+              <el-icon size="40" color="var(--color-border)"><PieChart /></el-icon>
               <p>{{ t('admin.noData') }}</p>
             </div>
           </div>
@@ -238,6 +238,17 @@
         </el-card>
       </el-col>
     </el-row>
+
+    <!-- 版本页脚（对标上游 dashboard 版本页脚：服务端/前端版本号；/version 已收归管理员门禁） -->
+    <footer class="dash-footer">
+      <span>{{ t('admin.serverVersion') }} {{ formatVersion(serverVersion) }}</span>
+      <span class="meta-dot">·</span>
+      <span>{{ t('admin.frontendVersion') }} {{ formatVersion(appVersion) }}</span>
+      <span class="meta-dot">·</span>
+      <span>© 2026 PigeonBox</span>
+      <span class="meta-dot">·</span>
+      <span>Apache-2.0</span>
+    </footer>
   </div>
 </template>
 
@@ -254,11 +265,24 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import TrendChart, { type TrendPoint } from '@/components/TrendChart.vue'
 
+// vite define 注入的构建版本（package.json,对齐发布列车）
+const appVersion = __APP_VERSION__
+
 const { t, locale } = useI18n()
 const userStore = useUserStore()
 const router = useRouter()
 
 const loading = ref(false)
+
+// 服务端构建版本（/version,管理员门禁;拉取失败静默,页脚显示 —）
+const serverVersion = ref('')
+
+// 页脚版本号展示:空值显示 —;dev/commit 哈希等非语义化版本不带 v 前缀
+const formatVersion = (v: string) => {
+  if (!v) return '—'
+  if (/^v/.test(v) || !/^\d/.test(v)) return v
+  return `v${v}`
+}
 
 interface DashboardStats {
   total_users: number
@@ -321,7 +345,9 @@ const recentUsers = ref<RecentUser[]>([])
 const recentFiles = ref<RecentFile[]>([])
 const trendData = ref<TrendPoint[]>([])
 
-const typeColors = ['#667eea', '#f093fb', '#4facfe', '#fa709a', '#e6a23c', '#67c23a']
+// 图表分类色板——与品牌靛蓝同族的中饱和色,按序取色保证相邻项对比清晰;
+// 弃用旧粉紫渐变系(#f093fb/#fa709a):0.2 透明度下发灰且花哨,不符合"简约不简单"
+const typeColors = ['#5e6ad2', '#0ea5e9', '#14b8a6', '#f59e0b', '#f43f5e', '#8b5cf6']
 
 interface FileTypeStat {
   type: string
@@ -451,6 +477,17 @@ const fetchRecentFiles = async () => {
   }
 }
 
+const fetchServerVersion = async () => {
+  try {
+    const res = await adminApi.getVersion()
+    if (res.code === 200 && res.version) {
+      serverVersion.value = res.version
+    }
+  } catch {
+    // 版本获取失败不影响面板
+  }
+}
+
 onMounted(async () => {
   loading.value = true
   try {
@@ -460,6 +497,7 @@ onMounted(async () => {
       fetchRecentFiles(),
       fetchEnhancedStats(),
       fetchTrend(),
+      fetchServerVersion(),
     ])
     generateMockFileTypeDist()
   } finally {
@@ -679,7 +717,8 @@ const generateMockFileTypeDist = () => {
 
 .welcome-right {
   z-index: 1;
-  opacity: 0.5;
+  color: var(--primary-color);
+  opacity: 0.12;
 }
 
 .stats-row { margin-bottom: 24px; }
@@ -700,13 +739,7 @@ const generateMockFileTypeDist = () => {
   border-color: var(--primary-color);
 }
 
-.gradient-blue,
-.gradient-purple,
-.gradient-green,
-.gradient-orange {
-  background: var(--color-surface);
-}
-
+/* 图标语义色编码:用户=accent / 文件=紫 / 存储=青绿 / 今日上传=琥珀 */
 .stat-icon {
   position: relative;
   z-index: 1;
@@ -719,6 +752,36 @@ const generateMockFileTypeDist = () => {
   margin-bottom: 16px;
   background: var(--primary-bg);
   color: var(--primary-color);
+}
+
+.tone-violet .stat-icon {
+  background: rgba(124, 58, 237, 0.1);
+  color: #7c3aed;
+}
+
+.tone-teal .stat-icon {
+  background: rgba(13, 148, 136, 0.1);
+  color: #0d9488;
+}
+
+.tone-amber .stat-icon {
+  background: rgba(217, 119, 6, 0.1);
+  color: #d97706;
+}
+
+html.dark .tone-teal .stat-icon {
+  background: rgba(45, 212, 191, 0.16);
+  color: #2dd4bf;
+}
+
+html.dark .tone-violet .stat-icon {
+  background: rgba(167, 139, 250, 0.16);
+  color: #a78bfa;
+}
+
+html.dark .tone-amber .stat-icon {
+  background: rgba(245, 158, 11, 0.16);
+  color: #f59e0b;
 }
 
 .stat-content {
@@ -736,10 +799,6 @@ const generateMockFileTypeDist = () => {
 .stat-label {
   font-size: 14px;
   color: var(--color-text-secondary);
-}
-
-.stat-decoration {
-  display: none;
 }
 
 .charts-row { margin-bottom: 24px; }
@@ -765,58 +824,49 @@ const generateMockFileTypeDist = () => {
   color: var(--color-text-primary);
 }
 
-.chart-placeholder {
-  height: 250px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary);
-}
-
-.chart-placeholder p { margin-top: 16px; }
-
 .file-type-dist {
   padding: 8px 0;
   min-height: 240px;
 }
 
 .file-type-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-  position: relative;
+  margin-bottom: 18px;
 }
 
-.file-type-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  height: 32px;
-  border-radius: var(--radius-md);
-  opacity: 0.2;
-  transition: width 0.5s ease;
-  z-index: 0;
+.file-type-item:last-child {
+  margin-bottom: 0;
 }
 
-.file-type-info {
-  position: relative;
-  z-index: 1;
+/* 文字在上、实色条+浅灰轨道在下——替代旧"文字压半透明色块"的含混布局 */
+.file-type-head {
   display: flex;
   justify-content: space-between;
-  width: 100%;
-  padding: 0 12px;
+  align-items: baseline;
+  margin-bottom: 6px;
   font-size: 13px;
-  color: var(--color-text-primary);
 }
 
 .file-type-name {
   font-weight: 600;
+  color: var(--color-text-primary);
 }
 
 .file-type-count {
   color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.file-type-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-muted);
+  overflow: hidden;
+}
+
+.file-type-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease;
 }
 
 .file-type-dist .empty {
@@ -829,6 +879,23 @@ const generateMockFileTypeDist = () => {
 }
 
 .recent-row { margin-bottom: 24px; }
+
+/* 版本页脚 */
+.dash-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-footer .meta-dot {
+  color: var(--color-border);
+}
 
 .recent-card {
   border-radius: var(--radius-xl);

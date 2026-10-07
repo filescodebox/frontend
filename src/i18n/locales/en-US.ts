@@ -109,6 +109,7 @@ export default {
     copyLinkFailed: '复制失败',
     loggedOut: '已退出登录',
     notice: '请勿上传或分享违法内容。根据《中华人民共和国网络安全法》等相关规定，传播违法内容将承担法律责任。',
+    versionLabel: 'Frontend',
     tabs: {
       file: '文件分享',
       text: '文本分享',
@@ -505,6 +506,8 @@ export default {
     },
   },
   admin: {
+    serverVersion: 'Server',
+    frontendVersion: 'Frontend',
     health: {
       title: '文件健康',
       subtitle: '点击卡片直达对应文件视图',

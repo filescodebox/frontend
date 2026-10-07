@@ -3,6 +3,10 @@ import vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { resolve } from 'path'
+import { readFileSync } from 'node:fs'
+
+// 前端构建版本注入首页/仪表盘版本页脚（对齐发布列车,发版随 server 同号）
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as { version: string }
 
 // 后端地址，dev 下所有 API 请求代理到这里（FCB_API_TARGET 可覆盖，便于指向本地多实例）
 const proxyTarget = {
@@ -21,6 +25,9 @@ export default defineConfig({
       dts: 'src/components.d.ts',
     }),
   ],
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -46,6 +53,7 @@ export default defineConfig({
       '/openapi.json': proxyTarget,
       '/robots.txt': proxyTarget,
       '/ping': proxyTarget,
+      '/version': proxyTarget,
     },
   },
 })
