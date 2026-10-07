@@ -122,7 +122,11 @@ const localeStore = useLocaleStore()
 const { t, locale } = useI18n()
 
 // 对标上游"取件优先"（2026-10-07）：首页默认落在取件 Tab
-const activeTab = ref('get')
+// 支持 ?tab=file|text 直达（可分享深链；取件码/分享码分发复用同一参数语义）
+const activeTab = ref((() => {
+  const q = new URLSearchParams(window.location.hash.split('?')[1] || '').get('tab')
+  return q === 'file' || q === 'text' ? q : 'get'
+})())
 // 场景：自己用 / 给他人（默认给他人）
 
 const shareResultDialog = ref<InstanceType<typeof ShareResultDialog> | null>(null)
