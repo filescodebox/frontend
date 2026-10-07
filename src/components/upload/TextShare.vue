@@ -4,7 +4,7 @@
       <el-input
         v-model="textContent"
         type="textarea"
-        :rows="6"
+        :rows="4"
         :placeholder="t('upload.textPlaceholder')"
         resize="none"
         class="text-area"
@@ -134,12 +134,21 @@ const handleShare = async () => {
 }
 
 .text-area :deep(.el-textarea__inner) {
+  /* 与文件 tab 拖拽区同高(手机 204/桌面 224,实测值)——切换 tab 主体块等大;
+     !important 压过 EP 内建 min-height(实测 computed 曾回落 2px) */
+  min-height: 224px !important;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 16px;
   font-size: 15px;
   line-height: 1.6;
   transition: border-color 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .text-area :deep(.el-textarea__inner) {
+    min-height: 204px !important;
+  }
 }
 
 .text-area :deep(.el-textarea__inner:focus) {
