@@ -116,11 +116,6 @@ export default {
       file: '文件发送',
       text: '文本分享',
     },
-    cardSub: {
-      get: '请输入您的 6 位取件码',
-      file: '点击或拖放文件到此处上传',
-      text: '在此输入要分享的文本',
-    },
     tabs: {
       file: '文件分享',
       text: '文本分享',

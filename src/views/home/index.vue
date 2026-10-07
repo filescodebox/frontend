@@ -29,7 +29,6 @@
               <el-icon size="26"><Postcard v-if="activeTab === 'get'" /><Upload v-else-if="activeTab === 'file'" /><Document v-else /></el-icon>
             </div>
             <h2 class="card-head-title">{{ t('home.cardTitle.' + activeTab) }}</h2>
-            <p class="card-head-sub">{{ t('home.cardSub.' + activeTab) }}</p>
           </div>
           <!-- 分段切换器（对标上游 发送文件/发送文本 圆角轨道+活动白块） -->
           <div class="seg" role="tablist">
@@ -253,11 +252,6 @@ onMounted(async () => {
   color: var(--color-text-primary);
 }
 
-.card-head-sub {
-  margin: 0;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-}
 
 /* 功能卡片 —— 视觉焦点 */
 .function-card {
