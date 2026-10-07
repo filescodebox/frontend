@@ -111,6 +111,7 @@ export default {
     notice: '请勿上传或分享违法内容。根据《中华人民共和国网络安全法》等相关规定，传播违法内容将承担法律责任。',
     versionLabel: 'Frontend',
     needRetrieve: '需要取件？',
+    goSend: 'Send something',
     cardTitle: {
       get: '提取文件',
       file: '文件发送',

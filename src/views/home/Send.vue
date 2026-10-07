@@ -1,42 +1,54 @@
 <template>
   <div class="home-container">
-    <!-- 主容器 -->
     <div class="main-wrapper">
-      <!-- 顶部导航 —— TopNav home 变体（站名/语言/主题/铃铛/用户菜单内聚于组件） -->
-      <TopNav variant="home" @command="handleUserCommand">
+      <!-- 顶部导航 -->
+      <TopNav variant="home">
         <template #nav-extra>
-          <!-- nav-extra-desktop:手机端隐藏(首页本身即取件优先,API 文档 PC 端入口保留) -->
-          <el-button v-if="configStore.config?.apiDocsEnabled !== false" text class="nav-extra-desktop" @click="$router.push('/api-docs')">
-            <el-icon><Document /></el-icon>
-            {{ t('home.apiDocs') }}
-          </el-button>
-          <el-button text class="nav-extra-desktop" @click="$router.push('/retrieve')">
+          <!-- 回取件（首页=取件专属页） -->
+          <el-button text class="nav-extra-desktop" @click="router.push('/')">
             <el-icon><Postcard /></el-icon>
             {{ t('home.retrieve') }}
           </el-button>
-          <el-button v-if="!userStore.isLoggedIn" type="primary" @click="$router.push('/user/login')">
+          <el-button v-if="configStore.config?.apiDocsEnabled !== false" text class="nav-extra-desktop" @click="router.push('/api-docs')">
+            <el-icon><Document /></el-icon>
+            {{ t('home.apiDocs') }}
+          </el-button>
+          <el-button v-if="!userStore.isLoggedIn" type="primary" @click="router.push('/user/login')">
             {{ t('home.login') }}
           </el-button>
         </template>
       </TopNav>
 
-      <!-- 主内容区：单列聚焦(对标上游"居中一个柜子卡片"的取件优先布局) -->
+      <!-- 发送页：文件/文本 双 tab（取件已拆分至首页专属卡片,互不挤占） -->
       <main class="content-area">
-        <!-- 功能卡片：取件为第一 Tab（对标上游取件优先模式） -->
         <div class="function-card">
           <div class="card-head">
             <div class="card-head-icon">
-              <el-icon size="26"><Postcard /></el-icon>
+              <el-icon size="26"><Upload v-if="activeTab === 'file'" /><Document v-else /></el-icon>
             </div>
-            <h2 class="card-head-title">{{ t('home.cardTitle.get') }}</h2>
+            <h2 class="card-head-title">{{ t('home.cardTitle.' + activeTab) }}</h2>
           </div>
-          <div class="card-pane"><GetShare /></div>
+          <div class="seg" role="tablist">
+            <button
+              v-for="x in ([['file', t('home.tabs.file')], ['text', t('home.tabs.text')]] as const)"
+              :key="x[0]"
+              class="seg-item"
+              :class="{ active: activeTab === x[0] }"
+              role="tab"
+              :aria-selected="activeTab === x[0]"
+              @click="setTab(x[0])"
+            >
+              {{ x[1] }}
+            </button>
+          </div>
+          <div v-show="activeTab === 'file'" class="card-pane"><FileUpload @success="handleShareSuccess" /></div>
+          <div v-show="activeTab === 'text'" class="card-pane"><TextShare @success="handleShareSuccess" /></div>
 
-          <!-- 卡内页脚：去发送（文件/文本分享已拆分至 /send 专属页,取件卡片不再随切换变高失焦） -->
+          <!-- 卡内页脚：回取件 -->
           <div class="card-footer">
-            <a class="footer-link" @click="router.push('/send')">
-              <el-icon><Upload /></el-icon>
-              {{ t('home.goSend') }}
+            <a class="footer-link" @click="router.push('/')">
+              <el-icon><Download /></el-icon>
+              {{ t('home.needRetrieve') }}
             </a>
           </div>
         </div>
@@ -50,7 +62,6 @@
             <el-icon><Link /></el-icon>
             GitHub
           </a>
-          <!-- 管理入口（ui.show_admin_addr 控制；/admin 路由始终可达，仅控制此入口展示） -->
           <a v-if="configStore.config?.showAdminAddr" href="#/admin/login">
             <el-icon><Setting /></el-icon>
             {{ t('admin.title') }}
@@ -66,22 +77,27 @@
       </footer>
     </div>
 
+    <!-- 分享成功弹窗 -->
+    <ShareResultDialog ref="shareResultDialog" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  Upload, Document, Link, Postcard, Setting
+  Upload, Document,
+  Download, Link, Postcard, Setting
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
 import { useLocaleStore } from '@/stores/locale'
-import GetShare from '@/components/upload/GetShare.vue'
+import type { ShareResult } from '@/types/share'
+import FileUpload from '@/components/upload/FileUpload.vue'
+import TextShare from '@/components/upload/TextShare.vue'
 import TopNav from '@/components/layout/TopNav.vue'
+import ShareResultDialog from '@/components/share/ShareResultDialog.vue'
 
 // vite define 注入的构建版本（package.json,对齐发布列车）
 const appVersion = __APP_VERSION__
@@ -92,33 +108,27 @@ const configStore = useConfigStore()
 const localeStore = useLocaleStore()
 const { t, locale } = useI18n()
 
-// 取件专属页（2026-10-07 拆分：文件/文本分享迁往 /send,避免 tab 切换
-// 撑高卡片使取件失焦）。旧 ?tab=file|text 深链重定向到发送页
-const legacyTab = new URLSearchParams(window.location.hash.split('?')[1] || '').get('tab')
-if (legacyTab === 'file' || legacyTab === 'text') {
-  router.replace({ path: '/send', query: { tab: legacyTab } })
+// ?tab=file|text 深链直达,非法值回退 file
+const activeTab = ref<'file' | 'text'>((() => {
+  const q = new URLSearchParams(window.location.hash.split('?')[1] || '').get('tab')
+  return q === 'text' ? 'text' : 'file'
+})())
+
+const setTab = (tab: 'file' | 'text') => {
+  activeTab.value = tab
+  router.replace({ query: { tab: tab === 'text' ? 'text' : undefined } })
 }
 
-const handleUserCommand = (command: string) => {
-  switch (command) {
-    case 'dashboard':
-      router.push('/user/dashboard')
-      break
-    case 'logout':
-      userStore.logout()
-      ElMessage.success(t('home.loggedOut'))
-      break
-  }
+const shareResultDialog = ref<InstanceType<typeof ShareResultDialog> | null>(null)
+
+const handleShareSuccess = (result: ShareResult) => {
+  shareResultDialog.value?.open(result)
 }
 
 onMounted(async () => {
-  // 同步 i18n 和 store
   locale.value = localeStore.locale
   document.documentElement.lang = localeStore.locale
-  // 加载配置
   await configStore.fetchConfig()
-  // 安全版主题：背景图（后端已白名单校验 http(s)）。
-  // 主题色（accent）统一在 App.vue 全局应用，此处不再重复设置。
   const cfg = configStore.config
   if (cfg?.background) {
     const dark = document.documentElement.classList.contains('dark')
@@ -133,7 +143,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 主容器 —— 纯净背景 */
+/* 与首页同构的卡片体系（拆页复制,scoped 隔离;改动需两处同步） */
 .home-container {
   min-height: 100vh;
   background: var(--color-bg);
@@ -148,7 +158,6 @@ onMounted(async () => {
   flex-direction: column;
 }
 
-/* 主内容区 —— 单列聚焦卡片布局（PC 720px 居中,与上游柜子卡片同构） */
 .content-area {
   flex: 1;
   width: 100%;
@@ -156,45 +165,14 @@ onMounted(async () => {
   margin: 0 auto;
 }
 
-/* Hero —— 居中 */
-.step-head {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-bottom: 6px;
+.function-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm);
 }
 
-.step-num {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--primary-color);
-  background: var(--primary-bg);
-}
-
-.step-title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  /* 两端窄屏下步骤标题不撑破列 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.step-desc {
-  font-size: var(--text-xs);
-  color: var(--color-text-tertiary);
-  line-height: 1.5;
-}
-
-/* 功能卡卡头（对标上游：软垫图标+标题+一行副题） */
 .card-head {
   display: flex;
   flex-direction: column;
@@ -222,24 +200,44 @@ onMounted(async () => {
   color: var(--color-text-primary);
 }
 
-
-/* 功能卡片 —— 视觉焦点 */
-.function-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm);
+.seg {
+  display: flex;
+  gap: 4px;
+  margin: 0 var(--spacing-xl) var(--spacing-lg);
+  padding: 4px;
+  background: var(--color-muted);
+  border-radius: var(--radius-lg);
 }
 
-/* 面板统一容器:三个 tab 共用一致内边距与最小高度,
-   切换时卡片尺寸不再跳变(取件面板内容最矮,由 min-height 托底) */
+.seg-item {
+  flex: 1;
+  height: 38px;
+  border: none;
+  border-radius: calc(var(--radius-lg) - 4px);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.seg-item:hover {
+  color: var(--color-text-primary);
+}
+
+.seg-item.active {
+  background: var(--color-card-bg);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
 .card-pane {
   padding: var(--spacing-md) var(--spacing-sm) 0;
   min-height: 380px;
 }
 
-/* 卡内页脚（发送类 tab）：需要取件? */
 .card-footer {
   display: flex;
   justify-content: center;
@@ -262,14 +260,6 @@ onMounted(async () => {
   color: var(--primary-color);
 }
 
-/* 分段切换器：圆角轨道 + 活动白块（对标上游 发送文件/发送文本） */
-
-
-
-
-/* 分享结果弹窗样式内聚于 ShareResultDialog 组件 */
-
-/* 页脚：居中三行（免责/链接/版本元信息） */
 .footer-section {
   margin-top: var(--spacing-2xl);
   padding-top: var(--spacing-xl);
@@ -323,9 +313,7 @@ onMounted(async () => {
   color: var(--color-border);
 }
 
-/* ===== 响应式：手机端 (≤768px) ===== */
 @media (max-width: 768px) {
-  /* 顶栏文字按钮窄屏隐藏,防单行溢出(登录按钮保留) */
   .nav-extra-desktop {
     display: none;
   }
@@ -334,16 +322,11 @@ onMounted(async () => {
     padding: var(--spacing-md) var(--spacing-md) var(--spacing-xl);
   }
 
-
-
-
   .function-card {
     padding: var(--spacing-xs) var(--spacing-md);
-    /* 圆角大卡片贴边留 2px 呼吸,避免"框中框"的局促 */
     border-radius: var(--radius-lg);
   }
 
-  /* 手机上卡片就是主战场,页脚收紧 */
   .footer-section {
     margin-top: var(--spacing-xl);
     gap: var(--spacing-sm);

@@ -9,6 +9,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '首页' },
   },
   {
+    path: '/send',
+    name: 'Send',
+    component: () => import('@/views/home/Send.vue'),
+    meta: { title: '发送' },
+  },
+  {
     path: '/share/:code',
     name: 'ShareView',
     component: () => import('@/views/share/View.vue'),
