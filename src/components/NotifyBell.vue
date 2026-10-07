@@ -1,5 +1,5 @@
 <template>
-  <div class="notify-bell" @click="goNotifications">
+  <div class="notify-bell" role="button" aria-label="notifications" @click="goNotifications">
     <el-badge :value="unread" :hidden="unread === 0" :max="99" class="bell-badge">
       <el-icon :size="20" class="bell-icon"><Bell /></el-icon>
     </el-badge>
@@ -45,22 +45,30 @@ usePolling(refresh, 60000)
 </script>
 
 <style scoped>
+/* 与 LocaleSwitcher/ThemeSwitcher 同款圆形按钮:token 化配色,明暗两态自适应。
+   旧版图标写死 color:white——顶栏改浅色底后铃铛隐身,只剩红色角标悬空(2026-10-07) */
 .notify-bell {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
   cursor: pointer;
-  padding: 8px;
   border-radius: 50%;
-  transition: background 0.2s;
+  background: var(--color-muted);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 .notify-bell:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--primary-bg);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 .bell-icon {
-  color: white;
+  color: inherit;
 }
 :deep(.bell-badge sup) {
-  transform: translate(2px, -2px);
+  transform: translate(4px, -4px);
 }
 </style>
