@@ -44,9 +44,9 @@
               {{ t[1] }}
             </button>
           </div>
-          <div v-show="activeTab === 'get'"><GetShare /></div>
-          <div v-show="activeTab === 'file'"><FileUpload @success="handleShareSuccess" /></div>
-          <div v-show="activeTab === 'text'"><TextShare @success="handleShareSuccess" /></div>
+          <div v-show="activeTab === 'get'" class="card-pane"><GetShare /></div>
+          <div v-show="activeTab === 'file'" class="card-pane"><FileUpload @success="handleShareSuccess" /></div>
+          <div v-show="activeTab === 'text'" class="card-pane"><TextShare @success="handleShareSuccess" /></div>
 
           <!-- 卡内页脚（发送类 tab）：对标上游 需要取件? 链接 -->
           <div v-if="activeTab !== 'get'" class="card-footer">
@@ -230,7 +230,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: var(--spacing-xl) var(--spacing-lg) 0;
+  padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
   text-align: center;
 }
 
@@ -262,14 +262,20 @@ onMounted(async () => {
   padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm);
 }
 
+/* 面板统一容器:三个 tab 共用一致内边距与最小高度,
+   切换时卡片尺寸不再跳变(取件面板内容最矮,由 min-height 托底) */
+.card-pane {
+  padding: var(--spacing-md) var(--spacing-sm) 0;
+  min-height: 380px;
+}
+
 /* 卡内页脚（发送类 tab）：需要取件? */
 .card-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-top: var(--spacing-lg);
-  padding: var(--spacing-md) var(--spacing-xl) 0;
-  border-top: 1px solid var(--color-border-light);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
 }
 
 .footer-link {
