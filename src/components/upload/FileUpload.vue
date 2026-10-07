@@ -37,10 +37,6 @@
           <h3>{{ t('upload.dragHint') }}</h3>
           <p>{{ t('upload.clickHint') }}</p>
         </div>
-        <div class="upload-hint">
-          <el-icon><InfoFilled /></el-icon>
-          {{ t('upload.formatHint') }}
-        </div>
       </div>
     </el-upload>
 
@@ -55,12 +51,11 @@
       />
     </transition-group>
 
-    <!-- 共享设置（对所有文件生效） -->
-    <ShareSettingsForm v-if="tasks.length > 0" :settings="settings" />
+    <!-- 共享设置（对所有文件生效；常驻——恒定布局，未选文件时 CTA 禁用） -->
+    <ShareSettingsForm :settings="settings" />
 
-    <!-- 上传按钮 -->
+    <!-- 上传按钮（对标上游"安全寄送"：纸飞机图标 + 寄送语义） -->
     <el-button
-      v-if="tasks.length > 0"
       type="primary"
       size="large"
       class="upload-btn"
@@ -69,9 +64,9 @@
       @click="handleUploadAll"
     >
       <template #icon>
-        <el-icon v-if="!isUploading"><Upload /></el-icon>
+        <el-icon v-if="!isUploading"><Promotion /></el-icon>
       </template>
-      {{ isUploading ? t('upload.uploading') : t('upload.startUpload') }}
+      {{ isUploading ? t('upload.uploading') : t('upload.secureSend') }}
     </el-button>
 
     <!-- 预签名直传对话框（单文件 >100MB；Promise 化，由队列经 presign 回调驱动） -->
@@ -83,7 +78,7 @@
 import { ref, computed, onBeforeUnmount } from 'vue'
 import { ElMessage, type UploadFile } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import { UploadFilled, InfoFilled, Upload } from '@element-plus/icons-vue'
+import { UploadFilled, Promotion } from '@element-plus/icons-vue'
 import { useConfigStore } from '@/stores/config'
 import { useUserStore } from '@/stores/user'
 import { useShareSettings } from '@/composables/useShareSettings'
@@ -238,15 +233,6 @@ onBeforeUnmount(() => dispose())
   color: var(--color-text-secondary);
 }
 
-.upload-hint {
-  margin-top: 12px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
 
 .files-list {
   display: flex;

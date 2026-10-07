@@ -47,6 +47,14 @@
           <div v-show="activeTab === 'get'"><GetShare /></div>
           <div v-show="activeTab === 'file'"><FileUpload @success="handleShareSuccess" /></div>
           <div v-show="activeTab === 'text'"><TextShare @success="handleShareSuccess" /></div>
+
+          <!-- 卡内页脚（发送类 tab）：对标上游 需要取件? 链接 -->
+          <div v-if="activeTab !== 'get'" class="card-footer">
+            <a class="footer-link" @click="activeTab = 'get'">
+              <el-icon><Download /></el-icon>
+              {{ t('home.needRetrieve') }}
+            </a>
+          </div>
         </div>
       </main>
 
@@ -86,7 +94,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
   Upload, Document,
-  Link, Postcard, Setting
+  Download, Link, Postcard, Setting
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
@@ -257,6 +265,30 @@ onMounted(async () => {
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
   padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm);
+}
+
+/* 卡内页脚（发送类 tab）：需要取件? */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-xl) 0;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.footer-link:hover {
+  color: var(--primary-color);
 }
 
 /* 分段切换器：圆角轨道 + 活动白块（对标上游 发送文件/发送文本） */
