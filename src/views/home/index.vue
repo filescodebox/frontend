@@ -30,37 +30,23 @@
             <h2 class="card-head-title">{{ t('home.cardTitle.' + activeTab) }}</h2>
             <p class="card-head-sub">{{ t('home.cardSub.' + activeTab) }}</p>
           </div>
-          <el-tabs v-model="activeTab" class="function-tabs">
-            <el-tab-pane name="get">
-              <template #label>
-                <span class="tab-label">
-                  <el-icon><Download /></el-icon>
-                  {{ t('home.tabs.get') }}
-                </span>
-              </template>
-              <GetShare />
-            </el-tab-pane>
-
-            <el-tab-pane name="file">
-              <template #label>
-                <span class="tab-label">
-                  <el-icon><Upload /></el-icon>
-                  {{ t('home.tabs.file') }}
-                </span>
-              </template>
-              <FileUpload @success="handleShareSuccess" />
-            </el-tab-pane>
-
-            <el-tab-pane name="text">
-              <template #label>
-                <span class="tab-label">
-                  <el-icon><Document /></el-icon>
-                  {{ t('home.tabs.text') }}
-                </span>
-              </template>
-              <TextShare @success="handleShareSuccess" />
-            </el-tab-pane>
-          </el-tabs>
+          <!-- 分段切换器（对标上游 发送文件/发送文本 圆角轨道+活动白块） -->
+          <div class="seg" role="tablist">
+            <button
+              v-for="t in ([['get', '获取分享'], ['file', '文件分享'], ['text', '文本分享']] as const)"
+              :key="t[0]"
+              class="seg-item"
+              :class="{ active: activeTab === t[0] }"
+              role="tab"
+              :aria-selected="activeTab === t[0]"
+              @click="activeTab = t[0]"
+            >
+              {{ t[1] }}
+            </button>
+          </div>
+          <div v-show="activeTab === 'get'"><GetShare /></div>
+          <div v-show="activeTab === 'file'"><FileUpload @success="handleShareSuccess" /></div>
+          <div v-show="activeTab === 'text'"><TextShare @success="handleShareSuccess" /></div>
         </div>
       </main>
 
@@ -100,7 +86,7 @@ import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
   Upload, Document,
-  Download, Link, Postcard, Setting
+  Link, Postcard, Setting
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
@@ -273,42 +259,38 @@ onMounted(async () => {
   padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm);
 }
 
-.tab-label {
+/* 分段切换器：圆角轨道 + 活动白块（对标上游 发送文件/发送文本） */
+.seg {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  gap: 4px;
+  margin: 0 var(--spacing-xl) var(--spacing-lg);
+  padding: 4px;
+  background: var(--color-muted);
+  border-radius: var(--radius-lg);
+}
+
+.seg-item {
+  flex: 1;
+  height: 38px;
+  border: none;
+  border-radius: calc(var(--radius-lg) - 4px);
+  background: transparent;
+  color: var(--color-text-secondary);
   font-size: var(--text-sm);
   font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
-:deep(.el-tabs__header) {
-  margin-bottom: var(--spacing-lg);
-}
-
-:deep(.el-tabs__nav-wrap::after) {
-  height: 1px;
-  background: var(--color-border);
-}
-
-:deep(.el-tabs__item) {
-  padding: 0 var(--spacing-lg);
-  height: 46px;
-  line-height: 46px;
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-:deep(.el-tabs__item:hover) {
+.seg-item:hover {
   color: var(--color-text-primary);
 }
 
-:deep(.el-tabs__item.is-active) {
+.seg-item.active {
+  background: var(--color-card-bg);
   color: var(--color-text-primary);
-}
-
-:deep(.el-tabs__active-bar) {
-  background: var(--primary-color);
-  height: 2px;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
 
 /* 分享结果弹窗样式内聚于 ShareResultDialog 组件 */
@@ -380,10 +362,6 @@ onMounted(async () => {
     padding: var(--spacing-xs) var(--spacing-md);
     /* 圆角大卡片贴边留 2px 呼吸,避免"框中框"的局促 */
     border-radius: var(--radius-lg);
-  }
-
-  :deep(.el-tabs__item) {
-    padding: 0 var(--spacing-sm);
   }
 
   /* 手机上卡片就是主战场,页脚收紧 */

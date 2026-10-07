@@ -1,6 +1,6 @@
 <template>
   <div class="share-settings">
-    <div class="setting-group">
+    <div class="setting-group expire-row">
       <label class="setting-label">
         <el-icon><Clock /></el-icon>
         {{ t('upload.expire') }}
@@ -124,14 +124,21 @@ const unitLabel = (u: ShareExpireStyle) => t(UNIT_KEYS[u])
 
 <style scoped>
 .share-settings {
-  margin-bottom: 16px;
-  padding: 20px;
-  background: var(--color-muted);
-  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
 }
 
 .setting-group {
   margin-bottom: 16px;
+}
+
+/* 有效期行式布局：label 居左，控件居右（对标上游 过期时间 [1][天]） */
+.expire-row .setting-label {
+  margin-bottom: 8px;
+}
+
+.expire-row .expire-inputs {
+  display: flex;
+  align-items: center;
 }
 
 .setting-group:last-child {
@@ -159,19 +166,23 @@ const unitLabel = (u: ShareExpireStyle) => t(UNIT_KEYS[u])
 
 .more-settings {
   margin-top: 4px;
-  border-top: 1px solid var(--color-border-light);
-  border-bottom: none;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
 }
 
 .more-settings :deep(.el-collapse-item__header) {
+  height: 44px;
+  padding: 0 14px;
   font-size: 13px;
   color: var(--color-text-secondary);
+  background: var(--color-card-bg);
   border-bottom: none;
 }
 
 .more-settings :deep(.el-collapse-item__wrap) {
   border-bottom: none;
-  background: transparent;
+  background: var(--color-muted);
 }
 
 .e2e-hint {
