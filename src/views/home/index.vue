@@ -5,14 +5,10 @@
       <!-- 顶部导航 —— TopNav home 变体（站名/语言/主题/铃铛/用户菜单内聚于组件） -->
       <TopNav variant="home" @command="handleUserCommand">
         <template #nav-extra>
-          <!-- nav-extra-desktop:手机端隐藏(首页本身即取件优先,API 文档 PC 端入口保留) -->
+          <!-- nav-extra-desktop:手机端隐藏(首页本身即取件页,顶栏不再放取件入口;API 文档 PC 端入口保留) -->
           <el-button v-if="configStore.config?.apiDocsEnabled !== false" text class="nav-extra-desktop" @click="$router.push('/api-docs')">
             <el-icon><Document /></el-icon>
             {{ t('home.apiDocs') }}
-          </el-button>
-          <el-button text class="nav-extra-desktop" @click="getShareRef?.focus()">
-            <el-icon><Postcard /></el-icon>
-            {{ t('home.retrieve') }}
           </el-button>
           <el-button v-if="!userStore.isLoggedIn" type="primary" @click="$router.push('/user/login')">
             {{ t('home.login') }}
@@ -30,7 +26,7 @@
             </div>
             <h2 class="card-head-title">{{ t('home.cardTitle.get') }}</h2>
           </div>
-          <div class="card-pane"><GetShare ref="getShareRef" :deep-code="deepCode" /></div>
+          <div class="card-pane"><GetShare :deep-code="deepCode" /></div>
 
           <!-- 卡内页脚：去发送（文件/文本分享已拆分至 /send 专属页,取件卡片不再随切换变高失焦） -->
           <div class="card-footer">
@@ -70,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -90,7 +86,6 @@ const router = useRouter()
 const route = useRoute()
 // ?code= 深链接码（联邦口令/旧收藏经 /retrieve 兼容重定向落此处）：就地取件
 const deepCode = computed(() => (route.query.code as string) || '')
-const getShareRef = ref<InstanceType<typeof GetShare>>()
 const userStore = useUserStore()
 const configStore = useConfigStore()
 const localeStore = useLocaleStore()
