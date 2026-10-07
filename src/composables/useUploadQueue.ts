@@ -295,6 +295,7 @@ export function useUploadQueue(opts: {
           e2e_key: settings.e2e ? e2eKey : undefined,
           file_name: pending.length === 1 ? pending[0]!.file.name : undefined,
           has_password: !!settings.password,
+          pickup_code: result.pickup_code || undefined,
         }
       }
 
@@ -338,6 +339,7 @@ export function useUploadQueue(opts: {
         e2e_key: settings.e2e ? e2eKey : undefined,
         file_name: pending.length === 1 ? pending[0]!.file.name : undefined,
         has_password: !!settings.password,
+        pickup_code: result.pickup_code || undefined,
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed'

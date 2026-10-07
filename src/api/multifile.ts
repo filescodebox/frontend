@@ -23,6 +23,8 @@ export interface MultiShareResult {
   url: string
   share_url: string
   file_count: number
+  /** 6 位取件码（文件分享铸造；永久/文本分享为空） */
+  pickup_code?: string
 }
 
 export const isOkCode = (code?: number) => code === 0 || code === 200
