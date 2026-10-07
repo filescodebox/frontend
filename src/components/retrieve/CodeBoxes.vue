@@ -20,11 +20,14 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { splitTyping } from '@/utils/codeInput'
 
 /**
  * 分格取件码输入（对标上游 5 格 OTP 输入模式，2026-10-07）：
  * 逐格输入自动推进、退格回退、方向键导航、整段粘贴分发；
- * 填满 emit `complete`；粘贴 8 位分享码整段 emit `paste-code` 交由调用方分派。
+ * 填满 emit `complete`（不抢焦点，调用方可防抖分派或继续输入）；
+ * 粘贴超长文本整段 emit `paste-code`、末格续输溢出 emit `expand`，
+ * 均交由调用方分派（扩格 6→8 或按整串跳转）。
  * 取件码区分大小写：不做任何大小写归一（回归 2026-10-03 教训）。
  */
 const props = withDefaults(
@@ -41,6 +44,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
   complete: [value: string]
   'paste-code': [value: string]
+  expand: [value: string]
 }>()
 
 const inputs = ref<HTMLInputElement[]>([])
@@ -65,20 +69,17 @@ const onInput = (i: number, e: InputEvent) => {
     return
   }
   // 单格只收最后一个字符；多余字符顺延到后续格（快速连续输入）
-  const seq = typed.split('')
-  const next = chars.value.slice()
-  let idx = i
-  for (const ch of seq) {
-    if (idx >= props.length) break
-    next[idx] = ch
-    idx++
-  }
-  const value = next.slice(0, props.length).join('')
+  const { value, overflow } = splitTyping(props.modelValue, i, typed, props.length)
   emit('update:modelValue', value)
-  if (idx < props.length) {
-    focusAt(idx)
+  // 顺延超出 length 的溢出上抛（末格续输第 7 位等），由调用方决定扩格
+  if (overflow) {
+    emit('expand', value + overflow)
+    return
+  }
+  const cursor = i + typed.length
+  if (cursor < props.length) {
+    focusAt(cursor)
   } else if (value.length === props.length) {
-    inputs.value[props.length - 1]?.blur()
     emit('complete', value)
   }
 }
@@ -115,21 +116,20 @@ const onKeydown = (i: number, e: KeyboardEvent) => {
 const onPaste = (e: ClipboardEvent) => {
   const text = sanitize(e.clipboardData?.getData('text') || '')
   if (!text) return
-  // 8 位分享码整段交给调用方分派（避免截断成前 6 位误触发匿名取件）
+  // 超长整段交给调用方分派（避免截断成前 6 位误触发匿名取件）
   if (text.length > props.length) {
     emit('paste-code', text)
     return
   }
   emit('update:modelValue', text.slice(0, props.length))
   if (text.length === props.length) {
-    inputs.value[props.length - 1]?.blur()
     emit('complete', text)
   } else {
     focusAt(text.length)
   }
 }
 
-const focus = () => focusAt(0)
+const focus = (i = 0) => focusAt(i)
 defineExpose({ focus })
 </script>
 

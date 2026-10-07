@@ -10,7 +10,7 @@
             <el-icon><Document /></el-icon>
             {{ t('home.apiDocs') }}
           </el-button>
-          <el-button text class="nav-extra-desktop" @click="$router.push('/retrieve')">
+          <el-button text class="nav-extra-desktop" @click="getShareRef?.focus()">
             <el-icon><Postcard /></el-icon>
             {{ t('home.retrieve') }}
           </el-button>
@@ -30,7 +30,7 @@
             </div>
             <h2 class="card-head-title">{{ t('home.cardTitle.get') }}</h2>
           </div>
-          <div class="card-pane"><GetShare /></div>
+          <div class="card-pane"><GetShare ref="getShareRef" :deep-code="deepCode" /></div>
 
           <!-- 卡内页脚：去发送（文件/文本分享已拆分至 /send 专属页,取件卡片不再随切换变高失焦） -->
           <div class="card-footer">
@@ -70,8 +70,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
@@ -87,6 +87,10 @@ import TopNav from '@/components/layout/TopNav.vue'
 const appVersion = __APP_VERSION__
 
 const router = useRouter()
+const route = useRoute()
+// ?code= 深链接码（联邦口令/旧收藏经 /retrieve 兼容重定向落此处）：就地取件
+const deepCode = computed(() => (route.query.code as string) || '')
+const getShareRef = ref<InstanceType<typeof GetShare>>()
 const userStore = useUserStore()
 const configStore = useConfigStore()
 const localeStore = useLocaleStore()

@@ -210,6 +210,10 @@
             <el-form-item :label="t('admin.configPage.download.requireLogin')">
               <el-switch v-model="exForm.download.require_login" />
             </el-form-item>
+            <el-form-item :label="t('admin.configPage.download.codeFold')">
+              <el-switch v-model="exForm.download.code_case_insensitive" />
+              <span class="field-hint">{{ t('admin.configPage.download.codeFoldHint') }}</span>
+            </el-form-item>
             <el-form-item :label="t('admin.configPage.download.presignPolicy')">
               <el-select v-model="exForm.download.presign_policy" style="width: 280px">
                 <el-option label="所有人可直传" value="everyone" />
@@ -459,6 +463,7 @@ const exForm = reactive({
     presign_policy: 'everyone',
     presign_threshold_mb: 100,
     presign_expire_seconds: 600,
+    code_case_insensitive: true,
   },
   notify: { webhook_url: '', smtp: { host: '', port: 465, username: '', password: '', from: '' } },
   oidc: { enabled: false, issuer: '', client_id: '', client_secret: '', scopes: 'openid profile email', frontend_callback: '' },
@@ -503,6 +508,8 @@ const fetchExSections = (data: Record<string, unknown>) => {
     }
     if (!exForm.download.presign_threshold_mb) exForm.download.presign_threshold_mb = 100
     if (!exForm.download.presign_expire_seconds) exForm.download.presign_expire_seconds = 600
+    // 旧库无 code_case_insensitive 键 → 后端下发 null：归一为默认值（nil 语义=开启）
+    if (exForm.download.code_case_insensitive == null) exForm.download.code_case_insensitive = true
   }
   if (sec.notify) {
     Object.assign(exForm.notify, sec.notify)

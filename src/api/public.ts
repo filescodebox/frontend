@@ -27,6 +27,8 @@ export interface PublicConfig {
   presignThresholdMb?: number
   /** 主题色（#hex，后端已校验） */
   accentColor?: string
+  /** 分享码/口令查询是否不区分大小写（download.code_case_insensitive，缺省=开；旧后端无此键） */
+  codeCaseInsensitive?: boolean
   expireStyle: string[]
   textMaxBytes: number
   initialized?: boolean

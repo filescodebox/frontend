@@ -10,7 +10,7 @@
             <el-icon><Plus /></el-icon>
             {{ t('user.newShare') }}
           </el-button>
-          <el-button round @click="$router.push('/retrieve')">
+          <el-button round @click="$router.push('/')">
             <el-icon><Postcard /></el-icon>
             {{ t('user.retrieve') }}
           </el-button>

@@ -20,7 +20,7 @@
           <el-icon size="48" class="icon-secondary"><WarningFilled /></el-icon>
           <h2 class="card-title">{{ t('anonymous.notFound') }}</h2>
           <p class="card-subtitle">{{ t('anonymous.notFoundHint') }}</p>
-          <el-button type="primary" size="large" @click="$router.push('/retrieve')">
+          <el-button type="primary" size="large" @click="$router.push('/')">
             <el-icon><Back /></el-icon>
             {{ t('anonymous.back') }}
           </el-button>
@@ -90,7 +90,7 @@
           <el-button
             link
             class="back-link"
-            @click="$router.push('/retrieve')"
+            @click="$router.push('/')"
           >
             <el-icon><Back /></el-icon>
             {{ t('anonymous.back') }}

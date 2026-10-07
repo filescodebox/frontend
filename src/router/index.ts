@@ -21,10 +21,14 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '分享详情' },
   },
   {
+    // 2026-10-09 取件执行融合进首页：/retrieve 退役为兼容重定向——
+    // 联邦跨站跳转协议仍是 外部节点#/retrieve?code=（旧版节点为独立页），
+    // 旧深链/旧收藏/他站公告落此处统一转首页就地取件
     path: '/retrieve',
-    name: 'AnonymousRetrieve',
-    component: () => import('@/views/anonymous/Retrieve.vue'),
-    meta: { title: '匿名取件' },
+    redirect: (to) => ({
+      path: '/',
+      query: to.query.code ? { code: to.query.code as string } : {},
+    }),
   },
   {
     path: '/retrieve/result',
