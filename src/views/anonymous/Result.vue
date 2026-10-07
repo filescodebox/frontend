@@ -5,9 +5,9 @@
       <header class="result-header">
         <div class="logo-section" @click="$router.push('/')">
           <div class="logo-icon">
-            <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
+            <img src="/favicon.svg" alt="PigeonBox" class="logo-img" />
           </div>
-          <span class="logo-text">FilesCodeBox</span>
+          <span class="logo-text">PigeonBox</span>
         </div>
         <div class="header-actions">
           <LocaleSwitcher />

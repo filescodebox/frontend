@@ -1,7 +1,7 @@
 import { request } from '@/utils/request'
 import { xhrSend } from '@/api/_xhr'
 import type { ApiResponse } from '@/types/common'
-import type { share as shareContract } from '@filescodebox/contracts'
+import type { share as shareContract } from '@pigeonbox/contracts'
 
 export const shareApi = {
   // 分享文本(请求契约 = contracts IDL 生成;此前手写类型漏 custom_code/encrypted)

@@ -201,7 +201,7 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, _from, next) => {
   // 设置页面标题
-  document.title = (to.meta.title as string) || 'FilesCodeBox'
+  document.title = (to.meta.title as string) || 'PigeonBox'
 
   // 检查是否需要登录
   if (to.meta.requiresAuth) {

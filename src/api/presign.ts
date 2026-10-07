@@ -1,6 +1,6 @@
 import { request } from '@/utils/request'
 import type { ApiResponse } from '@/types/common'
-import type { presign as presignContract } from '@filescodebox/contracts'
+import type { presign as presignContract } from '@pigeonbox/contracts'
 
 /** wire 契约类型(contracts IDL 生成,勿手写):秒传命中时 data 仅秒传字段有效 */
 export type PresignInitData = presignContract.InitData

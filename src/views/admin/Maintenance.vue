@@ -213,7 +213,7 @@ const fetchSystemInfo = async () => {
     // 获取系统信息
     const infoRes = await adminApi.getSystemInfo()
     if (infoRes.code === 200 && infoRes.data) {
-      systemInfo.version = infoRes.data.filecodebox_version || '-'
+      systemInfo.version = infoRes.data.pigeonbox_version || '-'
       systemInfo.goVersion = infoRes.data.go_version || '-'
       systemInfo.buildTime = infoRes.data.build_time || '-'
       systemInfo.gitCommit = infoRes.data.git_commit || '-'

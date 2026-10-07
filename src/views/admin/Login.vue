@@ -3,9 +3,9 @@
     <div class="login-card">
       <div class="login-header">
         <div class="logo-icon">
-          <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
+          <img src="/favicon.svg" alt="PigeonBox" class="logo-img" />
         </div>
-        <h1>FilesCodeBox</h1>
+        <h1>PigeonBox</h1>
         <p>管理后台登录</p>
       </div>
 

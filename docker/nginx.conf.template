@@ -1,4 +1,4 @@
-# FilesCodeBox 前端容器 nginx 配置
+# PigeonBox 前端容器 nginx 配置
 # ${BACKEND_HOST}/${BACKEND_PORT}/${CLIENT_MAX_BODY_SIZE} 由容器启动时
 # envsubst 渲染（官方镜像 docker-entrypoint.d 的 templates 机制，仅替换
 # 已定义的环境变量，$host/$uri 等 nginx 变量不受影响）。

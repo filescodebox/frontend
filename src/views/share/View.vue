@@ -64,7 +64,7 @@
           <div class="share-header">
             <div class="logo-section">
               <div class="logo-icon">
-                <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
+                <img src="/favicon.svg" alt="PigeonBox" class="logo-img" />
               </div>
               <div class="logo-text">
                 <h1>{{ t('share.contentTitle') }}</h1>

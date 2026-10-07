@@ -401,7 +401,7 @@ export const adminApi = {
       git_commit: string
       os_info: string
       cpu_cores: number
-      filecodebox_version: string
+      pigeonbox_version: string
     }>>({
       url: '/admin/maintenance/system-info',
       method: 'GET'

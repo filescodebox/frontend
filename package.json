@@ -1,5 +1,5 @@
 {
-  "name": "filecodebox-frontend",
+  "name": "pigeonbox-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -25,7 +25,7 @@
     "vue-router": "^5.0.3"
   },
   "devDependencies": {
-    "@filescodebox/contracts": "https://github.com/filescodebox/contracts/releases/download/v0.6.4/filescodebox-contracts-0.6.4.tgz",
+    "@pigeonbox/contracts": "https://github.com/pigeonbox/contracts/releases/download/v0.7.0/pigeonbox-contracts-0.7.0.tgz",
     "@types/node": "^24.12.0",
     "@types/qrcode": "^1.5.6",
     "@vitejs/plugin-vue": "^6.0.2",

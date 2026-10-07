@@ -118,7 +118,7 @@
       <footer class="footer-section">
         <p class="footer-notice">{{ t('home.notice') }}</p>
         <div class="footer-links">
-          <a href="https://github.com/filescodebox/filescodebox" target="_blank">
+          <a href="https://github.com/pigeonbox/pigeonbox" target="_blank">
             <el-icon><Link /></el-icon>
             GitHub
           </a>

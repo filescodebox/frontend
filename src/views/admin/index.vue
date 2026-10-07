@@ -5,10 +5,10 @@
       <el-aside width="240px" class="admin-aside">
         <div class="admin-logo">
           <div class="logo-icon">
-            <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
+            <img src="/favicon.svg" alt="PigeonBox" class="logo-img" />
           </div>
           <div class="logo-text">
-            <h2>FilesCodeBox</h2>
+            <h2>PigeonBox</h2>
             <p>{{ t('admin.title') }}</p>
           </div>
         </div>

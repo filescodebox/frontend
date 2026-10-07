@@ -111,7 +111,7 @@ const TYPE_DEFS: Record<string, { label: string; fields: FieldDef[] }> = {
       { key: 'webdav_url', label: 'URL', ph: 'https://dav.example.com/dav/' },
       { key: 'webdav_username', label: '用户名' },
       { key: 'webdav_password', label: '密码', secret: true },
-      { key: 'root', label: '远端子目录', ph: 'filecodebox' },
+      { key: 'root', label: '远端子目录', ph: 'pigeonbox' },
     ],
   },
   ftp: {
@@ -121,7 +121,7 @@ const TYPE_DEFS: Record<string, { label: string; fields: FieldDef[] }> = {
       { key: 'ftp_username', label: '用户名' },
       { key: 'ftp_password', label: '密码', secret: true },
       { key: 'ftp_tls', label: 'FTPS(AUTH TLS)', kind: 'bool' },
-      { key: 'root', label: '远端子目录', ph: 'filecodebox' },
+      { key: 'root', label: '远端子目录', ph: 'pigeonbox' },
     ],
   },
   sftp: {
@@ -132,7 +132,7 @@ const TYPE_DEFS: Record<string, { label: string; fields: FieldDef[] }> = {
       { key: 'sftp_password', label: '密码', secret: true },
       { key: 'sftp_private_key', label: 'PEM 私钥', secret: true, ph: '与密码二选一' },
       { key: 'sftp_host_key', label: 'Host Key', ph: '可选，known_hosts 行' },
-      { key: 'root', label: '远端子目录', ph: 'filecodebox' },
+      { key: 'root', label: '远端子目录', ph: 'pigeonbox' },
     ],
   },
   azureblob: {
@@ -143,7 +143,7 @@ const TYPE_DEFS: Record<string, { label: string; fields: FieldDef[] }> = {
       { key: 'azureblob_key', label: '共享密钥', secret: true },
       { key: 'azureblob_sas', label: 'SAS', secret: true, ph: '与密钥二选一' },
       { key: 'azureblob_endpoint', label: 'Endpoint', ph: '可选，Azurite/主权云' },
-      { key: 'root', label: '容器内前缀', ph: 'filecodebox' },
+      { key: 'root', label: '容器内前缀', ph: 'pigeonbox' },
     ],
   },
   hdfs: {
@@ -151,7 +151,7 @@ const TYPE_DEFS: Record<string, { label: string; fields: FieldDef[] }> = {
     fields: [
       { key: 'hdfs_endpoint', label: 'WebHDFS 地址', ph: 'http://namenode:9870' },
       { key: 'hdfs_user', label: '代理用户' },
-      { key: 'root', label: '远端子目录', ph: 'filecodebox' },
+      { key: 'root', label: '远端子目录', ph: 'pigeonbox' },
     ],
   },
   onedrive: {
@@ -162,7 +162,7 @@ const TYPE_DEFS: Record<string, { label: string; fields: FieldDef[] }> = {
       { key: 'onedrive_refresh_token', label: 'Refresh Token', secret: true },
       { key: 'onedrive_tenant', label: 'Tenant', ph: 'common' },
       { key: 'onedrive_drive_id', label: 'Drive ID', ph: '可选，默认 me/drive' },
-      { key: 'root', label: '远端子目录', ph: 'filecodebox' },
+      { key: 'root', label: '远端子目录', ph: 'pigeonbox' },
     ],
   },
 }
@@ -178,7 +178,7 @@ function cloudFields(): FieldDef[] {
 }
 
 const allTypes = Object.entries(TYPE_DEFS).map(([value, v]) => ({ value, label: v.label }))
-const FIB = 'filecodebox'
+const FIB = 'pigeonbox'
 
 const loading = ref(false)
 const switching = ref(false)

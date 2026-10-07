@@ -4,7 +4,7 @@
       <!-- Logo 区 -->
       <div class="login-header">
         <div class="logo-icon">
-          <img src="/favicon.svg" alt="FilesCodeBox" class="logo-img" />
+          <img src="/favicon.svg" alt="PigeonBox" class="logo-img" />
         </div>
         <h1>{{ t('login.title') }}</h1>
       </div>

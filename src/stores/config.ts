@@ -38,7 +38,7 @@ export const useConfigStore = defineStore('config', () => {
 
   // 获取站点名称
   const siteName = () => {
-    return config.value?.name || 'FilesCodeBox'
+    return config.value?.name || 'PigeonBox'
   }
 
   // 获取站点描述

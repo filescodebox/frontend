@@ -591,7 +591,7 @@ export default {
         username: '用户名',
         password: '密码',
         sender: '发件人',
-        senderPlaceholder: "FilesCodeBox <no-reply{'@'}example.com>",
+        senderPlaceholder: "PigeonBox <no-reply{'@'}example.com>",
         testTo: '测试发信',
         testToPlaceholder: '收件邮箱',
         testSend: '发送测试邮件',
@@ -797,7 +797,7 @@ export default {
   },
   docs: {
     title: 'API 文档',
-    subtitle: 'FilesCodeBox 后端 API（基于 thrift IDL + 自定义路由）',
+    subtitle: 'PigeonBox 后端 API（基于 thrift IDL + 自定义路由）',
     openInNew: '打开 OpenAPI JSON',
     loadFailed: '加载 API 文档失败',
     disabledTitle: 'API 文档未开启',
