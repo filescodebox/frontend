@@ -47,20 +47,26 @@ usePolling(refresh, 60000)
 <style scoped>
 /* 与 LocaleSwitcher/ThemeSwitcher 同款圆形按钮:token 化配色,明暗两态自适应。
    旧版图标写死 color:white——顶栏改浅色底后铃铛隐身,只剩红色角标悬空(2026-10-07) */
+/* 圆形按钮样式挂在 el-badge 内层:sup 角标以 32px 圆为锚,落在按钮右上角
+   (挂在 .notify-bell 上时角标只能锚到 18px 图标,会压住铃铛柄) */
 .notify-bell {
+  display: inline-flex;
+  cursor: pointer;
+  border-radius: 50%;
+}
+:deep(.bell-badge) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
-  cursor: pointer;
   border-radius: 50%;
   background: var(--color-muted);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
-.notify-bell:hover {
+.notify-bell:hover :deep(.bell-badge) {
   background: var(--primary-bg);
   border-color: var(--primary-color);
   color: var(--primary-color);
@@ -69,6 +75,10 @@ usePolling(refresh, 60000)
   color: inherit;
 }
 :deep(.bell-badge sup) {
-  transform: translate(4px, -4px);
+  /* el-badge sup 默认锚定针对小尺寸内容,32px 圆上会落在中部压住铃铛;
+     显式钉到按钮右上角 */
+  top: -3px;
+  right: -3px;
+  transform: none;
 }
 </style>

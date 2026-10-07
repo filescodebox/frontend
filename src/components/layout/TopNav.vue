@@ -121,19 +121,20 @@ const goHome = () => {
   gap: var(--spacing-xs);
 }
 
-/* home 变体沿用原移动端纵向堆叠布局 */
+/* home 变体手机端保持单行:logo 左、控件右,与 PC 同构
+   (旧版纵向堆叠两行——logo 独占一行、控件挤第二行,高度翻倍且参差) */
 @media (max-width: 768px) {
   .top-nav--home {
-    height: auto;
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    padding: 0 var(--spacing-md);
   }
 
   .top-nav--home .nav-right {
-    justify-content: flex-end;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    gap: var(--spacing-xs);
+  }
+
+  .top-nav--home .logo-text {
+    font-size: var(--text-base);
   }
 }
 </style>

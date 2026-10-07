@@ -5,11 +5,12 @@
       <!-- 顶部导航 —— TopNav home 变体（站名/语言/主题/铃铛/用户菜单内聚于组件） -->
       <TopNav variant="home" @command="handleUserCommand">
         <template #nav-extra>
-          <el-button v-if="configStore.config?.apiDocsEnabled !== false" text @click="$router.push('/api-docs')">
+          <!-- nav-extra-desktop:手机端隐藏(首页本身即取件优先,API 文档 PC 端入口保留) -->
+          <el-button v-if="configStore.config?.apiDocsEnabled !== false" text class="nav-extra-desktop" @click="$router.push('/api-docs')">
             <el-icon><Document /></el-icon>
             {{ t('home.apiDocs') }}
           </el-button>
-          <el-button text @click="$router.push('/retrieve')">
+          <el-button text class="nav-extra-desktop" @click="$router.push('/retrieve')">
             <el-icon><Postcard /></el-icon>
             {{ t('home.retrieve') }}
           </el-button>
@@ -383,6 +384,11 @@ onMounted(async () => {
 
 /* ===== 响应式：手机端 (≤768px) ===== */
 @media (max-width: 768px) {
+  /* 顶栏文字按钮窄屏隐藏,防单行溢出(登录按钮保留) */
+  .nav-extra-desktop {
+    display: none;
+  }
+
   .main-wrapper {
     padding: var(--spacing-md) var(--spacing-md) var(--spacing-xl);
   }
