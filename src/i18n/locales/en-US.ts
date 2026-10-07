@@ -209,6 +209,7 @@ export default {
     formatHint: '支持任意格式文件，可直接 Ctrl/Cmd + V 粘贴',
     largeFileHint: '大文件将走对象存储直传通道，更快更稳',
     presignFallback: 'Anonymous direct upload is disabled; switched to the standard channel',
+    textTooLargeHint: '内容超出文本分享上限，建议改用文件分享，或压缩后重试',
     drop_hint: '将文件拖到此处，或点击选择',
     paste_hint: '提示：可直接 Ctrl/Cmd + V 粘贴图片',
     presign_hint: '大文件将走对象存储直传通道',
@@ -599,6 +600,8 @@ export default {
         accentColor: '主题色',
         accentHint: '#RRGGBB，保存后全站主色即时生效',
         showAdminEntry: '页脚展示管理入口',
+    robots: 'Robots.txt',
+    robotsHint: '搜索引擎抓取规则，保存后立即在 /robots.txt 生效；留空使用默认全站 Disallow',
         save: '保存外观',
         saved: '外观已保存并全站生效'
       },

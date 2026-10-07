@@ -19,10 +19,11 @@ export interface NotifyListData {
 }
 
 export const notifyApi = {
-  // 获取当前活跃通知（公开）
+  // 获取当前活跃通知（匿名公开端点；2026-10-07 前指向不存在的 /notifies/active，
+  // 公告横幅从未在访客侧亮过）
   active: (type?: string) => {
     return request<ApiResponse<NotifyListData>>({
-      url: '/notifies/active',
+      url: '/api/v1/notifies/public',
       method: 'GET',
       params: type ? { type } : undefined,
     })

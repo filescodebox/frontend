@@ -28,6 +28,7 @@ export interface PublicConfig {
   /** 主题色（#hex，后端已校验） */
   accentColor?: string
   expireStyle: string[]
+  textMaxBytes: number
   initialized?: boolean
 }
 

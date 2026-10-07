@@ -198,8 +198,32 @@ const router = createRouter({
   routes,
 })
 
+// 未初始化状态缓存（对标上游未初始化全站拦截：唯一入口= /setup 向导）
+let initChecked = false
+let systemInitialized = true
+
 // 路由守卫
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
+  // 首个导航做一次初始化探测（会话内缓存；探测失败放行，避免后端不可达时锁死）
+  if (!initChecked && to.path !== '/setup') {
+    initChecked = true
+    try {
+      const { publicApi } = await import('@/api/public')
+      const res = await publicApi.checkInitialization()
+      systemInitialized = !!res.initialized
+    } catch {
+      systemInitialized = true
+    }
+    if (!systemInitialized) {
+      next('/setup')
+      return
+    }
+  }
+  if (to.path === '/setup' && initChecked && systemInitialized) {
+    next('/')
+    return
+  }
+
   // 设置页面标题
   document.title = (to.meta.title as string) || 'PigeonBox'
 

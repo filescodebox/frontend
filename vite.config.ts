@@ -44,6 +44,7 @@ export default defineConfig({
       '/preview': proxyTarget,
       '/qrcode': proxyTarget,
       '/openapi.json': proxyTarget,
+      '/robots.txt': proxyTarget,
       '/ping': proxyTarget,
     },
   },

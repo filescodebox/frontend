@@ -184,6 +184,16 @@
             <el-form-item :label="t('admin.configPage.appearance.showAdminEntry')">
               <el-switch v-model="exForm.ui.show_admin_addr" />
             </el-form-item>
+            <el-form-item :label="t('admin.configPage.appearance.robots')">
+              <el-input
+                v-model="exForm.ui.robots_text"
+                type="textarea"
+                :rows="3"
+                placeholder="User-agent: *&#10;Disallow: /"
+                style="max-width: 520px; font-family: 'SF Mono', Menlo, monospace; font-size: 12px"
+              />
+              <span class="field-hint">{{ t('admin.configPage.appearance.robotsHint') }}</span>
+            </el-form-item>
           </el-form>
           <el-button type="primary" :loading="exSaving.ui" @click="saveSection('ui', exForm.ui, t('admin.configPage.appearance.saved'))">{{ t('admin.configPage.appearance.save') }}</el-button>
         </el-tab-pane>
@@ -435,7 +445,7 @@ const saveConfig = async () => {
 // ==================== v0.7.3 扩容设置段（ui/download/notify/oidc/local_import/api_token）====================
 // 扁平契约：每段独立保存（adminApi.updateConfig({ 段名: 值 })），后端 nil-保留未提交段
 const exForm = reactive({
-  ui: { background: '', accent_color: '', show_admin_addr: false },
+  ui: { background: '', accent_color: '', show_admin_addr: false, robots_text: '' },
   upload_ex: {
     open_upload: true,
     require_login: false,

@@ -72,6 +72,7 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Clock, Lock, EditPen, Key } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { useConfigStore } from '@/stores/config'
 import type { ShareSettings, ShareExpireStyle } from '@/composables/useShareSettings'
 
 /**
@@ -89,7 +90,12 @@ const props = withDefaults(defineProps<{
   showPassword: true,
   showCustomCode: 'auto',
   showE2e: true,
-  units: () => ['minute', 'hour', 'day', 'week', 'month', 'year', 'forever'],
+  // 对标上游：管理台"允许的过期样式"白名单驱动前端可选集（/api/config.expireStyle）
+  units: () => {
+    const allowed = useConfigStore().config?.expireStyle
+    if (allowed && allowed.length) return allowed as ShareExpireStyle[]
+    return ['minute', 'hour', 'day', 'week', 'month', 'year', 'forever']
+  },
 })
 
 const userStore = useUserStore()

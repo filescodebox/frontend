@@ -37,6 +37,7 @@ import { ref } from 'vue'
 import { shareApi } from '@/api/share'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { useConfigStore } from '@/stores/config'
 import { Promotion } from '@element-plus/icons-vue'
 import { encryptText, generateKeyB64 } from '@/utils/e2e'
 import { useUserStore } from '@/stores/user'
@@ -70,6 +71,13 @@ const handleShare = async () => {
   }
   if (!validate()) {
     ElMessage.warning(t('upload.passwordRequired'))
+    return
+  }
+
+  // 超限预检（对标上游"内容过多，建议改用文件"引导）：byte 级而非字符级
+  const textMax = useConfigStore().config?.textMaxBytes || 222 * 1024
+  if (new Blob([textContent.value]).size > textMax) {
+    ElMessage.warning(t('upload.textTooLargeHint'))
     return
   }
 
