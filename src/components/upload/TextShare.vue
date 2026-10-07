@@ -47,7 +47,14 @@ const { t } = useI18n()
 const userStore = useUserStore()
 
 const emit = defineEmits<{
-  success: [result: { code: string; share_url: string; full_share_url: string; e2e_key?: string }]
+  success: [result: {
+    code: string
+    share_url: string
+    full_share_url: string
+    e2e_key?: string
+    file_name?: string
+    has_password?: boolean
+  }]
 }>()
 
 const textContent = ref('')
@@ -92,6 +99,8 @@ const handleShare = async () => {
         share_url: res.data.url,
         full_share_url: res.data.url,
         e2e_key: e2eKey || undefined,
+        // file_name 故意不传：文本分享无直链下载端点，成功弹窗据此隐藏命令行 Tab
+        has_password: !!settings.password,
       })
 
       // 重置

@@ -50,6 +50,7 @@
             <el-form-item prop="password">
               <el-input
                 v-model="form.password"
+                ref="passwordInputRef"
                 type="password"
                 :placeholder="t('anonymous.passwordPlaceholder')"
                 size="large"
@@ -77,9 +78,18 @@
             <el-icon><InfoFilled /></el-icon>
             <span>{{ t('anonymous.codeHint') }}</span>
           </div>
+
+          <div class="card-links">
+            <a class="card-link" @click="historyDialog?.open('pickup')">
+              <el-icon><Clock /></el-icon>
+              {{ t('home.getShare.history') }}
+            </a>
+          </div>
         </div>
       </main>
     </div>
+
+    <LocalHistoryDialog ref="historyDialog" @pickup="onHistoryPickup" />
   </div>
 </template>
 
@@ -89,14 +99,16 @@ import { useRouter, useRoute } from 'vue-router'
 import { type FormInstance, type FormRules } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import {
-  Postcard, Key, Lock, InfoFilled
+  Postcard, Key, Lock, InfoFilled, Clock
 } from '@element-plus/icons-vue'
 import { anonymousApi } from '@/api/anonymous'
 import { federationApi } from '@/api/federation'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import { localHistory } from '@/utils/localHistory'
 import LocaleSwitcher from '@/components/LocaleSwitcher.vue'
 import ThemeSwitcher from '@/components/ThemeSwitcher.vue'
-import { ElMessageBox } from 'element-plus'
+import LocalHistoryDialog from '@/components/history/LocalHistoryDialog.vue'
+import { ElMessageBox, ElMessage } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
@@ -211,7 +223,13 @@ const handleRetrieve = async () => {
     // 后端成功码两代约定并存：200（旧 handler）/ 0（resp.Success）。
     // 此前只认 200，匿名取件的 code:0 成功响应被误判为失败（"操作失败: success"）
     if ((res.code === 200 || res.code === 0) && res.data) {
-      // 成功 — 跳到结果页，带上数据
+      // 成功 — 记入本机取件记录（仅 code+文件名+大小，不含密码），再跳结果页
+      localHistory.pushPickup({
+        code: form.code,
+        name: res.data.file_name || undefined,
+        size: res.data.file_size || undefined,
+      })
+      // 跳到结果页，带上数据
       router.push({
         path: '/retrieve/result',
         query: { data: encodeURIComponent(JSON.stringify(res.data)) },
@@ -235,6 +253,37 @@ const handleRetrieve = async () => {
   }
 }
 
+// 密码预检自动取件（对标上游"填满即取"，2026-10-07）：
+// 首页 6 格填满带 auto=1 进入时，先 search 查 require_password——
+// 无密码直接取件（少一次点击），有密码聚焦密码框并提示（密码永不做自动尝试）
+const tryAutoRetrieve = async () => {
+  if (loading.value || form.code.length !== 6) return
+  try {
+    const res = await anonymousApi.search(form.code)
+    if ((res.code === 200 || res.code === 0) && res.data?.require_password) {
+      passwordInputRef.value?.focus?.()
+      ElMessage.info(t('anonymous.needPasswordHint'))
+      return
+    }
+  } catch {
+    // 预检失败（限流/网络）：静默走正常取件路径，由 retrieve 给出真实错误
+  }
+  await handleRetrieve()
+}
+
+const historyDialog = ref<InstanceType<typeof LocalHistoryDialog>>()
+const passwordInputRef = ref<{ focus: () => void }>()
+
+const onHistoryPickup = (code: string) => {
+  form.code = code.replace(/[^A-Za-z0-9-]/g, '').slice(0, 32)
+  form.password = ''
+  if (/^[A-Za-z0-9]{6}$/.test(code)) {
+    void tryAutoRetrieve()
+  } else {
+    void handleRetrieve()
+  }
+}
+
 onMounted(async () => {
   // 支持 ?code=XXXXX 直填（保持原样大小写，只去空白与非法字符）
   const pre = (route.query.code as string) || ''
@@ -242,7 +291,12 @@ onMounted(async () => {
     form.code = pre.trim().replace(/[^A-Za-z0-9]/g, '').slice(0, 8)
   }
   await nextTick()
-  codeInputRef.value?.focus?.()
+  // auto=1：首页 6 格填满直送，自动取件；否则聚焦取件码输入框
+  if (route.query.auto === '1' && form.code.length === 6) {
+    await tryAutoRetrieve()
+  } else {
+    codeInputRef.value?.focus?.()
+  }
 })
 </script>
 
@@ -328,12 +382,14 @@ onMounted(async () => {
 
 .card-icon {
   display: inline-flex;
-  width: 96px;
-  height: 96px;
+  width: 72px;
+  height: 72px;
   align-items: center;
   justify-content: center;
-  background: var(--primary-color);
-  color: white;
+  /* 对标上游"浅灰软垫+墨色图标"：强调色只留给主按钮与焦点态 */
+  background: var(--color-muted);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-light);
   border-radius: var(--radius-xl);
   margin-bottom: 24px;
 }
@@ -366,10 +422,10 @@ onMounted(async () => {
 
 .submit-btn {
   width: 100%;
-  height: 48px;
+  height: 50px;
   font-size: 16px;
   font-weight: 600;
-  border-radius: var(--radius-lg);
+  border-radius: 999px;
   background: var(--primary-color);
   border: none;
   margin-top: 8px;
@@ -387,6 +443,26 @@ onMounted(async () => {
   gap: 6px;
   color: var(--color-text-secondary);
   font-size: 12px;
+}
+
+.card-links {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+}
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.card-link:hover {
+  color: var(--primary-color);
 }
 
 .icon-secondary {

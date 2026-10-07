@@ -4,9 +4,9 @@ import Components from 'unplugin-vue-components/vite'
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { resolve } from 'path'
 
-// 后端地址，dev 下所有 API 请求代理到这里
+// 后端地址，dev 下所有 API 请求代理到这里（FCB_API_TARGET 可覆盖，便于指向本地多实例）
 const proxyTarget = {
-  target: 'http://localhost:12345',
+  target: process.env.FCB_API_TARGET || 'http://localhost:12345',
   changeOrigin: true,
 }
 

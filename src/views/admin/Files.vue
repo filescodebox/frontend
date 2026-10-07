@@ -48,6 +48,19 @@
 
       <el-divider />
 
+      <!-- 健康洞察过滤提示（来自仪表盘卡点击） -->
+      <el-alert
+        v-if="filters.health"
+        type="info"
+        :closable="true"
+        class="health-banner"
+        @close="clearHealth"
+      >
+        <template #title>
+          健康过滤：{{ HEALTH_LABELS[filters.health] || filters.health }}
+        </template>
+      </el-alert>
+
       <!-- 治理筛选栏 -->
       <div class="filter-bar">
         <el-input
@@ -304,6 +317,7 @@ const { list: filesList, total, page, pageSize, loading, reload, handleSizeChang
     try {
       const params: Record<string, unknown> = { page, page_size }
       if (filters.keyword) params.keyword = filters.keyword
+      if (filters.health) params.health = filters.health
       if (filters.status) params.status = filters.status
       if (filters.status === 'deleted') params.deleted = 'only'
       else if (filters.deleted === 'all') params.deleted = 'all'
@@ -330,6 +344,7 @@ const { list: filesList, total, page, pageSize, loading, reload, handleSizeChang
 // 治理筛选条件（对应 GET /admin/files/filter）
 const filters = reactive({
   keyword: '',
+  health: '',
   status: '',
   upload_type: '',
   expired: '',
@@ -337,6 +352,19 @@ const filters = reactive({
   owner_ip: '',
   user_id: ''
 })
+
+const HEALTH_LABELS: Record<string, string> = {
+  active: '可取件',
+  expired: '已过期',
+  expiring_soon: '即将过期',
+  never_picked: '未取件',
+  forever: '永久有效',
+}
+
+const clearHealth = () => {
+  filters.health = ''
+  reload()
+}
 
 // 操作后刷新适配器（处置/删除/改期后调用，语义=刷新当前页）
 const fetchFiles = () => reload()
@@ -410,6 +438,7 @@ const applyFilters = () => {
 
 const resetFilters = () => {
   filters.keyword = ''
+  filters.health = ''
   filters.status = ''
   filters.upload_type = ''
   filters.expired = ''
@@ -637,6 +666,11 @@ const downloadFile = async (row: any) => {
 }
 
 onMounted(() => {
+  // 仪表盘健康洞察卡跳转入口：?health=expiring_soon 等直达过滤视图
+  const h = new URLSearchParams(window.location.hash.split('?')[1] || '').get('health')
+  if (h && ['active', 'expired', 'expiring_soon', 'never_picked', 'forever'].includes(h)) {
+    filters.health = h
+  }
   reload()
 })
 </script>

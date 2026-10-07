@@ -80,8 +80,18 @@
           </div>
         </div>
 
-        <!-- 功能标签页 -->
+        <!-- 功能标签页（对标上游取件优先模式：取件为第一 Tab，2026-10-07） -->
         <el-tabs v-model="activeTab" class="function-tabs">
+          <el-tab-pane name="get">
+            <template #label>
+              <span class="tab-label">
+                <el-icon><Download /></el-icon>
+                {{ t('home.tabs.get') }}
+              </span>
+            </template>
+            <GetShare />
+          </el-tab-pane>
+
           <el-tab-pane name="file">
             <template #label>
               <span class="tab-label">
@@ -100,16 +110,6 @@
               </span>
             </template>
             <TextShare @success="handleShareSuccess" />
-          </el-tab-pane>
-
-          <el-tab-pane name="get">
-            <template #label>
-              <span class="tab-label">
-                <el-icon><Download /></el-icon>
-                {{ t('home.tabs.get') }}
-              </span>
-            </template>
-            <GetShare />
           </el-tab-pane>
         </el-tabs>
       </main>
@@ -162,7 +162,8 @@ const configStore = useConfigStore()
 const localeStore = useLocaleStore()
 const { t, locale } = useI18n()
 
-const activeTab = ref('file')
+// 对标上游"取件优先"（2026-10-07）：首页默认落在取件 Tab
+const activeTab = ref('get')
 // 场景：自己用 / 给他人（默认给他人）
 const scenario = ref<'self' | 'others'>('others')
 

@@ -209,6 +209,9 @@ export function useUploadQueue(opts: {
           share_url: res.url,
           full_share_url: res.url,
           e2e_key: settings.e2e ? e2eKey : undefined,
+          file_name: task.file.name,
+          has_password: !!settings.password,
+          pickup_code: res.pickup_code || undefined,
         }
       }
 
@@ -242,6 +245,9 @@ export function useUploadQueue(opts: {
             share_url: r.url || '',
             full_share_url: r.url || '',
             e2e_key: settings.e2e ? e2eKey : undefined,
+            file_name: task.file.name,
+            has_password: !!settings.password,
+            pickup_code: r.pickup_code || undefined,
           }
         }
         // 回退：落入下方 multi 流程（r 未定义安全——TS 收窄由 plan 判定保证）
@@ -287,6 +293,8 @@ export function useUploadQueue(opts: {
           share_url: result.share_url || result.url,
           full_share_url: result.url,
           e2e_key: settings.e2e ? e2eKey : undefined,
+          file_name: pending.length === 1 ? pending[0]!.file.name : undefined,
+          has_password: !!settings.password,
         }
       }
 
@@ -328,6 +336,8 @@ export function useUploadQueue(opts: {
         share_url: result.share_url || result.url,
         full_share_url: result.url,
         e2e_key: settings.e2e ? e2eKey : undefined,
+        file_name: pending.length === 1 ? pending[0]!.file.name : undefined,
+        has_password: !!settings.password,
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : 'Failed'

@@ -5,7 +5,8 @@ import type { presign as presignContract } from '@pigeonbox/contracts'
 /** wire 契约类型(contracts IDL 生成,勿手写):秒传命中时 data 仅秒传字段有效 */
 export type PresignInitData = presignContract.InitData
 
-export type PresignCompleteData = presignContract.CompleteData
+// contracts v0.7.0 资产尚未含 pickup_code（下一列车随 gen-ts 更新）；本地扩展对齐后端
+export type PresignCompleteData = presignContract.CompleteData & { pickup_code?: string }
 
 export const presignApi = {
   // 业务成功码：新版 resp.Success 返回 0，旧式 handler 返回 200

@@ -73,6 +73,36 @@
           />
         </el-form-item>
 
+        <!-- 站点预配置（可选；对标上游首启向导，策略一页配完） -->
+        <el-divider content-position="left">
+          <span class="section-title">{{ t('setup.siteSection') }}</span>
+        </el-divider>
+
+        <el-form-item :label="t('setup.siteName')">
+          <el-input
+            v-model="setupForm.siteName"
+            :placeholder="t('setup.siteNamePlaceholder')"
+            size="large"
+            clearable
+            maxlength="80"
+          />
+        </el-form-item>
+
+        <el-form-item :label="t('setup.uploadSizeLabel')">
+          <el-input-number
+            v-model="setupForm.uploadSizeMb"
+            :min="1"
+            :max="10240"
+            size="large"
+            style="width: 100%"
+          />
+        </el-form-item>
+
+        <el-form-item :label="t('setup.openUploadLabel')">
+          <el-switch v-model="setupForm.openUpload" />
+          <span class="switch-hint">{{ t('setup.openUploadHint') }}</span>
+        </el-form-item>
+
         <el-form-item>
           <el-button
             type="primary"
@@ -113,7 +143,11 @@ const setupForm = reactive({
   adminUsername: '',
   adminEmail: '',
   adminPassword: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  // 站点预配置（可选段）
+  siteName: '',
+  uploadSizeMb: 100,
+  openUpload: true
 })
 
 const validateConfirmPassword = (_rule: unknown, value: string, callback: (err?: Error) => void) => {
@@ -168,7 +202,16 @@ const handleSetup = async () => {
     const res = await publicApi.initializeSystem({
       admin_username: setupForm.adminUsername,
       admin_password: setupForm.adminPassword,
-      admin_email: setupForm.adminEmail
+      admin_email: setupForm.adminEmail,
+      // 站点预配置：站点名非空才携带 base_config；其余两项始终携带
+      // thriftgo required 字段需显式存在；port/host 后端以现网配置覆盖
+      ...(setupForm.siteName.trim()
+        ? { base_config: { name: setupForm.siteName.trim(), description: '', port: 0, host: '' } }
+        : {}),
+      site_config: {
+        upload_size_mb: setupForm.uploadSizeMb,
+        open_upload: setupForm.openUpload
+      }
     })
     ElMessage.success(res.message || t('setup.success'))
     router.push('/user/login')
@@ -193,7 +236,7 @@ const handleSetup = async () => {
 
 .setup-card {
   width: 100%;
-  max-width: 400px;
+  max-width: 460px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
@@ -240,6 +283,18 @@ const handleSetup = async () => {
 
 .submit-btn {
   width: 100%;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.switch-hint {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
 }
 
 .setup-footer {

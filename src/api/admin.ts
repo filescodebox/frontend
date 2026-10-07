@@ -49,6 +49,12 @@ export const adminApi = {
       total_size: number
       today_uploads: number
       today_downloads: number
+      // 文件健康洞察维度（2026-10-07；后端 AdminStatsData 同步暴露）
+      active_files: number
+      expired_files: number
+      expiring_soon_files: number
+      never_picked_files: number
+      forever_files: number
     }>>({
       url: '/admin/stats',
       method: 'GET',
@@ -58,12 +64,16 @@ export const adminApi = {
   // 别名：获取仪表板统计
   getDashboardStats: () => adminApi.getStats(),
 
+  // 健康洞察过滤取值（与后端 FileCodeQuery.Health 同口径）
+  healthFilters: ['active', 'expired', 'expiring_soon', 'never_picked', 'forever'] as const,
+
   // 获取文件列表
   getFiles: (params: {
     page?: number
     page_size?: number
     keyword?: string
     sort_by?: string
+    health?: string
   }) => {
     return request<PaginatedResponse<{
       id: number

@@ -161,6 +161,22 @@
             <el-form-item :label="t('admin.configPage.appearance.bgUrl')">
               <el-input v-model="exForm.ui.background" :placeholder="t('admin.configPage.appearance.bgUrlPlaceholder')" clearable />
             </el-form-item>
+            <el-form-item :label="t('admin.configPage.themes.label')">
+              <div class="theme-presets">
+                <div
+                  v-for="th in THEMES"
+                  :key="th.key"
+                  class="theme-swatch"
+                  :class="{ active: themePresetKey === th.key }"
+                  :title="t(th.labelKey)"
+                  @click="applyThemePreset(th)"
+                >
+                  <span class="swatch-dot" :style="{ background: th.swatch }" />
+                  <span class="swatch-name">{{ t(th.labelKey) }}</span>
+                </div>
+              </div>
+              <span class="field-hint">{{ t('admin.configPage.themes.hint') }}</span>
+            </el-form-item>
             <el-form-item :label="t('admin.configPage.appearance.accentColor')">
               <el-input v-model="exForm.ui.accent_color" placeholder="#409eff" style="width: 220px" />
               <span class="field-hint">{{ t('admin.configPage.appearance.accentHint') }}</span>
@@ -298,6 +314,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { THEMES, matchThemePreset, type ThemePreset } from '@/config/themes'
 import { adminApi } from '@/api/admin'
 import { useConfigStore } from '@/stores/config'
 import { useErrorHandler } from '@/composables/useErrorHandler'
@@ -438,6 +455,12 @@ const exForm = reactive({
   local_import: { enabled: false, roots: [] as string[] },
   api_token: { enabled: true, per_key_qps: 20, per_key_burst: 40 },
 })
+
+// 主题预设（2026-10-07 轻量主题包）：选择=写 ui.accent_color 走既有持久化与热应用
+const themePresetKey = computed(() => matchThemePreset(exForm.ui.accent_color))
+const applyThemePreset = (th: ThemePreset) => {
+  exForm.ui.accent_color = th.accent
+}
 
 const exSaving = reactive<Record<string, boolean>>({})
 
@@ -665,5 +688,41 @@ onMounted(() => {
   overflow: auto;
   width: 100%;
   margin: 0;
+}
+
+/* 主题预设色板 */
+.theme-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.theme-swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.theme-swatch:hover {
+  border-color: var(--primary-color);
+}
+
+.theme-swatch.active {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-bg);
+  color: var(--color-text-primary);
+}
+
+.swatch-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
 }
 </style>

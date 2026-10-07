@@ -1,6 +1,7 @@
 // =============================================================================
-// PigeonBox 全局样式 — 极简专业风(Linear / Vercel)
-// 设计语言:黑白主导 + 冷色强调,锐利 1px 边框,极轻阴影,克制圆角
+// PigeonBox 全局样式 — 清新柔和风(2026-10-07 自 Linear 式锐利风调整,对标上游
+// FileCodeBox 2024 主题的"简约不简单":大圆角/弥散阴影/留白呼吸感,信息密度不变)
+// 设计语言:品牌靛蓝点睛 + 中性灰阶,柔和边界,空气感间距
 // =============================================================================
 
 * {
@@ -19,16 +20,16 @@
   --primary-color-rgb: 94, 106, 210;
   --primary-gradient: linear-gradient(135deg, #5e6ad2 0%, #5e6ad2 100%); // 兼容旧引用,实为单色
 
-  // 中性色(亮色模式)—— 纯净、锐利
-  --color-bg: #fafafa;
+  // 中性色(亮色模式)—— 干净、微冷、留白呼吸感
+  --color-bg: #f5f6f8;
   --color-surface: #ffffff;
   --color-elevated: #ffffff;
   --color-card-bg: #ffffff;
   --color-input-bg: #ffffff;
-  --color-muted: #f5f5f5;
+  --color-muted: #f4f5f7;
 
-  --color-border: #e5e5e5;         // 实色 1px 边框
-  --color-border-light: #f0f0f0;
+  --color-border: #e7e8ec;         // 柔和 1px 边框
+  --color-border-light: #eef0f3;
 
   // 文字 —— 纯灰阶
   --color-text-primary: #0a0a0a;   // 近黑
@@ -46,26 +47,26 @@
 	--color-info: #6b7280;
 	--color-alert-bg: #f8fafc;
 
-  // 间距 —— 紧凑、信息密度高
+  // 间距 —— 保留信息密度,大区块留白略增
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 12px;
   --spacing-lg: 16px;
   --spacing-xl: 24px;
-  --spacing-2xl: 32px;
+  --spacing-2xl: 36px;
 
-  // 圆角 —— 克制
-  --radius-sm: 4px;
-  --radius-md: 6px;      // 按钮/输入框
-  --radius-lg: 8px;      // 默认容器
-  --radius-xl: 12px;     // 大卡片
-  --radius-2xl: 16px;
+  // 圆角 —— 柔和(清新观感的主来源)
+  --radius-sm: 6px;
+  --radius-md: 10px;     // 按钮/输入框
+  --radius-lg: 14px;     // 默认容器
+  --radius-xl: 20px;     // 大卡片
+  --radius-2xl: 24px;
 
-  // 阴影 —— 极轻,Linear 式
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  // 阴影 —— 弥散低透(大模糊+负扩散,而非锐利投影)
+  --shadow-xs: 0 1px 2px rgba(16, 18, 24, 0.04);
+  --shadow-sm: 0 2px 10px rgba(16, 18, 24, 0.05), 0 1px 2px rgba(16, 18, 24, 0.04);
+  --shadow-md: 0 8px 24px -8px rgba(16, 18, 24, 0.10), 0 2px 6px -2px rgba(16, 18, 24, 0.05);
+  --shadow-lg: 0 24px 56px -20px rgba(16, 18, 24, 0.16), 0 4px 12px -4px rgba(16, 18, 24, 0.06);
 
   // 字号系统
   --text-xs: 12px;
@@ -93,22 +94,22 @@
 	--el-color-error: #dc2626;
 	--el-color-info: #6b7280;
 
-  --el-border-radius-base: 6px;
-  --el-border-radius-small: 4px;
-  --el-border-radius-round: 6px;
-  --el-border-radius-circle: 20px;
+  --el-border-radius-base: 10px;
+  --el-border-radius-small: 8px;
+  --el-border-radius-round: 999px;
+  --el-border-radius-circle: 50%;
 
-  --el-border-color: #e5e5e5;
-  --el-border-color-light: #e5e5e5;
-  --el-border-color-lighter: #f0f0f0;
-  --el-border-color-extra-light: #f5f5f5;
-  --el-border-color-dark: #d4d4d4;
+  --el-border-color: #e7e8ec;
+  --el-border-color-light: #e7e8ec;
+  --el-border-color-lighter: #eef0f3;
+  --el-border-color-extra-light: #f4f5f7;
+  --el-border-color-dark: #d6d8de;
 
   --el-bg-color: #ffffff;
-  --el-bg-color-page: #fafafa;
+  --el-bg-color-page: #f5f6f8;
   --el-bg-color-overlay: #ffffff;
-  --el-fill-color: #f5f5f5;
-  --el-fill-color-light: #fafafa;
+  --el-fill-color: #f4f5f7;
+  --el-fill-color-light: #f8f9fa;
   --el-fill-color-lighter: #fafafa;
   --el-fill-color-blank: #ffffff;
 
@@ -139,8 +140,8 @@ html.dark {
   --color-input-bg: #141414;
   --color-muted: #1a1a1a;
 
-  --color-border: #262626;
-  --color-border-light: #1f1f1f;
+  --color-border: #262629;
+  --color-border-light: #1f1f23;
 
   --color-text-primary: #fafafa;
   --color-text-regular: #d4d4d4;
@@ -159,9 +160,9 @@ html.dark {
 	--el-color-warning: #d29a0a;
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 24px 56px -20px rgba(0, 0, 0, 0.6);
 
   // EP 暗色覆盖（light-N 向深底混,供浅底/hover/边框用）
   --el-color-primary: #8e97e0;
@@ -319,6 +320,26 @@ a {
   }
 }
 
+// 弹窗/浮层:大圆角 + 弥散阴影(清新观感的关键面)
+.el-dialog {
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.el-message {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.el-message-box {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.el-popper.is-light {
+  border-radius: var(--radius-lg);
+}
+
 // 输入框:focus 态强调色边框
 .el-input__wrapper {
   border-radius: var(--radius-md);
@@ -361,6 +382,13 @@ a {
 // 暗色模式 EP 适配(补充 token 无法覆盖的部分)
 // =============================================================================
 html.dark {
+  // 暗色主色提亮为 #8e97e0 后,自定义实底按钮的白字对比度跌至 ~2.5:1,
+  // 统一改为深字(EP 自带 primary 按钮由其自身变量处理,不在此列)
+  .submit-btn,
+  .get-btn {
+    color: #101014;
+  }
+
   .el-card {
     background-color: var(--el-bg-color) !important;
     border-color: var(--el-border-color) !important;

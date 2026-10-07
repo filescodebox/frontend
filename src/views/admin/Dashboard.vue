@@ -80,6 +80,29 @@
       </el-col>
     </el-row>
 
+    <!-- 文件健康洞察（2026-10-07 对标上游 dashboard：每张卡=可点击的过滤器直达处理） -->
+    <el-card class="health-card" shadow="hover">
+      <template #header>
+        <div class="card-header">
+          <h3>{{ t('admin.health.title') }}</h3>
+          <el-tag type="info" size="small">{{ t('admin.health.subtitle') }}</el-tag>
+        </div>
+      </template>
+      <div class="health-grid">
+        <div
+          v-for="item in healthCards"
+          :key="item.key"
+          class="health-item"
+          :class="'health-' + item.tone"
+          @click="goHealth(item.key)"
+        >
+          <div class="health-count">{{ item.count }}</div>
+          <div class="health-label">{{ t(item.label) }}</div>
+          <el-icon class="health-arrow"><ArrowRight /></el-icon>
+        </div>
+      </div>
+    </el-card>
+
     <!-- 图表区域 -->
     <el-row :gutter="24" class="charts-row">
       <el-col :span="12">
@@ -227,11 +250,13 @@ import {
   Setting, Avatar
 } from '@element-plus/icons-vue'
 import { adminApi } from '@/api/admin'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import TrendChart, { type TrendPoint } from '@/components/TrendChart.vue'
 
 const { t, locale } = useI18n()
 const userStore = useUserStore()
+const router = useRouter()
 
 const loading = ref(false)
 
@@ -240,6 +265,11 @@ interface DashboardStats {
   total_files: number
   total_size: number
   today_uploads: number
+  active_files?: number
+  expired_files?: number
+  expiring_soon_files?: number
+  never_picked_files?: number
+  forever_files?: number
 }
 
 interface RecentUser {
@@ -261,7 +291,25 @@ const stats = reactive({
   fileCount: 0,
   totalStorage: 0,
   todayUploads: 0,
+  activeFiles: 0,
+  expiredFiles: 0,
+  expiringSoonFiles: 0,
+  neverPickedFiles: 0,
+  foreverFiles: 0,
 })
+
+// 文件健康洞察卡（点击=带 health 过滤直达文件管理页）
+const healthCards = computed(() => [
+  { key: 'active', count: stats.activeFiles, label: 'admin.health.active', tone: 'ok' },
+  { key: 'expiring_soon', count: stats.expiringSoonFiles, label: 'admin.health.expiringSoon', tone: 'warn' },
+  { key: 'never_picked', count: stats.neverPickedFiles, label: 'admin.health.neverPicked', tone: 'info' },
+  { key: 'forever', count: stats.foreverFiles, label: 'admin.health.forever', tone: 'muted' },
+  { key: 'expired', count: stats.expiredFiles, label: 'admin.health.expired', tone: 'danger' },
+])
+
+const goHealth = (key: string) => {
+  router.push({ path: '/admin/files', query: { health: key } })
+}
 
 const animatedStats = reactive({
   userCount: 0,
@@ -328,6 +376,11 @@ const fetchDashboardStats = async () => {
       stats.fileCount = data.total_files || 0
       stats.totalStorage = data.total_size || 0
       stats.todayUploads = data.today_uploads || 0
+      stats.activeFiles = data.active_files || 0
+      stats.expiredFiles = data.expired_files || 0
+      stats.expiringSoonFiles = data.expiring_soon_files || 0
+      stats.neverPickedFiles = data.never_picked_files || 0
+      stats.foreverFiles = data.forever_files || 0
       animateNumber('userCount', stats.userCount)
       animateNumber('fileCount', stats.fileCount)
       animateNumber('todayUploads', stats.todayUploads)
@@ -502,6 +555,68 @@ const generateMockFileTypeDist = () => {
 </script>
 
 <style scoped>
+/* 文件健康洞察卡 */
+.health-card {
+  margin-bottom: 24px;
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.health-item {
+  position: relative;
+  padding: 16px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-muted);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.health-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+}
+
+.health-count {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.health-label {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.health-arrow {
+  position: absolute;
+  right: 12px;
+  top: 16px;
+  color: var(--color-text-tertiary);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.health-item:hover .health-arrow {
+  opacity: 1;
+  color: var(--primary-color);
+}
+
+.health-warn .health-count { color: var(--color-warning); }
+.health-danger .health-count { color: var(--color-danger); }
+.health-ok .health-count { color: var(--color-success); }
+
+@media (max-width: 1024px) {
+  .health-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 .dashboard-container {
   animation: fadeIn 0.5s ease-in;
 }

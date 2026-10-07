@@ -64,6 +64,7 @@ export const shareApi = {
 export interface UploadFileResult {
   code: string
   url: string
+  pickup_code?: string
 }
 
 export async function uploadFile(
