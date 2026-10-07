@@ -101,17 +101,19 @@ const { t } = useI18n()
 
 const search = ref('')
 
-// 只展示有 viewer_at 的（即至少被取件过一次）
+// 服务端 status=viewed 只返回被取件过的分享（total 与列表同源）；
+// 此处仅按最近取件时间倒序展示
 const viewedShares = computed(() => {
-  return list.value.filter(s => s.viewer_at)
-    .sort((a, b) => (b.viewer_at || '').localeCompare(a.viewer_at || ''))
+  return [...list.value].sort((a, b) => (b.viewer_at || '').localeCompare(a.viewer_at || ''))
 })
 
 const { list, total, page, pageSize, loading, reload, handlePageChange, handleSizeChange } =
   useTableQuery<UserShareItem>(async ({ page, page_size }) => {
     try {
       const res = await userSharesApi.list({
-        status: 'all',
+        // viewed：core 侧 viewer_at 非空过滤；此前拉 all 再客户端过滤，
+        // 分页 total 是全量分享数，出现「空表却显示共 N 条」
+        status: 'viewed',
         search: search.value || undefined,
         page,
         page_size,
