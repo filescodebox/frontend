@@ -5,12 +5,8 @@
       <!-- 顶部导航 —— TopNav home 变体（站名/语言/主题/铃铛/用户菜单内聚于组件） -->
       <TopNav variant="home" @command="handleUserCommand">
         <template #nav-extra>
-          <!-- nav-extra-desktop:手机端隐藏(首页本身即取件页,顶栏不再放取件入口;API 文档 PC 端入口保留) -->
-          <el-button v-if="configStore.config?.apiDocsEnabled !== false" text class="nav-extra-desktop" @click="$router.push('/api-docs')">
-            <el-icon><Document /></el-icon>
-            {{ t('home.apiDocs') }}
-          </el-button>
-          <el-button v-if="!userStore.isLoggedIn" type="primary" @click="$router.push('/user/login')">
+          <!-- nav-extra-desktop:手机端隐藏(首页本身即取件页,顶栏只留登录,API 文档沉到页脚) -->
+          <el-button v-if="!userStore.isLoggedIn" type="primary" plain @click="$router.push('/user/login')">
             {{ t('home.login') }}
           </el-button>
         </template>
@@ -22,37 +18,32 @@
         <div class="function-card">
           <div class="card-head">
             <div class="card-head-icon">
-              <el-icon size="26"><Postcard /></el-icon>
+              <el-icon size="22"><Postcard /></el-icon>
             </div>
             <h2 class="card-head-title">{{ t('home.cardTitle.get') }}</h2>
           </div>
-          <div class="card-pane"><GetShare :deep-code="deepCode" /></div>
+          <div class="card-pane"><GetShare ref="getShareRef" :deep-code="deepCode" /></div>
 
-          <!-- 卡内页脚：去发送（文件/文本分享已拆分至 /send 专属页,取件卡片不再随切换变高失焦） -->
+          <!-- 卡内页脚：去发送 / 本机记录（两条次级入口并排一行,不与主 CTA 抢层级） -->
           <div class="card-footer">
-            <a class="footer-link" @click="router.push('/send')">
-              <el-icon><Upload /></el-icon>
-              {{ t('home.goSend') }}
-            </a>
+            <a class="footer-link" @click="router.push('/send')">{{ t('home.goSend') }}</a>
+            <span class="footer-dot">·</span>
+            <a class="footer-link" @click="getShareRef?.openHistory()">{{ t('home.getShare.history') }}</a>
           </div>
         </div>
       </main>
 
-      <!-- 页脚：免责声明 / 链接 / 版本元信息 -->
+      <!-- 页脚：免责声明 + 单行元信息（链接与版本并流,去分隔线） -->
       <footer class="footer-section">
         <p class="footer-notice">{{ t('home.notice') }}</p>
-        <div class="footer-links">
-          <a href="https://github.com/pigeonbox/pigeonbox" target="_blank">
-            <el-icon><Link /></el-icon>
-            GitHub
-          </a>
-          <!-- 管理入口（ui.show_admin_addr 控制；/admin 路由始终可达，仅控制此入口展示） -->
-          <a v-if="configStore.config?.showAdminAddr" href="#/admin/login">
-            <el-icon><Setting /></el-icon>
-            {{ t('admin.title') }}
-          </a>
-        </div>
         <div class="footer-meta">
+          <a href="https://github.com/pigeonbox/pigeonbox" target="_blank">GitHub</a>
+          <span class="meta-dot">·</span>
+          <!-- API 文档/管理入口按配置展示（/api-docs 与 /admin 路由始终可达,仅控制入口展示） -->
+          <a v-if="configStore.config?.apiDocsEnabled !== false" @click="$router.push('/api-docs')">{{ t('home.apiDocs') }}</a>
+          <template v-if="configStore.config?.apiDocsEnabled !== false"><span class="meta-dot">·</span></template>
+          <a v-if="configStore.config?.showAdminAddr" href="#/admin/login">{{ t('admin.title') }}</a>
+          <template v-if="configStore.config?.showAdminAddr"><span class="meta-dot">·</span></template>
           <span>{{ t('home.versionLabel') }} v{{ appVersion }}</span>
           <span class="meta-dot">·</span>
           <span>© 2026 PigeonBox</span>
@@ -66,13 +57,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useI18n } from 'vue-i18n'
-import {
-  Upload, Document, Link, Postcard, Setting
-} from '@element-plus/icons-vue'
+import { Postcard } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
 import { useLocaleStore } from '@/stores/locale'
@@ -86,6 +75,7 @@ const router = useRouter()
 const route = useRoute()
 // ?code= 深链接码（联邦口令/旧收藏经 /retrieve 兼容重定向落此处）：就地取件
 const deepCode = computed(() => (route.query.code as string) || '')
+const getShareRef = ref<InstanceType<typeof GetShare>>()
 const userStore = useUserStore()
 const configStore = useConfigStore()
 const localeStore = useLocaleStore()
@@ -153,6 +143,8 @@ onMounted(async () => {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Hero —— 居中 */
@@ -193,20 +185,20 @@ onMounted(async () => {
   line-height: 1.5;
 }
 
-/* 功能卡卡头（对标上游：软垫图标+标题+一行副题） */
+/* 功能卡卡头（软垫图标+标题,轻量一档让位给输入区） */
 .card-head {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
+  gap: 10px;
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-sm);
   text-align: center;
 }
 
 .card-head-icon {
   display: inline-flex;
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   align-items: center;
   justify-content: center;
   background: var(--color-muted);
@@ -216,35 +208,35 @@ onMounted(async () => {
 
 .card-head-title {
   margin: 0;
-  font-size: 24px;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-primary);
 }
 
 
-/* 功能卡片 —— 视觉焦点 */
+/* 功能卡片 —— 视觉焦点（在剩余空间垂直居中;auto margin 在内容超高时安全塌缩为 0,不裁剪） */
 .function-card {
+  margin: auto 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-xl) var(--spacing-sm);
 }
 
-/* 面板统一容器:三个 tab 共用一致内边距与最小高度,
-   切换时卡片尺寸不再跳变(取件面板内容最矮,由 min-height 托底) */
+/* 单面板容器:取件页唯一面板,高度贴合内容(旧 min-height 是三 tab 时代防跳高遗产,已无必要) */
 .card-pane {
-  padding: var(--spacing-md) var(--spacing-sm) 0;
-  min-height: 380px;
+  padding: 0 var(--spacing-sm);
 }
 
-/* 卡内页脚（发送类 tab）：需要取件? */
+/* 卡内页脚（次级入口行:去发送 · 取件/发件记录） */
 .card-footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  gap: 10px;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-md);
 }
 
 .footer-link {
@@ -261,6 +253,10 @@ onMounted(async () => {
   color: var(--primary-color);
 }
 
+.footer-dot {
+  color: var(--color-border);
+}
+
 /* 分段切换器：圆角轨道 + 活动白块（对标上游 发送文件/发送文本） */
 
 
@@ -268,15 +264,13 @@ onMounted(async () => {
 
 /* 分享结果弹窗样式内聚于 ShareResultDialog 组件 */
 
-/* 页脚：居中三行（免责/链接/版本元信息） */
+/* 页脚：免责声明 + 单行元信息（去分隔线,靠留白收尾） */
 .footer-section {
   margin-top: var(--spacing-2xl);
-  padding-top: var(--spacing-xl);
-  border-top: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   text-align: center;
 }
 
@@ -288,22 +282,13 @@ onMounted(async () => {
   max-width: 640px;
 }
 
-.footer-links {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-lg);
-}
-
-.footer-links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.footer-meta a {
   color: var(--color-text-secondary);
-  font-size: var(--text-xs);
+  cursor: pointer;
   transition: color 0.15s ease;
 }
 
-.footer-links a:hover {
+.footer-meta a:hover {
   color: var(--color-text-primary);
 }
 
@@ -324,18 +309,6 @@ onMounted(async () => {
 
 /* ===== 响应式：手机端 (≤768px) ===== */
 @media (max-width: 768px) {
-  /* 顶栏文字按钮窄屏隐藏,防单行溢出(登录按钮保留) */
-  .nav-extra-desktop {
-    display: none;
-  }
-
-  .main-wrapper {
-    padding: var(--spacing-md) var(--spacing-md) var(--spacing-xl);
-  }
-
-
-
-
   .function-card {
     padding: var(--spacing-xs) var(--spacing-md);
     /* 圆角大卡片贴边留 2px 呼吸,避免"框中框"的局促 */

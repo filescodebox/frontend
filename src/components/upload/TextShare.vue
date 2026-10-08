@@ -126,29 +126,35 @@ const handleShare = async () => {
 
 <style scoped>
 .text-share-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 20px 0;
 }
 
+/* 文本框弹性填充:等高 tab 方案下与文件 tab 拖拽区同高(容器高度由 grid 叠放统一),
+   替代旧"实测 224px"硬编码对齐——那会随拖拽区样式漂移 */
 .text-input-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   margin-bottom: 24px;
 }
 
+.text-area {
+  flex: 1;
+  display: flex;
+}
+
 .text-area :deep(.el-textarea__inner) {
-  /* 与文件 tab 拖拽区同高(手机 204/桌面 224,实测值)——切换 tab 主体块等大;
-     !important 压过 EP 内建 min-height(实测 computed 曾回落 2px) */
-  min-height: 224px !important;
+  flex: 1;
+  min-height: 180px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: 16px;
   font-size: 15px;
   line-height: 1.6;
   transition: border-color 0.2s ease;
-}
-
-@media (max-width: 768px) {
-  .text-area :deep(.el-textarea__inner) {
-    min-height: 204px !important;
-  }
 }
 
 .text-area :deep(.el-textarea__inner:focus) {

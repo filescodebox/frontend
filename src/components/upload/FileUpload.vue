@@ -156,6 +156,9 @@ onBeforeUnmount(() => dispose())
 
 <style scoped>
 .file-upload-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 20px 0;
   position: relative;
 }
@@ -187,8 +190,17 @@ onBeforeUnmount(() => dispose())
   font-size: 24px;
 }
 
+/* 拖拽区弹性填充:等高 tab 方案下吸收剩余空间(空态时撑满,队列变长时回落自然高度)。
+   注意 EP 结构:自定义 class 落在外层壳 div,真正的 .el-upload 在内一层,flex 链要两层都接上 */
 .upload-dragger {
+  flex: 1;
+  display: flex;
   margin-bottom: 24px;
+}
+
+.upload-dragger :deep(.el-upload) {
+  flex: 1;
+  display: flex;
 }
 
 /* 手机端拖拽区收紧:降低留白,避免空拖拽区占满首屏 */
@@ -203,6 +215,11 @@ onBeforeUnmount(() => dispose())
 }
 
 .upload-dragger :deep(.el-upload-dragger) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-xl);
   background: var(--color-muted);
@@ -239,6 +256,11 @@ onBeforeUnmount(() => dispose())
   flex-direction: column;
   gap: 8px;
   margin-bottom: 16px;
+}
+
+/* 空队列不留幽灵 margin:等高 tab 方案下 16px 空隙会让文件 tab 反超文本 tab */
+.files-list:empty {
+  margin-bottom: 0;
 }
 
 .upload-btn {

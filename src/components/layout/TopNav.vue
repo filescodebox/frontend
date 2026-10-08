@@ -64,10 +64,12 @@ const goHome = () => {
   border-bottom: 1px solid var(--color-border);
 }
 
+/* home 变体:无分隔线融入背景(首页只有一张卡片,少一条通栏横线更清爽) */
 .top-nav--home {
   background: var(--color-bg);
+  border-bottom: none;
   padding: 0 var(--spacing-md);
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: var(--spacing-xl);
 }
 
 .nav-left {

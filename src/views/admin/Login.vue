@@ -15,6 +15,7 @@
         :rules="loginRules"
         class="login-form"
         label-position="top"
+        hide-required-asterisk
       >
         <el-form-item prop="username" label="用户名">
           <el-input
@@ -161,17 +162,21 @@ const handleLogin = async () => {
   padding: var(--spacing-2xl);
 }
 
+/* 头部纵向 flex 居中:logo 是块级元素,text-align 管不到它(错位根因) */
 .login-header {
-  text-align: center;
-  margin-bottom: var(--spacing-2xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xl);
 }
 
 .logo-icon {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
 }
 
 .logo-img {

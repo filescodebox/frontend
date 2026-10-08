@@ -245,16 +245,18 @@ const handleSetup = async () => {
 }
 
 .setup-header {
-  text-align: center;
-  margin-bottom: var(--spacing-2xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
 }
 
 .logo-icon {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: var(--spacing-md);
 }
 
 .logo-img {

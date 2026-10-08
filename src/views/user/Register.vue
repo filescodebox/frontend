@@ -14,6 +14,7 @@
         :model="registerForm"
         :rules="rules"
         label-position="top"
+        hide-required-asterisk
         @submit.prevent="handleRegister"
       >
         <el-form-item :label="t('register.username')" prop="username">
@@ -208,16 +209,18 @@ const handleRegister = async () => {
 }
 
 .register-header {
-  text-align: center;
-  margin-bottom: var(--spacing-2xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-xl);
 }
 
 .logo-icon {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: var(--spacing-md);
 }
 
 .logo-img {
@@ -236,6 +239,10 @@ const handleRegister = async () => {
 
 .submit-btn {
   width: 100%;
+  height: 46px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 999px;
 }
 
 .register-footer {

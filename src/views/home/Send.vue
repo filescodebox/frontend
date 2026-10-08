@@ -4,16 +4,12 @@
       <!-- 顶部导航 -->
       <TopNav variant="home">
         <template #nav-extra>
-          <!-- 回取件（首页=取件专属页） -->
+          <!-- 回取件（首页=取件专属页）;API 文档沉到页脚 -->
           <el-button text class="nav-extra-desktop" @click="router.push('/')">
             <el-icon><Postcard /></el-icon>
             {{ t('home.retrieve') }}
           </el-button>
-          <el-button v-if="configStore.config?.apiDocsEnabled !== false" text class="nav-extra-desktop" @click="router.push('/api-docs')">
-            <el-icon><Document /></el-icon>
-            {{ t('home.apiDocs') }}
-          </el-button>
-          <el-button v-if="!userStore.isLoggedIn" type="primary" @click="router.push('/user/login')">
+          <el-button v-if="!userStore.isLoggedIn" type="primary" plain @click="router.push('/user/login')">
             {{ t('home.login') }}
           </el-button>
         </template>
@@ -24,7 +20,7 @@
         <div class="function-card">
           <div class="card-head">
             <div class="card-head-icon">
-              <el-icon size="26"><Upload v-if="activeTab === 'file'" /><Document v-else /></el-icon>
+              <el-icon size="22"><Upload v-if="activeTab === 'file'" /><Document v-else /></el-icon>
             </div>
             <h2 class="card-head-title">{{ t('home.cardTitle.' + activeTab) }}</h2>
           </div>
@@ -41,8 +37,15 @@
               {{ x[1] }}
             </button>
           </div>
-          <div v-show="activeTab === 'file'" class="card-pane"><FileUpload @success="handleShareSuccess" /></div>
-          <div v-show="activeTab === 'text'" class="card-pane"><TextShare @success="handleShareSuccess" /></div>
+          <!-- 双 tab 等高:grid 叠放,两 pane 恒占同一格,容器高度=两者最大值,切换零跳变 -->
+          <div class="card-panes">
+            <div class="card-pane" :class="{ inactive: activeTab !== 'file' }">
+              <FileUpload @success="handleShareSuccess" />
+            </div>
+            <div class="card-pane" :class="{ inactive: activeTab !== 'text' }">
+              <TextShare @success="handleShareSuccess" />
+            </div>
+          </div>
 
           <!-- 卡内页脚：回取件 -->
           <div class="card-footer">
@@ -54,20 +57,17 @@
         </div>
       </main>
 
-      <!-- 页脚：免责声明 / 链接 / 版本元信息 -->
+      <!-- 页脚：免责声明 + 单行元信息（链接与版本并流,去分隔线） -->
       <footer class="footer-section">
         <p class="footer-notice">{{ t('home.notice') }}</p>
-        <div class="footer-links">
-          <a href="https://github.com/pigeonbox/pigeonbox" target="_blank">
-            <el-icon><Link /></el-icon>
-            GitHub
-          </a>
-          <a v-if="configStore.config?.showAdminAddr" href="#/admin/login">
-            <el-icon><Setting /></el-icon>
-            {{ t('admin.title') }}
-          </a>
-        </div>
         <div class="footer-meta">
+          <a href="https://github.com/pigeonbox/pigeonbox" target="_blank">GitHub</a>
+          <span class="meta-dot">·</span>
+          <!-- API 文档/管理入口按配置展示（/api-docs 与 /admin 路由始终可达,仅控制入口展示） -->
+          <a v-if="configStore.config?.apiDocsEnabled !== false" @click="router.push('/api-docs')">{{ t('home.apiDocs') }}</a>
+          <template v-if="configStore.config?.apiDocsEnabled !== false"><span class="meta-dot">·</span></template>
+          <a v-if="configStore.config?.showAdminAddr" href="#/admin/login">{{ t('admin.title') }}</a>
+          <template v-if="configStore.config?.showAdminAddr"><span class="meta-dot">·</span></template>
           <span>{{ t('home.versionLabel') }} v{{ appVersion }}</span>
           <span class="meta-dot">·</span>
           <span>© 2026 PigeonBox</span>
@@ -88,7 +88,7 @@ import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import {
   Upload, Document,
-  Download, Link, Postcard, Setting
+  Download, Postcard
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useConfigStore } from '@/stores/config'
@@ -163,29 +163,32 @@ onMounted(async () => {
   width: 100%;
   max-width: 720px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .function-card {
+  margin: auto 0;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
-  padding: var(--spacing-sm) var(--spacing-xl) var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-xl) var(--spacing-sm);
 }
 
 .card-head {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-lg);
+  gap: 10px;
+  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-sm);
   text-align: center;
 }
 
 .card-head-icon {
   display: inline-flex;
-  width: 56px;
-  height: 56px;
+  width: 44px;
+  height: 44px;
   align-items: center;
   justify-content: center;
   background: var(--color-muted);
@@ -195,7 +198,7 @@ onMounted(async () => {
 
 .card-head-title {
   margin: 0;
-  font-size: 24px;
+  font-size: var(--text-xl);
   font-weight: 700;
   color: var(--color-text-primary);
 }
@@ -233,17 +236,33 @@ onMounted(async () => {
   box-shadow: var(--shadow-sm);
 }
 
+/* 双 tab 等高容器:grid 叠放,容器高度恒取两 pane 最大值(切换零跳变);
+   主区域(拖拽区/文本框)由各组件 flex:1 拉伸吸收差额,不再硬编码对齐高度 */
+.card-panes {
+  display: grid;
+  padding: 0 var(--spacing-sm);
+}
+
 .card-pane {
-  padding: var(--spacing-md) var(--spacing-sm) 0;
-  min-height: 380px;
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 非活动 tab:占位但不可见不可交互(visibility 同时脱离焦点树与读屏) */
+.card-pane.inactive {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .card-footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-lg);
+  gap: 10px;
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg) var(--spacing-md);
 }
 
 .footer-link {
@@ -262,12 +281,10 @@ onMounted(async () => {
 
 .footer-section {
   margin-top: var(--spacing-2xl);
-  padding-top: var(--spacing-xl);
-  border-top: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   text-align: center;
 }
 
@@ -279,22 +296,13 @@ onMounted(async () => {
   max-width: 640px;
 }
 
-.footer-links {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-lg);
-}
-
-.footer-links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.footer-meta a {
   color: var(--color-text-secondary);
-  font-size: var(--text-xs);
+  cursor: pointer;
   transition: color 0.15s ease;
 }
 
-.footer-links a:hover {
+.footer-meta a:hover {
   color: var(--color-text-primary);
 }
 

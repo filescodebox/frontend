@@ -49,11 +49,6 @@
       </el-button>
     </div>
 
-    <!-- 本机记录入口 -->
-    <div class="mode-links">
-      <a class="mode-link" @click="historyDialog?.open('pickup')">{{ t('home.getShare.history') }}</a>
-    </div>
-
     <LocalHistoryDialog ref="historyDialog" @pickup="onHistoryPickup" />
   </div>
 </template>
@@ -225,20 +220,22 @@ onMounted(() => {
 defineExpose({
   /** 顶栏「取件」按钮：聚焦取件输入框 */
   focus: () => codeBoxesRef.value?.focus(),
+  /** 卡内页脚「取件 / 发件记录」链接：打开本机记录弹窗 */
+  openHistory: () => historyDialog.value?.open('pickup'),
 })
 </script>
 
 <style scoped>
 .get-share-container {
-  padding: 20px 0;
+  padding: 0;
 }
 
 .pickup-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
-  padding: var(--spacing-xl) 0 var(--spacing-md);
+  gap: 14px;
+  padding: var(--spacing-md) 0 var(--spacing-xs);
 }
 
 .pickup-hint {
@@ -286,24 +283,5 @@ defineExpose({
 
 .get-btn:hover:not(:disabled) {
   opacity: 0.92;
-}
-
-.mode-links {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-top: var(--spacing-lg);
-}
-
-.mode-link {
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  cursor: pointer;
-  transition: color 0.15s ease;
-}
-
-.mode-link:hover {
-  color: var(--primary-color);
 }
 </style>
