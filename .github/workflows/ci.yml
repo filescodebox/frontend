@@ -25,21 +25,7 @@ jobs:
             echo "::error::neutral 产物出现宿主平台代码——平台实现只允许进对应 flavor"
             exit 1
           fi
-      # fnos flavor 已迁 fnos 仓 web/(2026-10-09 适配器归平台仓),由 fnos CI 把守
-      - name: Build qnap(QPKG flavor)
-        run: npm run build:qnap
-      - name: qnap 产物适配器存在性验证
-        run: |
-          grep -rloE "api/qnap|qnapHostAdapter" dist/assets/ >/dev/null 2>&1 || {
-            echo "::error::qnap 产物缺少宿主适配器代码"
-            exit 1
-          }
-          # 产物入口收口:必须是 index.html(qnap flavor 构建产物 closeBundle 改名)
-          test -f dist/index.html || { echo "::error::qnap 产物缺少 index.html"; exit 1; }
-          if grep -rloE "trimjs|pickSharedFile|trim_open_gateway" dist/assets/ >/dev/null 2>&1; then
-            echo "::error::qnap 产物混入 fnOS 平台代码"
-            exit 1
-          fi
+      # 平台 flavor 已全部迁平台仓(fnos/qnap 的 web/ 自包含构建),由各平台 CI 把守
       # 镜像正式发布在 server 仓 release.yml（与 server 同版本列车），此处仅验证
       # Dockerfile 可构建（nginx 模板/产物拷贝路径变更能被 PR 及时发现）
       - name: Docker build smoke

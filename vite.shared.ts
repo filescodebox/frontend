@@ -1,6 +1,6 @@
-// 壳仓共享构建片段:双 flavor(neutral/fnos)共用。
-// core 以 Release 源码 tgz 形态安装(@pigeonbox/frontend-core),构建时以源码
-// 形态编译(视图/样式/路由全部来自 core,壳只注入平台适配器与入口)。
+// 构建共享片段(别名/插件/define)。core 以 Release 源码 tgz 形态安装
+// (@pigeonbox/frontend-core),构建时以源码形态编译(视图/样式/路由全部来自
+// core,壳只做 neutral 产物构建;平台适配器在各平台仓 web/ 自包含注入)。
 import { fileURLToPath } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import Components from 'unplugin-vue-components/vite'
