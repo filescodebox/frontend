@@ -21,7 +21,7 @@ jobs:
         run: npm run build
       - name: neutral 产物平台代码扫描(命中即红)
         run: |
-          if grep -rloE "trimjs|pickSharedFile|fnosSsoLogin|trim_open_gateway" dist/assets/ >/dev/null 2>&1; then
+          if grep -rloE "trimjs|pickSharedFile|fnosSsoLogin|trim_open_gateway|api/qnap|qnapHostAdapter" dist/assets/ >/dev/null 2>&1; then
             echo "::error::neutral 产物出现宿主平台代码——平台实现只允许进对应 flavor"
             exit 1
           fi
@@ -33,6 +33,24 @@ jobs:
             echo "::error::fnos 产物缺少宿主适配器代码"
             exit 1
           }
+          if grep -rloE "api/qnap|qnapHostAdapter" dist/assets/ >/dev/null 2>&1; then
+            echo "::error::fnos 产物混入 QNAP 平台代码"
+            exit 1
+          fi
+      - name: Build qnap(QPKG flavor)
+        run: npm run build:qnap
+      - name: qnap 产物适配器存在性验证
+        run: |
+          grep -rloE "api/qnap|qnapHostAdapter" dist/assets/ >/dev/null 2>&1 || {
+            echo "::error::qnap 产物缺少宿主适配器代码"
+            exit 1
+          }
+          # 产物入口收口:必须是 index.html(qnap flavor 构建产物 closeBundle 改名)
+          test -f dist/index.html || { echo "::error::qnap 产物缺少 index.html"; exit 1; }
+          if grep -rloE "trimjs|pickSharedFile|trim_open_gateway" dist/assets/ >/dev/null 2>&1; then
+            echo "::error::qnap 产物混入 fnOS 平台代码"
+            exit 1
+          fi
       # 镜像正式发布在 server 仓 release.yml（与 server 同版本列车），此处仅验证
       # Dockerfile 可构建（nginx 模板/产物拷贝路径变更能被 PR 及时发现）
       - name: Docker build smoke
