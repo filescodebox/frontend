@@ -25,18 +25,7 @@ jobs:
             echo "::error::neutral 产物出现宿主平台代码——平台实现只允许进对应 flavor"
             exit 1
           fi
-      - name: Build fnos(fpk flavor)
-        run: npm run build:fnos
-      - name: fnos 产物适配器存在性验证
-        run: |
-          grep -rloE "pickSharedFile|trim_open_gateway" dist/assets/ >/dev/null 2>&1 || {
-            echo "::error::fnos 产物缺少宿主适配器代码"
-            exit 1
-          }
-          if grep -rloE "api/qnap|qnapHostAdapter" dist/assets/ >/dev/null 2>&1; then
-            echo "::error::fnos 产物混入 QNAP 平台代码"
-            exit 1
-          fi
+      # fnos flavor 已迁 fnos 仓 web/(2026-10-09 适配器归平台仓),由 fnos CI 把守
       - name: Build qnap(QPKG flavor)
         run: npm run build:qnap
       - name: qnap 产物适配器存在性验证

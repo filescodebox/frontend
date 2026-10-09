@@ -4,17 +4,15 @@
   "version": "0.15.8",
   "type": "module",
   "scripts": {
-    "dev": "vite --config vite.fnos.config.ts",
+    "dev": "vite --config vite.qnap.config.ts",
     "dev:qnap": "vite --config vite.qnap.config.ts",
     "build": "vite build --config vite.config.ts",
-    "build:fnos": "vite build --config vite.fnos.config.ts",
     "build:qnap": "vite build --config vite.qnap.config.ts",
     "typecheck": "vue-tsc --noEmit -p tsconfig.app.json",
-    "preview": "vite preview --config vite.fnos.config.ts"
+    "preview": "vite preview --config vite.qnap.config.ts"
   },
   "dependencies": {
-    "@pigeonbox/frontend-core": "https://github.com/pigeonbox/frontend-core/releases/download/v0.1.4/pigeonbox-frontend-core-0.1.4.tgz",
-    "@trimjs/web-app": "^0.4.2"
+    "@pigeonbox/frontend-core": "https://github.com/pigeonbox/frontend-core/releases/download/v0.1.4/pigeonbox-frontend-core-0.1.4.tgz"
   },
   "devDependencies": {
     "@pigeonbox/contracts": "https://github.com/pigeonbox/contracts/releases/download/v0.8.0/pigeonbox-contracts-0.8.0.tgz",
