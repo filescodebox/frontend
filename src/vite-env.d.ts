@@ -1,4 +1,4 @@
 /// <reference types="vite/client" />
 
-// vite define 注入的构建版本（见 vite.config.ts,来源 package.json）
+// 构建版本注入(vite.define,来源=壳 package.json,对齐发布列车)
 declare const __APP_VERSION__: string

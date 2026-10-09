@@ -5,7 +5,8 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["node_modules/@pigeonbox/frontend-core/src/*"],
+      "@shell/*": ["src/*"]
     },
 
     /* Linting */
@@ -16,5 +17,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "node_modules/@pigeonbox/frontend-core/src/**/*.d.ts"]
 }
