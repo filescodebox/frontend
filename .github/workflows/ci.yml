@@ -21,7 +21,12 @@ jobs:
         run: npm run build
       - name: neutral 产物平台代码扫描(命中即红)
         run: |
-          if grep -rloE "trimjs|pickSharedFile|fnosSsoLogin|trim_open_gateway|api/qnap|qnapHostAdapter" dist/assets/ >/dev/null 2>&1; then
+          # api/qnap 两段判定:frontend-core 请求层的宿主 SSO 鉴权端点白名单
+          # (cb1ff09——/api/fnos/login|/api/qnap/login 的 401 是 SSO 不可用的预期
+          # 安全失败,不触发强制登出)是正当 neutral 代码,精确放行该一个字面量;
+          # 其余 api/qnap* 路径(qnap 适配器 API 客户端特征)仍命中即红。
+          if grep -rloE "trimjs|pickSharedFile|fnosSsoLogin|trim_open_gateway|qnapHostAdapter" dist/assets/ >/dev/null 2>&1 \
+             || { grep -rhoE "api/qnap[A-Za-z0-9/_.-]*" dist/assets/ 2>/dev/null | sort -u | grep -qvE "^api/qnap/login$"; }; then
             echo "::error::neutral 产物出现宿主平台代码——平台实现只允许进对应 flavor"
             exit 1
           fi
