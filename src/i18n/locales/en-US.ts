@@ -601,6 +601,7 @@ export default {
         accentColor: '主题色',
         accentHint: '#RRGGBB，保存后全站主色即时生效',
         showAdminEntry: '页脚展示管理入口',
+        showAdminEntryHint: '关闭仅隐藏页脚入口，/admin 地址始终可直达；登录管理员的顶栏菜单不受影响',
     robots: 'Robots.txt',
     robotsHint: '搜索引擎抓取规则，保存后立即在 /robots.txt 生效；留空使用默认全站 Disallow',
         save: '保存外观',

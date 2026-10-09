@@ -13,7 +13,7 @@ export interface PublicConfig {
   registerEnabled?: boolean
   /** OIDC 单点登录开关（P2 SSO；security.oidc.enabled） */
   oidcEnabled?: boolean
-  /** 管理后台入口可见性（ui.show_admin_addr；/admin 路由始终可达，仅控制页脚入口展示） */
+  /** 管理后台入口可见性（ui.show_admin_addr，缺省=展示；/admin 路由始终可达，仅控制页脚入口展示） */
   showAdminAddr?: boolean
   /** API 文档开关（ui.expose_openapi）：false 时后端 /openapi.json 404，前端隐藏入口并降级 /api-docs 页 */
   apiDocsEnabled?: boolean

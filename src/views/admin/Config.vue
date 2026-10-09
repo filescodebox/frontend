@@ -183,6 +183,7 @@
             </el-form-item>
             <el-form-item :label="t('admin.configPage.appearance.showAdminEntry')">
               <el-switch v-model="exForm.ui.show_admin_addr" />
+              <span class="field-hint">{{ t('admin.configPage.appearance.showAdminEntryHint') }}</span>
             </el-form-item>
             <el-form-item :label="t('admin.configPage.appearance.robots')">
               <el-input
@@ -449,7 +450,7 @@ const saveConfig = async () => {
 // ==================== v0.7.3 扩容设置段（ui/download/notify/oidc/local_import/api_token）====================
 // 扁平契约：每段独立保存（adminApi.updateConfig({ 段名: 值 })），后端 nil-保留未提交段
 const exForm = reactive({
-  ui: { background: '', accent_color: '', show_admin_addr: false, robots_text: '' },
+  ui: { background: '', accent_color: '', show_admin_addr: true, robots_text: '' },
   upload_ex: {
     open_upload: true,
     require_login: false,
@@ -490,7 +491,11 @@ const localImportRootsText = computed({
 
 const fetchExSections = (data: Record<string, unknown>) => {
   const sec = data as Record<string, any>
-  if (sec.ui) Object.assign(exForm.ui, sec.ui)
+  if (sec.ui) {
+    Object.assign(exForm.ui, sec.ui)
+    // 旧库 ui 段无 show_admin_addr 键（后端缺省=展示），归一为开避免开关显示与实际相反
+    if (exForm.ui.show_admin_addr == null) exForm.ui.show_admin_addr = true
+  }
   if (sec.upload_ex) {
     Object.assign(exForm.upload_ex, sec.upload_ex)
     if (exForm.upload_ex.open_upload == null) exForm.upload_ex.open_upload = true
